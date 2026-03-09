@@ -30,36 +30,11 @@ This repository preserves three layers of the project:
 | --- | --- | --- |
 | Original MATLAB toolbox | External reference | Baseline for parity checks |
 | Scilab wrapper | `macros/`, `examples/` | Preserved for reference |
-| **Python implementation** | `src/femlab/` | **Production-ready**, fully tested |
+| **Python implementation** | `src/femlab/` | Tested |
 
 ---
 
 ## Architecture
-
-### Repository Layout
-
-```mermaid
-graph TD
-    ROOT["FemLab/"]
-    ROOT --> SRC["src/femlab/<br/>Python package"]
-    ROOT --> MAC["macros/<br/>Legacy Scilab .sci files"]
-    ROOT --> EX["examples/<br/>Scilab teaching examples"]
-    ROOT --> MSH["mesh/<br/>Gmsh .geo/.msh assets"]
-    ROOT --> SCR["scripts/<br/>Comparison pipeline"]
-    ROOT --> TST["tests/<br/>pytest suite"]
-    ROOT --> CMP["_solver_comparasion/<br/>Benchmark artifacts"]
-    ROOT --> DOC["docs/ + help/<br/>Documentation & HTML ref"]
-
-    SRC --> CORE["core.py — init, cols, rows"]
-    SRC --> ELEM["Element modules<br/>bars · triangles · quads · solids"]
-    SRC --> ASM["assembly.py — assmk, assmq"]
-    SRC --> BC["boundary.py — setbc, solve_lag"]
-    SRC --> MAT["plasticity.py — Von Mises, Drucker-Prager"]
-    SRC --> IO["gmsh.py — Mesh I/O"]
-    SRC --> PLT["plotting.py — Visualization"]
-    SRC --> POST["postprocess.py — reaction forces"]
-    SRC --> EXPY["examples/ — Runnable demos"]
-```
 
 ### Python Package File Dependency Graph
 
@@ -307,7 +282,7 @@ triangle   = run_gmsh_triangle(plot=False)
 
 ### Minimal Cantilever Example
 
-A complete 2D cantilever beam in ~20 lines:
+A 2D cantilever beam:
 
 ```python
 import numpy as np
@@ -447,28 +422,21 @@ graph TD
 
 ### Accuracy: Python vs MATLAB (Baseline)
 
-| Case | Max |Δu| | Max |Δσ| | Verdict |
-| --- | ---: | ---: | --- |
-| cantilever_q4 | 5.70 × 10⁻¹⁴ | 4.63 × 10⁻¹³ | machine precision |
-| gmsh_triangle_t3 | 1.72 × 10⁻²¹ | 1.06 × 10⁻¹⁴ | machine precision |
-| flow_q4 | 2.13 × 10⁻¹⁴ | 2.39 × 10⁻¹⁸ | machine precision |
-| flow_t3 | 4.26 × 10⁻¹⁴ | 3.04 × 10⁻¹⁸ | machine precision |
-| bar01_nlbar | 8.74 × 10⁻²⁶ | 0 | machine precision |
-| bar02_nlbar | 3.86 × 10⁻¹⁶ | 0 | machine precision |
-| square_plastps | 7.98 × 10⁻¹⁷ | 1.33 × 10⁻¹⁵ | machine precision |
-| square_plastpe | 3.99 × 10⁻³ | 4.81 × 10⁻² | < 0.5 % (iterative) |
-| hole_plastps | 2.50 × 10⁻¹⁶ | 1.54 × 10⁻¹⁴ | machine precision |
-| hole_plastpe | 4.04 × 10⁻⁴ | 5.56 × 10⁻³ | < 0.1 % (iterative) |
+| Case | Max $\vert \Delta u \vert$ | Max $\vert \Delta \sigma \vert$ | Verdict |
+| :--- | :--- | :--- | :--- |
+| cantilever_q4 | $5.70 \times 10^{-14}$ | $4.63 \times 10^{-13}$ | machine precision |
+| gmsh_triangle_t3 | $1.72 \times 10^{-21}$ | $1.06 \times 10^{-14}$ | machine precision |
+| flow_q4 | $2.13 \times 10^{-14}$ | $2.39 \times 10^{-18}$ | machine precision |
+| flow_t3 | $4.26 \times 10^{-14}$ | $3.04 \times 10^{-18}$ | machine precision |
+| bar01_nlbar | $8.74 \times 10^{-26}$ | 0 | machine precision |
+| bar02_nlbar | $3.86 \times 10^{-16}$ | 0 | machine precision |
+| square_plastps | $7.98 \times 10^{-17}$ | $1.33 \times 10^{-15}$ | machine precision |
+| square_plastpe | $3.99 \times 10^{-3}$ | $4.81 \times 10^{-2}$ | < 0.5% (iterative) |
+| hole_plastps | $2.50 \times 10^{-16}$ | $1.54 \times 10^{-14}$ | machine precision |
+| hole_plastpe | $4.04 \times 10^{-4}$ | $5.56 \times 10^{-3}$ | < 0.1% (iterative) |
 
-### Accuracy Summary
 
-```mermaid
-pie title Python vs MATLAB Agreement
-    "Machine precision (8 cases)" : 8
-    "Sub-percent iterative diff (2 cases)" : 2
-```
-
-**8 of 10 cases** match MATLAB at machine precision (Δu < 10⁻¹⁴). The remaining 2 cases (plane-strain plasticity) show sub-percent differences expected from path-dependent iterative solvers — all three solvers (Python, MATLAB, Scilab) diverge from each other by similar margins on these cases.
+**8 of 10 cases** match MATLAB at machine precision (Δu < 10⁻¹⁴). The remaining 2 cases (plane-strain plasticity) show sub-percent differences expected from path-dependent iterative solvers. All three solvers (Python, MATLAB, Scilab) diverge from each other by similar margins on these cases.
 
 ### Runtime Comparison
 
