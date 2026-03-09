@@ -66,7 +66,35 @@ The high-value editable targets are documented in [docs/EDITABLE_TARGETS.md](doc
 
 - Legacy Scilab source imported into Git history.
 - GitHub repository created with `gh`.
-- Python package port in progress.
+- Python package now includes core assembly, Gmsh import, 1D/2D/3D element kernels, plotting helpers, and example drivers.
+
+## Quick Start
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python -m pip install -e .[dev]
+.\.venv\Scripts\python -m pytest -q
+```
+
+Example usage:
+
+```python
+from femlab.examples import run_cantilever, run_flow_q4, run_gmsh_triangle
+
+cantilever = run_cantilever(plot=False)
+flow = run_flow_q4(plot=False)
+triangle = run_gmsh_triangle(plot=False)
+```
+
+## Current Python Coverage
+
+- Line/bar elements: `kbar`, `qbar`, `kebar`, `qebar`
+- 2D elastic and potential elements: `Q4E`, `Q4P`, `T3E`, `T3P`
+- 2D elastoplastic quadrilateral elements: `Q4EPS`, `Q4EPE`
+- 3D elastic solid elements from the Scilab tree: `T4E`, `H8E`
+- Mesh readers: `load_gmsh`, `load_gmsh2`
+- Plot helpers: `plotelem`, `plotu`, `plotq4`, `plott3`, `plotbc`, `plotforces`
+- Example drivers: cantilever beam, Gmsh triangle mesh, Q4/T3 potential flow
 
 ## License Note
 

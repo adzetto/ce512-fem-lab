@@ -1,33 +1,11 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
 
 from ..types import GmshMesh
-
-
-NODES_PER_TYPE = {
-    1: 2,
-    2: 3,
-    3: 4,
-    4: 4,
-    5: 8,
-    6: 6,
-    7: 5,
-    8: 3,
-    9: 6,
-    10: 9,
-    11: 10,
-    12: 27,
-    13: 18,
-    14: 14,
-    15: 1,
-    16: 8,
-    17: 20,
-    18: 15,
-    19: 13,
-}
 
 
 def _empty_array(width: int) -> np.ndarray:
@@ -43,6 +21,8 @@ def load_gmsh(filename) -> GmshMesh:
     bounds_min = np.zeros(3, dtype=float)
     bounds_max = np.zeros(3, dtype=float)
     element_rows: list[list[int]] = []
+    element_tags: list[list[int]] = []
+    element_nodes: list[list[int]] = []
     point_rows: list[list[int]] = []
     line_rows: list[list[int]] = []
     line2_rows: list[list[int]] = []
@@ -97,14 +77,18 @@ def load_gmsh(filename) -> GmshMesh:
                     num_tags = parts[2]
                     tags = parts[3 : 3 + num_tags]
                     node_ids = parts[3 + num_tags :]
-                    info_row = [element_id, element_type, num_tags, *tags]
+                    info_row = [element_id, element_type, num_tags, 0, *tags]
+                    tag_row = tags
                 else:
                     element_id, element_type, reg_phys, reg_elem, num_nodes = parts[:5]
                     node_ids = parts[5:]
                     info_row = [element_id, element_type, reg_phys, reg_elem, num_nodes]
+                    tag_row = [reg_phys, reg_elem]
                 element_rows.append(info_row)
+                element_tags.append(tag_row)
 
                 mapped_nodes = [node_id_map[node_id] for node_id in node_ids]
+                element_nodes.append(mapped_nodes)
                 record = [*mapped_nodes, row_number]
                 if element_type == 15:
                     point_rows.append(record)
@@ -151,14 +135,29 @@ def load_gmsh(filename) -> GmshMesh:
             continue
         index += 1
 
-    width = max((len(row) for row in element_rows), default=0)
-    element_infos = np.zeros((len(element_rows), width), dtype=int)
+    info_width = max((len(row) for row in element_rows), default=0)
+    tag_width = max((len(row) for row in element_tags), default=0)
+    node_width = max((len(row) for row in element_nodes), default=0)
+    element_infos = np.zeros((len(element_rows), info_width), dtype=int)
+    tag_array = np.zeros((len(element_tags), tag_width), dtype=int)
+    node_array = np.zeros((len(element_nodes), node_width), dtype=int)
+    nb_type = np.zeros(19, dtype=int)
     for i, row in enumerate(element_rows):
         element_infos[i, : len(row)] = row
+    for i, row in enumerate(element_tags):
+        tag_array[i, : len(row)] = row
+    for i, row in enumerate(element_nodes):
+        node_array[i, : len(row)] = row
+        element_type = element_infos[i, 1] if element_infos.shape[0] else 0
+        if 1 <= element_type <= 19:
+            nb_type[element_type - 1] += 1
 
     return GmshMesh(
         positions=positions,
         element_infos=element_infos,
+        element_tags=tag_array,
+        element_nodes=node_array,
+        nb_type=nb_type,
         points=np.asarray(point_rows, dtype=int) if point_rows else _empty_array(2),
         lines=np.asarray(line_rows, dtype=int) if line_rows else _empty_array(3),
         lines2=np.asarray(line2_rows, dtype=int) if line2_rows else _empty_array(4),
@@ -181,3 +180,40 @@ def load_gmsh(filename) -> GmshMesh:
         bounds_min=bounds_min,
         bounds_max=bounds_max,
     )
+
+
+def load_gmsh2(filename, which=None) -> GmshMesh:
+    mesh = load_gmsh(filename)
+    if which is None:
+        return mesh
+    if np.isscalar(which) and int(which) == -1:
+        return mesh
+
+    requested = {int(value) for value in np.asarray(which).ravel()}
+    filtered = deepcopy(mesh)
+    type_map = {
+        1: ("lines", 3),
+        2: ("triangles", 4),
+        3: ("quads", 5),
+        4: ("tets", 5),
+        5: ("hexa", 9),
+        6: ("prism", 7),
+        7: ("pyramid", 6),
+        8: ("lines2", 4),
+        9: ("qtriangles", 7),
+        10: ("quads9", 10),
+        11: ("tets10", 11),
+        12: ("hexa27", 28),
+        13: ("prism18", 19),
+        14: ("pyramid14", 15),
+        15: ("points", 2),
+        16: ("quads8", 9),
+        17: ("hexa20", 21),
+        18: ("prism15", 16),
+        19: ("pyramid13", 14),
+    }
+    for element_type, (field_name, width) in type_map.items():
+        if element_type not in requested:
+            setattr(filtered, field_name, _empty_array(width))
+            filtered.nb_type[element_type - 1] = 0
+    return filtered

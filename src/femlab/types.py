@@ -9,6 +9,9 @@ import numpy as np
 class GmshMesh:
     positions: np.ndarray
     element_infos: np.ndarray
+    element_tags: np.ndarray = field(default_factory=lambda: np.zeros((0, 0), dtype=int))
+    element_nodes: np.ndarray = field(default_factory=lambda: np.zeros((0, 0), dtype=int))
+    nb_type: np.ndarray = field(default_factory=lambda: np.zeros(19, dtype=int))
     points: np.ndarray = field(default_factory=lambda: np.zeros((0, 2), dtype=int))
     lines: np.ndarray = field(default_factory=lambda: np.zeros((0, 3), dtype=int))
     lines2: np.ndarray = field(default_factory=lambda: np.zeros((0, 4), dtype=int))
