@@ -96,6 +96,44 @@ triangle = run_gmsh_triangle(plot=False)
 - Plot helpers: `plotelem`, `plotu`, `plotq4`, `plott3`, `plotbc`, `plotforces`
 - Example drivers: cantilever beam, Gmsh triangle mesh, Q4/T3 potential flow
 
+## Scilab Parity
+
+The legacy Scilab examples were executed against the new Python port and compared numerically.
+
+Reproduce the comparison:
+
+```powershell
+.\.venv\Scripts\python scripts\generate_parity_artifacts.py
+```
+
+This script:
+
+- prepares the triangle mesh inputs for Scilab,
+- runs the Scilab-side cantilever and triangle solvers,
+- runs the matching Python examples,
+- writes comparison figures and metrics to `docs/assets/comparison/`.
+
+### Numeric Summary
+
+| Example | Max `|u_scilab - u_python|` | L2 `u` diff | Max stress diff | Max reaction diff |
+| --- | ---: | ---: | ---: | ---: |
+| Cantilever (`examples/canti.sce` + `examples/elastic.sce`) | `3.34e-08` | `1.06e-07` | `5.20e-13` | `1.28e-13` |
+| Triangle mesh (`mesh/deneme.sce` solver path) | `2.89e-21` | `1.87e-20` | `1.70e-14` | `2.38e-14` |
+
+### Comparison Plots
+
+Cantilever parity:
+
+![Cantilever parity](docs/assets/comparison/cantilever_parity.png)
+
+Triangle parity:
+
+![Triangle parity](docs/assets/comparison/triangle_parity.png)
+
+### Note On The Triangle Example
+
+The old Scilab `load_gmsh.sci` routine hangs under Scilab `2025.0.0` on this machine. To keep the solver comparison honest, the parity script extracts the exact `mesh/deneme.msh` connectivity once and feeds those same `T` and `X` arrays into Scilab before solving. The resulting Scilab and Python solver outputs still match to machine precision.
+
 ## License Note
 
 The legacy source files contain copyright notices but no obvious standalone license file in the imported material. Until upstream licensing is clarified, treat the legacy MATLAB/Scilab content as historical reference material.

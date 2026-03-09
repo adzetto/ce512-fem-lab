@@ -1,0 +1,18 @@
+{
+  "cantilever": {
+    "u_max_abs_diff": 3.336673182197103e-08,
+    "u_l2_diff": 1.0590652964464617e-07,
+    "stress_max_abs_diff": 5.195843755245733e-13,
+    "reaction_max_abs_diff": 1.2811973704174306e-13
+  },
+  "triangle": {
+    "u_max_abs_diff": 2.8852059765849605e-21,
+    "u_l2_diff": 1.865860835527328e-20,
+    "stress_max_abs_diff": 1.7041923427996153e-14,
+    "reaction_max_abs_diff": 2.3842039453825237e-14
+  },
+  "notes": {
+    "triangle_mesh_source": "Scilab 2025 hangs in the legacy load_gmsh.sci path, so the triangle parity run feeds Scilab the exact mesh connectivity extracted from mesh/deneme.msh before solving.",
+    "scilab_cli": "C:\\Program Files\\scilab-2025.0.0\\bin\\WScilex-cli.exe"
+  }
+}
