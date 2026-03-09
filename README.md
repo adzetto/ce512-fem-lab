@@ -464,10 +464,10 @@ xychart-beta
 
 Before the full three-solver comparison, the Python port was validated directly against the Scilab wrapper:
 
-| Example | Max |u_scilab − u_python| | L2 u diff | Max stress diff | Max reaction diff |
+| Example | Max $\vert u_{\text{scilab}} - u_{\text{python}} \vert$ | L2 u diff | Max stress diff | Max reaction diff |
 | --- | ---: | ---: | ---: | ---: |
-| Cantilever | `3.34e-08` | `1.06e-07` | `5.20e-13` | `1.28e-13` |
-| Triangle mesh | `2.89e-21` | `1.87e-20` | `1.70e-14` | `2.38e-14` |
+| Cantilever | 3.34e-08 | 1.06e-07 | 5.20e-13 | 1.28e-13 |
+| Triangle mesh | 2.89e-21 | 1.87e-20 | 1.70e-14 | 2.38e-14 |
 
 | Cantilever parity | Triangle parity |
 | --- | --- |
