@@ -1,46 +1,25 @@
-from .assembly import assmk, assmq
-from .boundary import rnorm, setbc, solve_lag
-from .core import cols, init, rows
-from .elements import (
-    kbar,
-    kebar,
+from .bars import kbar, kebar, qbar, qebar
+from .quads import (
     keq4e,
     keq4epe,
     keq4eps,
     keq4p,
-    ket3e,
-    ket3p,
     kq4e,
     kq4epe,
     kq4eps,
     kq4p,
-    kt3e,
-    kt3p,
-    qbar,
-    qebar,
     qeq4e,
     qeq4epe,
     qeq4eps,
     qeq4p,
-    qet3e,
-    qet3p,
     qq4e,
     qq4epe,
     qq4eps,
     qq4p,
-    qt3e,
-    qt3p,
 )
-from .io import load_gmsh
-from .loads import addload, setload
-from .postprocess import reaction
+from .triangles import ket3e, ket3p, kt3e, kt3p, qet3e, qet3p, qt3e, qt3p
 
 __all__ = [
-    "addload",
-    "assmk",
-    "assmq",
-    "cols",
-    "init",
     "kbar",
     "kebar",
     "keq4e",
@@ -55,7 +34,6 @@ __all__ = [
     "kq4p",
     "kt3e",
     "kt3p",
-    "load_gmsh",
     "qbar",
     "qebar",
     "qeq4e",
@@ -70,10 +48,4 @@ __all__ = [
     "qq4p",
     "qt3e",
     "qt3p",
-    "reaction",
-    "rnorm",
-    "rows",
-    "setbc",
-    "setload",
-    "solve_lag",
 ]
