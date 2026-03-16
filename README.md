@@ -4,39 +4,38 @@ Python port of the legacy Scilab FemLab wrapper prepared by G. Turan at IYTE, it
 
 ![Lagrange multiplier truss example](docs/assets/lagrange/ex_lag_mult_problem.png)
 
-| Solver | Runtime (s) | max \|Delta U\| vs Python | max \|Delta Lag\| vs Python | max \|Delta R\| vs Python | max \|Delta member force\| vs Python | max \|Delta local disp.\| vs Python |
+| Solver | $$t\,(\mathrm{s})$$ | $$\max \lvert \Delta U \rvert$$ | $$\max \lvert \Delta \mathrm{Lag} \rvert$$ | $$\max \lvert \Delta R \rvert$$ | $$\max \lvert \Delta f_{\mathrm{member}} \rvert$$ | $$\max \lvert \Delta u_{\mathrm{loc}} \rvert$$ |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00071 | 0 | 0 | 0 | 0 | 0 |
-| Scilab | 3.96771 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 | 3.33e-16 |
-| MATLAB | 4.77372 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 | 7.77e-16 |
-| Julia | 1.72919 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 | 5.00e-16 |
+| Python | 0.00199 | 0 | 0 | 0 | 0 | 0 |
+| Scilab | 3.77963 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
+| MATLAB | 8.37410 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
+| Julia | 2.70541 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
 
 <table>
 <tr>
 <td valign="top" width="50%">
 <strong>Python</strong><br>
 <a href="src/femlab/examples/ex_lag_mult.py"><code>src/femlab/examples/ex_lag_mult.py</code></a>
-<pre><code>data = ex_lag_mult_data()
-K, _, q = init(data["X"].shape[0], data["dof"], use_sparse=False)
-K = kbar(K, data["T"], data["X"], data["G"])
-U, Lag = solve_lag_general(
-    K,
-    data["P"],
-    data["constraint_matrix"],
-    data["constraint_rhs"],
-    return_lagrange=True,
-)
-q, S, E = qbar(q, data["T"], data["X"], data["G"], U)</code></pre>
+<pre><code>c = np.cos(alpha); s = np.sin(alpha)
+selectors = np.eye(6)[dof_map]
+T = np.zeros((3, 4, 4))
+T[:, 0, 0] = c;  T[:, 0, 1] = s
+T[:, 1, 0] = -s; T[:, 1, 1] = c
+T[:, 2, 2] = c;  T[:, 2, 3] = s
+T[:, 3, 2] = -s; T[:, 3, 3] = c
+k_local = (A * E / L)[:, None, None] * kref
+k_global = np.einsum("eji,ejk,ekl-&gt;eil", T, k_local, T)
+K = np.einsum("eai,eab,ebj-&gt;ij", selectors, k_global, selectors)</code></pre>
 </td>
 <td valign="top" width="50%">
 <strong>Scilab</strong><br>
 <a href="scripts/scilab/ex_lag_mult.sce"><code>scripts/scilab/ex_lag_mult.sce</code></a>
-<pre><code>A = [1 1 1]; E = [64 64 64]; L = [4 4 6];
-alfa = [acos(3 / 4) -acos(3 / 4) 0];
-G = [1 0 0 0 0 0
-     0 1 0 0 0 0
-     0 0 -sin(60 / 180 * %pi) cos(60 / 180 * %pi) 0 0];
-P = zeros(N, 1); P(6) = -10;
+<pre><code>I = eye(N, N);
+S1 = I(Dvec(1, :), :); S2 = I(Dvec(2, :), :); S3 = I(Dvec(3, :), :);
+kg1 = T1' * k1 * T1;
+kg2 = T2' * k2 * T2;
+kg3 = T3' * k3 * T3;
+K = S1' * kg1 * S1 + S2' * kg2 * S2 + S3' * kg3 * S3;
 AL = [K Gbar'
       Gbar zeros(nc, nc)];
 solution = AL \ [P; Qbar];
@@ -48,30 +47,30 @@ Lag = solution(N + 1:$) * a_G;</code></pre>
 <td valign="top" width="50%">
 <strong>MATLAB</strong><br>
 <a href="scripts/matlab/ex_lag_mult.m"><code>scripts/matlab/ex_lag_mult.m</code></a>
-<pre><code>A = [1 1 1];
-E = [64 64 64];
-L = [4 4 6];
-alpha = [acos(3 / 4), -acos(3 / 4), 0];
-G = [1 0 0 0 0 0
-     0 1 0 0 0 0
-     0 0 -sind(60) cosd(60) 0 0];
-P = zeros(N, 1); P(6) = -10;
+<pre><code>I = eye(N);
+S1 = I(Dvec(1, :), :); S2 = I(Dvec(2, :), :); S3 = I(Dvec(3, :), :);
+kg1 = T1' * k1 * T1;
+kg2 = T2' * k2 * T2;
+kg3 = T3' * k3 * T3;
+K = S1' * kg1 * S1 + S2' * kg2 * S2 + S3' * kg3 * S3;
 AL = [K, Gbar'; Gbar, zeros(size(G, 1), size(G, 1))];
-solution = AL \ [P; Qbar];</code></pre>
+solution = AL \ [P; Qbar];
+U = solution(1:N);
+Lag = solution((N + 1):end) * a_G;</code></pre>
 </td>
 <td valign="top" width="50%">
 <strong>Julia</strong><br>
 <a href="scripts/julia/ex_lag_mult.jl"><code>scripts/julia/ex_lag_mult.jl</code></a>
-<pre><code>A = [1.0, 1.0, 1.0]
-E = [64.0, 64.0, 64.0]
-L = [4.0, 4.0, 6.0]
-alpha = [acos(3.0 / 4.0), -acos(3.0 / 4.0), 0.0]
-G = [1.0 0.0 0.0 0.0 0.0 0.0
-     0.0 1.0 0.0 0.0 0.0 0.0
-     0.0 0.0 -sin(deg2rad(60.0)) cos(deg2rad(60.0)) 0.0 0.0]
-P = zeros(Float64, N); P[6] = -10.0
+<pre><code>I6 = Matrix{Float64}(I, N, N)
+S1 = I6[Dvec[1, :], :]; S2 = I6[Dvec[2, :], :]; S3 = I6[Dvec[3, :], :]
+kg1 = transpose(T1) * k1 * T1
+kg2 = transpose(T2) * k2 * T2
+kg3 = transpose(T3) * k3 * T3
+K = transpose(S1) * kg1 * S1 + transpose(S2) * kg2 * S2 + transpose(S3) * kg3 * S3
 AL = [K transpose(Gbar); Gbar zeros(Float64, size(G, 1), size(G, 1))]
-solution = AL \ vcat(P, Qbar)</code></pre>
+solution = AL \ vcat(P, Qbar)
+U = solution[1:N]
+Lag = solution[(N + 1):end] * a_G</code></pre>
 </td>
 </tr>
 </table>
@@ -467,12 +466,12 @@ Each pair lists the local axial displacement at the first and second node of the
 
 Results below come from `python scripts/compare_ex_lag_mult.py`, which executed Python, Scilab, MATLAB, and Julia versions of the same problem and compared their outputs componentwise.
 
-| Solver | Runtime (s) | max \|Delta U\| vs Python | max \|Delta Lag\| vs Python | max \|Delta R\| vs Python | max \|Delta member force\| vs Python | max \|Delta local disp.\| vs Python |
+| Solver | $$t\,(\mathrm{s})$$ | $$\max \lvert \Delta U \rvert$$ | $$\max \lvert \Delta \mathrm{Lag} \rvert$$ | $$\max \lvert \Delta R \rvert$$ | $$\max \lvert \Delta f_{\mathrm{member}} \rvert$$ | $$\max \lvert \Delta u_{\mathrm{loc}} \rvert$$ |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00071 | 0 | 0 | 0 | 0 | 0 |
-| Scilab | 3.96771 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 | 3.33e-16 |
-| MATLAB | 4.77372 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 | 7.77e-16 |
-| Julia | 1.72919 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 | 5.00e-16 |
+| Python | 0.00199 | 0 | 0 | 0 | 0 | 0 |
+| Scilab | 3.77963 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
+| MATLAB | 8.37410 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
+| Julia | 2.70541 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
 
 The full machine-readable output is written to `tmp/ex_lag_mult_compare/summary.json`.
 

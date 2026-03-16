@@ -1,5 +1,4 @@
-function result = ex_lag_mult(output_dir)
-if nargin < 1
+if ~exist("output_dir", "var")
     output_dir = "";
 end
 
@@ -15,25 +14,49 @@ Dvec = [
 ];
 
 N = max(Dvec, [], "all");
-[Nelem, dof2] = size(Dvec);
-dof = dof2 / 2;
-K = zeros(N, N);
+I = eye(N);
+S1 = I(Dvec(1, :), :);
+S2 = I(Dvec(2, :), :);
+S3 = I(Dvec(3, :), :);
 
-for e = 1:Nelem
-    [k, T] = k_truss(A(e), E(e), L(e), alpha(e));
-    kg = T' * k * T;
-    for r = 1:(2 * dof)
-        m = Dvec(e, r);
-        if m ~= 0
-            for s = 1:(2 * dof)
-                n = Dvec(e, s);
-                if n ~= 0
-                    K(m, n) = K(m, n) + kg(r, s);
-                end
-            end
-        end
-    end
-end
+kref = [
+    1 0 -1 0
+    0 0 0 0
+    -1 0 1 0
+    0 0 0 0
+];
+
+c = cos(alpha);
+s = sin(alpha);
+
+T1 = [
+    c(1) s(1) 0 0
+    -s(1) c(1) 0 0
+    0 0 c(1) s(1)
+    0 0 -s(1) c(1)
+];
+T2 = [
+    c(2) s(2) 0 0
+    -s(2) c(2) 0 0
+    0 0 c(2) s(2)
+    0 0 -s(2) c(2)
+];
+T3 = [
+    c(3) s(3) 0 0
+    -s(3) c(3) 0 0
+    0 0 c(3) s(3)
+    0 0 -s(3) c(3)
+];
+
+k1 = A(1) * E(1) / L(1) * kref;
+k2 = A(2) * E(2) / L(2) * kref;
+k3 = A(3) * E(3) / L(3) * kref;
+
+kg1 = T1' * k1 * T1;
+kg2 = T2' * k2 * T2;
+kg3 = T3' * k3 * T3;
+
+K = S1' * kg1 * S1 + S2' * kg2 * S2 + S3' * kg3 * S3;
 
 G = [
     1 0 0 0 0 0
@@ -49,66 +72,42 @@ P = zeros(N, 1);
 P(6) = -10;
 
 AL = [K, Gbar'; Gbar, zeros(size(G, 1), size(G, 1))];
-BL = [P; Qbar];
-solution = AL \ BL;
+solution = AL \ [P; Qbar];
 
 Lag = solution((N + 1):end) * a_G;
 U = solution(1:N);
 R = K(1:4, :) * U;
 
-member_forces = zeros(4, Nelem);
-local_displacements = zeros(4, Nelem);
-for e = 1:Nelem
-    [k, T] = k_truss(A(e), E(e), L(e), alpha(e));
-    ueg = U(Dvec(e, :));
-    ue = T * ueg;
-    local_displacements(:, e) = ue;
-    member_forces(:, e) = k * ue;
-end
+ueg1 = U(Dvec(1, :));
+ueg2 = U(Dvec(2, :));
+ueg3 = U(Dvec(3, :));
 
+ue1 = T1 * ueg1;
+ue2 = T2 * ueg2;
+ue3 = T3 * ueg3;
+
+local_displacements = [ue1, ue2, ue3];
+member_forces = [k1 * ue1, k2 * ue2, k3 * ue3];
 constraint_residual = G * U - Q;
-
-result = struct( ...
-    "U", U, ...
-    "Lag", Lag, ...
-    "R", R, ...
-    "local_displacements", local_displacements, ...
-    "member_forces", member_forces, ...
-    "constraint_residual", constraint_residual ...
-);
 
 if strlength(output_dir) > 0
     if ~isfolder(output_dir)
         mkdir(output_dir);
     end
-    write_tsv(fullfile(output_dir, "U.tsv"), U);
-    write_tsv(fullfile(output_dir, "Lag.tsv"), Lag);
-    write_tsv(fullfile(output_dir, "R.tsv"), R);
-    write_tsv(fullfile(output_dir, "member_forces.tsv"), member_forces);
-    write_tsv(fullfile(output_dir, "local_displacements.tsv"), local_displacements);
-    write_tsv(fullfile(output_dir, "constraint_residual.tsv"), constraint_residual);
-elseif nargout == 0
+    writematrix(U, fullfile(output_dir, "U.tsv"), "Delimiter", "tab", "FileType", "text");
+    writematrix(Lag, fullfile(output_dir, "Lag.tsv"), "Delimiter", "tab", "FileType", "text");
+    writematrix(R, fullfile(output_dir, "R.tsv"), "Delimiter", "tab", "FileType", "text");
+    writematrix(member_forces, fullfile(output_dir, "member_forces.tsv"), "Delimiter", "tab", "FileType", "text");
+    writematrix(local_displacements, fullfile(output_dir, "local_displacements.tsv"), "Delimiter", "tab", "FileType", "text");
+    writematrix(constraint_residual, fullfile(output_dir, "constraint_residual.tsv"), "Delimiter", "tab", "FileType", "text");
+else
+    result = struct( ...
+        "U", U, ...
+        "Lag", Lag, ...
+        "R", R, ...
+        "local_displacements", local_displacements, ...
+        "member_forces", member_forces, ...
+        "constraint_residual", constraint_residual ...
+    );
     disp(result);
-end
-end
-
-function [k, T] = k_truss(A, E, L, alpha)
-c = cos(alpha);
-s = sin(alpha);
-T = [
-    c s 0 0
-    -s c 0 0
-    0 0 c s
-    0 0 -s c
-];
-k = A * E / L * [
-    1 0 -1 0
-    0 0 0 0
-    -1 0 1 0
-    0 0 0 0
-];
-end
-
-function write_tsv(path, data)
-writematrix(data, path, "Delimiter", "tab", "FileType", "text");
 end

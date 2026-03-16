@@ -4,32 +4,6 @@ import math
 
 import numpy as np
 
-from .. import init, kbar, qbar, solve_lag_general
-
-
-def _k_truss(area: float, modulus: float, length: float, alpha: float):
-    c = math.cos(alpha)
-    s = math.sin(alpha)
-    transform = np.array(
-        [
-            [c, s, 0.0, 0.0],
-            [-s, c, 0.0, 0.0],
-            [0.0, 0.0, c, s],
-            [0.0, 0.0, -s, c],
-        ],
-        dtype=float,
-    )
-    stiffness = area * modulus / length * np.array(
-        [
-            [1.0, 0.0, -1.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0],
-            [-1.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0],
-        ],
-        dtype=float,
-    )
-    return stiffness, transform
-
 
 def ex_lag_mult_data():
     areas = np.array([1.0, 1.0, 1.0], dtype=float)
@@ -37,7 +11,6 @@ def ex_lag_mult_data():
     lengths = np.array([4.0, 4.0, 6.0], dtype=float)
     angles = np.array([math.acos(3.0 / 4.0), -math.acos(3.0 / 4.0), 0.0], dtype=float)
 
-    # Node layout implied by the original Dvec/L/A/alpha definition.
     coordinates = np.array(
         [
             [0.0, 0.0],
@@ -88,30 +61,70 @@ def ex_lag_mult_data():
 
 def run_ex_lag_mult():
     data = ex_lag_mult_data()
-    stiffness, _, q = init(data["X"].shape[0], data["dof"], use_sparse=False)
-    stiffness = kbar(stiffness, data["T"], data["X"], data["G"])
-    displacement, lagrange = solve_lag_general(
-        stiffness,
-        data["P"],
-        data["constraint_matrix"],
-        data["constraint_rhs"],
-        return_lagrange=True,
-    )
-    q, stress, strain = qbar(q, data["T"], data["X"], data["G"], displacement)
+    dof_map = data["Dvec"] - 1
+    selectors = np.eye(data["P"].shape[0], dtype=float)[dof_map]
+    c = np.cos(data["alpha"])
+    s = np.sin(data["alpha"])
+    scale = data["A"] * data["E_modulus"] / data["L"]
 
-    member_forces = np.zeros((4, data["T"].shape[0]), dtype=float)
-    local_displacements = np.zeros_like(member_forces)
-    for e in range(data["T"].shape[0]):
-        k_local, transform = _k_truss(
-            float(data["A"][e]),
-            float(data["E_modulus"][e]),
-            float(data["L"][e]),
-            float(data["alpha"][e]),
-        )
-        ueg = displacement[data["Dvec"][e] - 1]
-        ue_local = transform @ ueg
-        local_displacements[:, e] = ue_local[:, 0]
-        member_forces[:, e] = (k_local @ ue_local)[:, 0]
+    transforms = np.zeros((data["T"].shape[0], 4, 4), dtype=float)
+    transforms[:, 0, 0] = c
+    transforms[:, 0, 1] = s
+    transforms[:, 1, 0] = -s
+    transforms[:, 1, 1] = c
+    transforms[:, 2, 2] = c
+    transforms[:, 2, 3] = s
+    transforms[:, 3, 2] = -s
+    transforms[:, 3, 3] = c
+
+    local_template = np.array(
+        [
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [-1.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ],
+        dtype=float,
+    )
+    local_stiffness = scale[:, None, None] * local_template[None, :, :]
+    global_stiffness = np.einsum(
+        "eji,ejk,ekl->eil", transforms, local_stiffness, transforms
+    )
+    stiffness = np.einsum("eai,eab,ebj->ij", selectors, global_stiffness, selectors)
+
+    a_g = float(np.max(stiffness))
+    g_bar = a_g * data["constraint_matrix"]
+    q_bar = a_g * data["constraint_rhs"]
+    system_matrix = np.block(
+        [
+            [stiffness, g_bar.T],
+            [g_bar, np.zeros((g_bar.shape[0], g_bar.shape[0]), dtype=float)],
+        ]
+    )
+    system_rhs = np.vstack([data["P"], q_bar])
+    solution = np.linalg.solve(system_matrix, system_rhs)
+
+    displacement = solution[: data["P"].shape[0], :]
+    lagrange = solution[data["P"].shape[0] :, :] * a_g
+    global_displacements = displacement[:, 0][dof_map]
+    local_displacements = np.einsum("eab,eb->ea", transforms, global_displacements).T
+    member_forces = np.einsum(
+        "eab,eb->ea", local_stiffness, local_displacements.T
+    ).T
+    global_internal = np.einsum("eab,eb->ea", global_stiffness, global_displacements)
+    q = np.einsum("eai,ea->i", selectors, global_internal).reshape(-1, 1)
+
+    initial_nodes = data["X"][data["T"][:, :2] - 1]
+    current = data["X"] + displacement.reshape(-1, data["dof"])
+    current_nodes = current[data["T"][:, :2] - 1]
+    initial_vectors = initial_nodes[:, 1, :] - initial_nodes[:, 0, :]
+    current_vectors = current_nodes[:, 1, :] - current_nodes[:, 0, :]
+    initial_lengths = np.linalg.norm(initial_vectors, axis=1)
+    current_lengths = np.linalg.norm(current_vectors, axis=1)
+    strain = (
+        0.5 * (current_lengths**2 - initial_lengths**2) / initial_lengths**2
+    ).reshape(-1, 1)
+    stress = (data["E_modulus"][:, None] * strain).reshape(-1, 1)
 
     reactions = stiffness[np.array([0, 1, 2, 3]), :] @ displacement
     constraint_residual = (

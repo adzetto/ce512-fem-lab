@@ -1,26 +1,6 @@
 mode(0);
 ieee(1);
 
-function [k, T] = k_truss(A, E, L, alfa)
-    T = [cos(alfa) sin(alfa) 0 0
-        -sin(alfa) cos(alfa) 0 0
-         0 0 cos(alfa) sin(alfa)
-         0 0 -sin(alfa) cos(alfa)];
-    k = A * E / L * [1 0 -1 0
-                     0 0 0 0
-                    -1 0 1 0
-                     0 0 0 0];
-endfunction
-
-function write_tsv(path, data)
-    sep = ascii(9);
-    if size(data, "*") == 0 then
-        mputl("", path);
-        return
-    end
-    csvWrite(data, path, sep);
-endfunction
-
 outdir = getenv("EX_LAG_MULT_OUTDIR");
 
 A = [1 1 1];
@@ -33,30 +13,46 @@ Dvec = [1 2 5 6
         1 2 3 4];
 
 N = max(max(Dvec));
-[Nelem, dof2] = size(Dvec);
-dof = dof2 / 2;
-K = zeros(N, N);
+nc = 3;
+I = eye(N, N);
+S1 = I(Dvec(1, :), :);
+S2 = I(Dvec(2, :), :);
+S3 = I(Dvec(3, :), :);
 
-for e = 1:Nelem
-    [k, T] = k_truss(A(e), E(e), L(e), alfa(e));
-    kg = T' * k * T;
-    for r = 1:2 * dof
-        m = Dvec(e, r);
-        if m <> 0 then
-            for s = 1:2 * dof
-                n = Dvec(e, s);
-                if n <> 0 then
-                    K(m, n) = K(m, n) + kg(r, s);
-                end
-            end
-        end
-    end
-end
+kref = [1 0 -1 0
+        0 0 0 0
+       -1 0 1 0
+        0 0 0 0];
+
+c = cos(alfa);
+s = sin(alfa);
+
+T1 = [c(1) s(1) 0 0
+     -s(1) c(1) 0 0
+      0 0 c(1) s(1)
+      0 0 -s(1) c(1)];
+T2 = [c(2) s(2) 0 0
+     -s(2) c(2) 0 0
+      0 0 c(2) s(2)
+      0 0 -s(2) c(2)];
+T3 = [c(3) s(3) 0 0
+     -s(3) c(3) 0 0
+      0 0 c(3) s(3)
+      0 0 -s(3) c(3)];
+
+k1 = A(1) * E(1) / L(1) * kref;
+k2 = A(2) * E(2) / L(2) * kref;
+k3 = A(3) * E(3) / L(3) * kref;
+
+kg1 = T1' * k1 * T1;
+kg2 = T2' * k2 * T2;
+kg3 = T3' * k3 * T3;
+
+K = S1' * kg1 * S1 + S2' * kg2 * S2 + S3' * kg3 * S3;
 
 G = [1 0 0 0 0 0
      0 1 0 0 0 0
      0 0 -sin(60 / 180 * %pi) cos(60 / 180 * %pi) 0 0];
-nc = size(G, 1);
 Q = zeros(nc, 1);
 a_G = max(max(K));
 Gbar = a_G * G;
@@ -67,35 +63,34 @@ P(6) = -10;
 
 AL = [K Gbar'
       Gbar zeros(nc, nc)];
-BL = [P; Qbar];
-solution = AL \ BL;
+solution = AL \ [P; Qbar];
 
 Lag = solution(N + 1:$) * a_G;
 U = solution(1:N);
 R = K([1 2 3 4], :) * U;
 
-member_forces = zeros(4, Nelem);
-local_displacements = zeros(4, Nelem);
-for e = 1:Nelem
-    [k, T] = k_truss(A(e), E(e), L(e), alfa(e));
-    ueg = U(Dvec(e, :));
-    ue = T * ueg;
-    local_displacements(:, e) = ue;
-    member_forces(:, e) = k * ue;
-end
+ueg1 = U(Dvec(1, :));
+ueg2 = U(Dvec(2, :));
+ueg3 = U(Dvec(3, :));
 
+ue1 = T1 * ueg1;
+ue2 = T2 * ueg2;
+ue3 = T3 * ueg3;
+
+local_displacements = [ue1 ue2 ue3];
+member_forces = [k1 * ue1 k2 * ue2 k3 * ue3];
 constraint_residual = G * U - Q;
 
 if outdir <> "" then
     if ~isdir(outdir) then
         mkdir(outdir);
     end
-    write_tsv(outdir + "/U.tsv", U);
-    write_tsv(outdir + "/Lag.tsv", Lag);
-    write_tsv(outdir + "/R.tsv", R);
-    write_tsv(outdir + "/member_forces.tsv", member_forces);
-    write_tsv(outdir + "/local_displacements.tsv", local_displacements);
-    write_tsv(outdir + "/constraint_residual.tsv", constraint_residual);
+    csvWrite(U, outdir + "/U.tsv", ascii(9));
+    csvWrite(Lag, outdir + "/Lag.tsv", ascii(9));
+    csvWrite(R, outdir + "/R.tsv", ascii(9));
+    csvWrite(member_forces, outdir + "/member_forces.tsv", ascii(9));
+    csvWrite(local_displacements, outdir + "/local_displacements.tsv", ascii(9));
+    csvWrite(constraint_residual, outdir + "/constraint_residual.tsv", ascii(9));
 else
     disp("U =");
     disp(U);

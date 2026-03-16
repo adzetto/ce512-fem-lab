@@ -98,8 +98,8 @@ def export_python(outdir: Path) -> tuple[str, float, str]:
 def run_matlab(outdir: Path) -> tuple[str, float, str]:
     matlab = find_matlab()
     command = (
-        f"addpath('{(REPO / 'scripts' / 'matlab').as_posix()}'); "
-        f"ex_lag_mult('{outdir.as_posix()}');"
+        f"output_dir = '{outdir.as_posix()}'; "
+        f"run('{(REPO / 'scripts' / 'matlab' / 'ex_lag_mult.m').as_posix()}');"
     )
     start = time.perf_counter()
     try:

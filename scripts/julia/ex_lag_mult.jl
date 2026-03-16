@@ -1,122 +1,108 @@
 using LinearAlgebra
 using DelimitedFiles
 
-function k_truss(area, modulus, length, alpha)
-    c = cos(alpha)
-    s = sin(alpha)
-    transform = [
-        c s 0.0 0.0
-        -s c 0.0 0.0
-        0.0 0.0 c s
-        0.0 0.0 -s c
-    ]
-    stiffness = area * modulus / length * [
-        1.0 0.0 -1.0 0.0
-        0.0 0.0 0.0 0.0
-        -1.0 0.0 1.0 0.0
-        0.0 0.0 0.0 0.0
-    ]
-    return stiffness, transform
-end
+outdir = length(ARGS) >= 1 ? ARGS[1] : ""
 
-function write_tsv(path, data)
-    mkpath(dirname(path))
-    array = ndims(data) == 1 ? reshape(data, :, 1) : data
-    writedlm(path, array, '\t')
-end
+A = [1.0, 1.0, 1.0]
+E = [64.0, 64.0, 64.0]
+L = [4.0, 4.0, 6.0]
+alpha = [acos(3.0 / 4.0), -acos(3.0 / 4.0), 0.0]
 
-function ex_lag_mult(outdir = "")
-    A = [1.0, 1.0, 1.0]
-    E = [64.0, 64.0, 64.0]
-    L = [4.0, 4.0, 6.0]
-    alpha = [acos(3.0 / 4.0), -acos(3.0 / 4.0), 0.0]
+Dvec = [
+    1 2 5 6
+    5 6 3 4
+    1 2 3 4
+]
 
-    Dvec = [
-        1 2 5 6
-        5 6 3 4
-        1 2 3 4
-    ]
+N = maximum(Dvec)
+I6 = Matrix{Float64}(I, N, N)
+S1 = I6[Dvec[1, :], :]
+S2 = I6[Dvec[2, :], :]
+S3 = I6[Dvec[3, :], :]
 
-    N = maximum(Dvec)
-    Nelem, dof2 = size(Dvec)
-    dof = Int(dof2 ÷ 2)
-    K = zeros(Float64, N, N)
+kref = [
+    1.0 0.0 -1.0 0.0
+    0.0 0.0 0.0 0.0
+    -1.0 0.0 1.0 0.0
+    0.0 0.0 0.0 0.0
+]
 
-    for e in 1:Nelem
-        k, T = k_truss(A[e], E[e], L[e], alpha[e])
-        kg = transpose(T) * k * T
-        for r in 1:(2 * dof)
-            m = Dvec[e, r]
-            if m != 0
-                for s in 1:(2 * dof)
-                    n = Dvec[e, s]
-                    if n != 0
-                        K[m, n] += kg[r, s]
-                    end
-                end
-            end
-        end
-    end
+c = cos.(alpha)
+s = sin.(alpha)
 
-    G = [
-        1.0 0.0 0.0 0.0 0.0 0.0
-        0.0 1.0 0.0 0.0 0.0 0.0
-        0.0 0.0 -sin(deg2rad(60.0)) cos(deg2rad(60.0)) 0.0 0.0
-    ]
-    Q = zeros(Float64, size(G, 1))
-    a_G = maximum(K)
-    Gbar = a_G * G
-    Qbar = a_G * Q
+T1 = [
+    c[1] s[1] 0.0 0.0
+    -s[1] c[1] 0.0 0.0
+    0.0 0.0 c[1] s[1]
+    0.0 0.0 -s[1] c[1]
+]
+T2 = [
+    c[2] s[2] 0.0 0.0
+    -s[2] c[2] 0.0 0.0
+    0.0 0.0 c[2] s[2]
+    0.0 0.0 -s[2] c[2]
+]
+T3 = [
+    c[3] s[3] 0.0 0.0
+    -s[3] c[3] 0.0 0.0
+    0.0 0.0 c[3] s[3]
+    0.0 0.0 -s[3] c[3]
+]
 
-    P = zeros(Float64, N)
-    P[6] = -10.0
+k1 = A[1] * E[1] / L[1] * kref
+k2 = A[2] * E[2] / L[2] * kref
+k3 = A[3] * E[3] / L[3] * kref
 
-    AL = [K transpose(Gbar); Gbar zeros(Float64, size(G, 1), size(G, 1))]
-    BL = vcat(P, Qbar)
-    solution = AL \ BL
+kg1 = transpose(T1) * k1 * T1
+kg2 = transpose(T2) * k2 * T2
+kg3 = transpose(T3) * k3 * T3
 
-    U = solution[1:N]
-    Lag = solution[(N + 1):end] * a_G
-    R = K[1:4, :] * U
+K = transpose(S1) * kg1 * S1 + transpose(S2) * kg2 * S2 + transpose(S3) * kg3 * S3
 
-    member_forces = zeros(Float64, 4, Nelem)
-    local_displacements = zeros(Float64, 4, Nelem)
-    for e in 1:Nelem
-        k, T = k_truss(A[e], E[e], L[e], alpha[e])
-        ueg = U[Dvec[e, :]]
-        ue = T * ueg
-        local_displacements[:, e] = ue
-        member_forces[:, e] = k * ue
-    end
+G = [
+    1.0 0.0 0.0 0.0 0.0 0.0
+    0.0 1.0 0.0 0.0 0.0 0.0
+    0.0 0.0 -sin(deg2rad(60.0)) cos(deg2rad(60.0)) 0.0 0.0
+]
+Q = zeros(Float64, size(G, 1))
+a_G = maximum(K)
+Gbar = a_G * G
+Qbar = a_G * Q
 
-    constraint_residual = G * U - Q
+P = zeros(Float64, N)
+P[6] = -10.0
 
-    if outdir != ""
-        write_tsv(joinpath(outdir, "U.tsv"), U)
-        write_tsv(joinpath(outdir, "Lag.tsv"), Lag)
-        write_tsv(joinpath(outdir, "R.tsv"), R)
-        write_tsv(joinpath(outdir, "member_forces.tsv"), member_forces)
-        write_tsv(joinpath(outdir, "local_displacements.tsv"), local_displacements)
-        write_tsv(joinpath(outdir, "constraint_residual.tsv"), constraint_residual)
-    else
-        println("U = ", U)
-        println("Lag = ", Lag)
-        println("R = ", R)
-        println("local_displacements = ", local_displacements)
-        println("member_forces = ", member_forces)
-    end
+AL = [K transpose(Gbar); Gbar zeros(Float64, size(G, 1), size(G, 1))]
+solution = AL \ vcat(P, Qbar)
 
-    return Dict(
-        "U" => U,
-        "Lag" => Lag,
-        "R" => R,
-        "local_displacements" => local_displacements,
-        "member_forces" => member_forces,
-        "constraint_residual" => constraint_residual,
-    )
-end
+U = solution[1:N]
+Lag = solution[(N + 1):end] * a_G
+R = K[1:4, :] * U
 
-if abspath(PROGRAM_FILE) == @__FILE__
-    outdir = length(ARGS) >= 1 ? ARGS[1] : ""
-    ex_lag_mult(outdir)
+ueg1 = U[Dvec[1, :]]
+ueg2 = U[Dvec[2, :]]
+ueg3 = U[Dvec[3, :]]
+
+ue1 = T1 * ueg1
+ue2 = T2 * ueg2
+ue3 = T3 * ueg3
+
+local_displacements = hcat(ue1, ue2, ue3)
+member_forces = hcat(k1 * ue1, k2 * ue2, k3 * ue3)
+constraint_residual = G * U - Q
+
+if outdir != ""
+    mkpath(outdir)
+    writedlm(joinpath(outdir, "U.tsv"), reshape(U, :, 1), '\t')
+    writedlm(joinpath(outdir, "Lag.tsv"), reshape(Lag, :, 1), '\t')
+    writedlm(joinpath(outdir, "R.tsv"), reshape(R, :, 1), '\t')
+    writedlm(joinpath(outdir, "member_forces.tsv"), member_forces, '\t')
+    writedlm(joinpath(outdir, "local_displacements.tsv"), local_displacements, '\t')
+    writedlm(joinpath(outdir, "constraint_residual.tsv"), reshape(constraint_residual, :, 1), '\t')
+else
+    println("U = ", U)
+    println("Lag = ", Lag)
+    println("R = ", R)
+    println("local_displacements = ", local_displacements)
+    println("member_forces = ", member_forces)
 end
