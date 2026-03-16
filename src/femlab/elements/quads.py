@@ -35,6 +35,33 @@ def _plane_elastic_matrix(Ge, *, plane_strain: bool = False):
     )
 
 
+def _plane_elastic_matrix_2d(Ge, *, plane_strain: bool = False):
+    props = as_float_array(Ge).reshape(-1)
+    E = props[0]
+    nu = props[1]
+    if not plane_strain:
+        return (
+            E
+            / (1.0 - nu**2)
+            * np.array(
+                [[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]],
+                dtype=float,
+            )
+        )
+    return (
+        E
+        / ((1.0 + nu) * (1.0 - 2.0 * nu))
+        * np.array(
+            [
+                [1.0 - nu, nu, 0.0],
+                [nu, 1.0 - nu, 0.0],
+                [0.0, 0.0, (1.0 - 2.0 * nu) / 2.0],
+            ],
+            dtype=float,
+        )
+    )
+
+
 def _q4_dN(r_i: float, r_j: float, nnodes: int):
     dN = (
         np.array(
@@ -98,7 +125,7 @@ def keq4e(Xe, Ge):
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
     plane_strain = props.size > 2 and int(props[2]) == 2
-    D = _plane_elastic_matrix(props, plane_strain=plane_strain)
+    D = _plane_elastic_matrix_2d(props, plane_strain=plane_strain)
     nnodes = Xe.shape[0]
     r, w = _q4_gauss_points()
     Ke = np.zeros((2 * nnodes, 2 * nnodes), dtype=float)
@@ -116,7 +143,7 @@ def qeq4e(Xe, Ge, Ue):
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
     plane_strain = props.size > 2 and int(props[2]) == 2
-    D = _plane_elastic_matrix(props, plane_strain=plane_strain)
+    D = _plane_elastic_matrix_2d(props, plane_strain=plane_strain)
     nnodes = Xe.shape[0]
     Ue = as_float_array(Ue).reshape(-1, 1)
     qe = np.zeros((2 * nnodes, 1), dtype=float)

@@ -6,10 +6,10 @@ Python port of the legacy Scilab FemLab wrapper prepared by G. Turan at IYTE, it
 
 | Solver | $$t\,(\mathrm{s})$$ | $$\max \lvert \Delta U \rvert$$ | $$\max \lvert \Delta \mathrm{Lag} \rvert$$ | $$\max \lvert \Delta R \rvert$$ | $$\max \lvert \Delta f_{\mathrm{member}} \rvert$$ | $$\max \lvert \Delta u_{\mathrm{loc}} \rvert$$ |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00199 | 0 | 0 | 0 | 0 | 0 |
-| Scilab | 3.77963 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
-| MATLAB | 8.37410 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
-| Julia | 2.70541 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
+| Python | 0.00044 | 0 | 0 | 0 | 0 | 0 |
+| Scilab | 4.05417 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
+| MATLAB | 7.04841 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
+| Julia | 2.12306 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
 
 <table>
 <tr>
@@ -468,10 +468,10 @@ Results below come from `python scripts/compare_ex_lag_mult.py`, which executed 
 
 | Solver | $$t\,(\mathrm{s})$$ | $$\max \lvert \Delta U \rvert$$ | $$\max \lvert \Delta \mathrm{Lag} \rvert$$ | $$\max \lvert \Delta R \rvert$$ | $$\max \lvert \Delta f_{\mathrm{member}} \rvert$$ | $$\max \lvert \Delta u_{\mathrm{loc}} \rvert$$ |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00199 | 0 | 0 | 0 | 0 | 0 |
-| Scilab | 3.77963 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
-| MATLAB | 8.37410 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
-| Julia | 2.70541 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
+| Python | 0.00044 | 0 | 0 | 0 | 0 | 0 |
+| Scilab | 4.05417 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
+| MATLAB | 7.04841 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
+| Julia | 2.12306 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
 
 The full machine-readable output is written to `tmp/ex_lag_mult_compare/summary.json`.
 

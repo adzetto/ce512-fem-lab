@@ -5,12 +5,15 @@ import numpy as np
 from .._helpers import (
     as_float_array,
     cols,
-    material_row,
+    element_dof_indices,
+    is_sparse,
     rows,
-    topology_nodes,
-    topology_property,
 )
-from ..assembly import assmk, assmq
+
+try:
+    import scipy.sparse as sp
+except ImportError:  # pragma: no cover
+    sp = None
 
 
 def kebar(Xe0, Xe1, Ge):
@@ -58,12 +61,40 @@ def kbar(K, T, X, G, u=None):
         current = X
     else:
         current = X + as_float_array(u).reshape(rows(X), cols(X))
-
-    for row in topology:
-        nodes = topology_nodes(row)
-        prop = topology_property(row)
-        Ke = kebar(X[nodes - 1], current[nodes - 1], material_row(G, prop))
-        K = assmk(K, Ke, row, cols(X))
+    element_nodes = topology[:, :-1].astype(int) - 1
+    props = as_float_array(G)[topology[:, -1].astype(int) - 1]
+    initial = X[element_nodes]
+    current_nodes = current[element_nodes]
+    a0 = initial[:, 1, :] - initial[:, 0, :]
+    a1 = current_nodes[:, 1, :] - current_nodes[:, 0, :]
+    l0 = np.linalg.norm(a0, axis=1)
+    l1 = np.linalg.norm(a1, axis=1)
+    area = props[:, 0]
+    modulus = props[:, 1] if props.shape[1] > 1 else np.ones_like(area)
+    strain = 0.5 * (l1**2 - l0**2) / l0**2
+    normal_force = area * modulus * strain
+    a1a1 = np.einsum("ei,ej->eij", a1, a1)
+    identity = np.eye(cols(X), dtype=float)[None, :, :]
+    axial = (modulus * area / l0**3)[:, None, None] * a1a1
+    geometric = (normal_force / l0)[:, None, None] * identity
+    upper = np.concatenate([axial + geometric, -(axial + geometric)], axis=2)
+    lower = np.concatenate([-(axial + geometric), axial + geometric], axis=2)
+    element_matrices = np.concatenate([upper, lower], axis=1)
+    indices = element_dof_indices(element_nodes, cols(X), one_based=False)
+    if is_sparse(K) and sp is not None:
+        scatter_rows = np.broadcast_to(
+            indices[:, :, None], element_matrices.shape
+        ).reshape(-1)
+        scatter_cols = np.broadcast_to(
+            indices[:, None, :], element_matrices.shape
+        ).reshape(-1)
+        delta = sp.coo_matrix(
+            (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
+            shape=K.shape,
+            dtype=float,
+        )
+        return (K.tocsr() + delta.tocsr()).tolil()
+    np.add.at(K, (indices[:, :, None], indices[:, None, :]), element_matrices)
     return K
 
 
@@ -74,17 +105,24 @@ def qbar(q, T, X, G, u=None):
         current = X
     else:
         current = X + as_float_array(u).reshape(rows(X), cols(X))
-
-    S = np.zeros((topology.shape[0], 1), dtype=float)
-    E = np.zeros((topology.shape[0], 1), dtype=float)
-    for i, row in enumerate(topology):
-        nodes = topology_nodes(row)
-        prop = topology_property(row)
-        qe, Se, Ee = qebar(X[nodes - 1], current[nodes - 1], material_row(G, prop))
-        q = assmq(q, qe, row, cols(X))
-        S[i, 0] = Se
-        E[i, 0] = Ee
-    return q, S, E
+    element_nodes = topology[:, :-1].astype(int) - 1
+    props = as_float_array(G)[topology[:, -1].astype(int) - 1]
+    initial = X[element_nodes]
+    current_nodes = current[element_nodes]
+    a0 = initial[:, 1, :] - initial[:, 0, :]
+    a1 = current_nodes[:, 1, :] - current_nodes[:, 0, :]
+    l0 = np.linalg.norm(a0, axis=1)
+    l1 = np.linalg.norm(a1, axis=1)
+    area = props[:, 0]
+    modulus = props[:, 1] if props.shape[1] > 1 else np.ones_like(area)
+    strain = (0.5 * (l1**2 - l0**2) / l0**2).reshape(-1, 1)
+    stress = (modulus[:, None] * strain).reshape(-1, 1)
+    element_vectors = (
+        (area * stress[:, 0] / l0)[:, None] * np.concatenate([-a1, a1], axis=1)
+    )
+    indices = element_dof_indices(element_nodes, cols(X), one_based=False)
+    np.add.at(q[:, 0], indices.reshape(-1), element_vectors.reshape(-1))
+    return q, stress, strain
 
 
 __all__ = ["kbar", "kebar", "qbar", "qebar"]

@@ -102,13 +102,14 @@ def setbc(K, p, C, dof: int = 1):
     stiffness_scale = 1.0e6 * max_abs_diagonal(K)
     if stiffness_scale == 0.0:
         stiffness_scale = 1.0
-    for row in constraints:
-        if dof == 1:
-            index = int(row[0]) - 1
-        else:
-            index = (int(row[0]) - 1) * dof + int(row[1]) - 1
-        K[index, index] = K[index, index] + stiffness_scale
-        p[index, 0] = p[index, 0] + stiffness_scale * row[-1]
+    if dof == 1:
+        indices = constraints[:, 0].astype(int) - 1
+    else:
+        indices = (constraints[:, 0].astype(int) - 1) * dof + constraints[
+            :, 1
+        ].astype(int) - 1
+    K[indices, indices] = K[indices, indices] + stiffness_scale
+    p[indices, 0] = p[indices, 0] + stiffness_scale * constraints[:, -1]
     return K, p, stiffness_scale
 
 
@@ -130,12 +131,13 @@ def solve_lag(K, p, C=None, dof: int = 1, *, return_lagrange: bool = False):
 
     G = np.zeros((n_constraints, system_size), dtype=float)
     Q = constraints[:, -1].reshape(-1, 1)
-    for i, row in enumerate(constraints):
-        if dof == 1:
-            index = int(row[0]) - 1
-        else:
-            index = (int(row[0]) - 1) * dof + int(row[1]) - 1
-        G[i, index] = 1.0
+    if dof == 1:
+        indices = constraints[:, 0].astype(int) - 1
+    else:
+        indices = (constraints[:, 0].astype(int) - 1) * dof + constraints[
+            :, 1
+        ].astype(int) - 1
+    G[np.arange(n_constraints), indices] = 1.0
 
     return solve_lag_general(K, p, G, Q, return_lagrange=return_lagrange)
 
@@ -144,9 +146,10 @@ def rnorm(f, C, dof: int):
     force = as_float_array(f).reshape(-1)
     constraints = as_float_array(C)
     fixed = np.zeros(force.shape[0], dtype=bool)
-    for row in constraints:
-        index = (int(row[0]) - 1) * dof + int(row[1]) - 1
-        fixed[index] = True
+    indices = (constraints[:, 0].astype(int) - 1) * dof + constraints[:, 1].astype(
+        int
+    ) - 1
+    fixed[indices] = True
     return float(np.linalg.norm(force[~fixed]))
 
 __all__ = ["rnorm", "setbc", "solve_lag", "solve_lag_general"]
