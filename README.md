@@ -4,6 +4,78 @@ Python port of the legacy Scilab FemLab wrapper prepared by G. Turan at IYTE, it
 
 ![Lagrange multiplier truss example](docs/assets/lagrange/ex_lag_mult_problem.png)
 
+| Solver | Runtime (s) | max \|Delta U\| vs Python | max \|Delta Lag\| vs Python | max \|Delta R\| vs Python | max \|Delta member force\| vs Python | max \|Delta local disp.\| vs Python |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Python | 0.00071 | 0 | 0 | 0 | 0 | 0 |
+| Scilab | 3.96771 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 | 3.33e-16 |
+| MATLAB | 4.77372 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 | 7.77e-16 |
+| Julia | 1.72919 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 | 5.00e-16 |
+
+<table>
+<tr>
+<td valign="top" width="50%">
+<strong>Python</strong><br>
+<a href="src/femlab/examples/ex_lag_mult.py"><code>src/femlab/examples/ex_lag_mult.py</code></a>
+<pre><code>data = ex_lag_mult_data()
+K, _, q = init(data["X"].shape[0], data["dof"], use_sparse=False)
+K = kbar(K, data["T"], data["X"], data["G"])
+U, Lag = solve_lag_general(
+    K,
+    data["P"],
+    data["constraint_matrix"],
+    data["constraint_rhs"],
+    return_lagrange=True,
+)
+q, S, E = qbar(q, data["T"], data["X"], data["G"], U)</code></pre>
+</td>
+<td valign="top" width="50%">
+<strong>Scilab</strong><br>
+<a href="scripts/scilab/ex_lag_mult.sce"><code>scripts/scilab/ex_lag_mult.sce</code></a>
+<pre><code>A = [1 1 1]; E = [64 64 64]; L = [4 4 6];
+alfa = [acos(3 / 4) -acos(3 / 4) 0];
+G = [1 0 0 0 0 0
+     0 1 0 0 0 0
+     0 0 -sin(60 / 180 * %pi) cos(60 / 180 * %pi) 0 0];
+P = zeros(N, 1); P(6) = -10;
+AL = [K Gbar'
+      Gbar zeros(nc, nc)];
+solution = AL \ [P; Qbar];
+U = solution(1:N);
+Lag = solution(N + 1:$) * a_G;</code></pre>
+</td>
+</tr>
+<tr>
+<td valign="top" width="50%">
+<strong>MATLAB</strong><br>
+<a href="scripts/matlab/ex_lag_mult.m"><code>scripts/matlab/ex_lag_mult.m</code></a>
+<pre><code>A = [1 1 1];
+E = [64 64 64];
+L = [4 4 6];
+alpha = [acos(3 / 4), -acos(3 / 4), 0];
+G = [1 0 0 0 0 0
+     0 1 0 0 0 0
+     0 0 -sind(60) cosd(60) 0 0];
+P = zeros(N, 1); P(6) = -10;
+AL = [K, Gbar'; Gbar, zeros(size(G, 1), size(G, 1))];
+solution = AL \ [P; Qbar];</code></pre>
+</td>
+<td valign="top" width="50%">
+<strong>Julia</strong><br>
+<a href="scripts/julia/ex_lag_mult.jl"><code>scripts/julia/ex_lag_mult.jl</code></a>
+<pre><code>A = [1.0, 1.0, 1.0]
+E = [64.0, 64.0, 64.0]
+L = [4.0, 4.0, 6.0]
+alpha = [acos(3.0 / 4.0), -acos(3.0 / 4.0), 0.0]
+G = [1.0 0.0 0.0 0.0 0.0 0.0
+     0.0 1.0 0.0 0.0 0.0 0.0
+     0.0 0.0 -sin(deg2rad(60.0)) cos(deg2rad(60.0)) 0.0 0.0]
+P = zeros(Float64, N); P[6] = -10.0
+AL = [K transpose(Gbar); Gbar zeros(Float64, size(G, 1), size(G, 1))]
+solution = AL \ vcat(P, Qbar)</code></pre>
+</td>
+</tr>
+</table>
+
 ---
 
 ## Project Overview
@@ -397,10 +469,10 @@ Results below come from `python scripts/compare_ex_lag_mult.py`, which executed 
 
 | Solver | Runtime (s) | max \|Delta U\| vs Python | max \|Delta Lag\| vs Python | max \|Delta R\| vs Python | max \|Delta member force\| vs Python | max \|Delta local disp.\| vs Python |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00392 | 0 | 0 | 0 | 0 | 0 |
-| Scilab | 3.91070 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 | 3.33e-16 |
-| MATLAB | 7.61652 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 | 7.77e-16 |
-| Julia | 2.28636 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 | 5.00e-16 |
+| Python | 0.00071 | 0 | 0 | 0 | 0 | 0 |
+| Scilab | 3.96771 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 | 3.33e-16 |
+| MATLAB | 4.77372 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 | 7.77e-16 |
+| Julia | 1.72919 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 | 5.00e-16 |
 
 The full machine-readable output is written to `tmp/ex_lag_mult_compare/summary.json`.
 
