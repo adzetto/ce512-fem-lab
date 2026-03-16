@@ -56,12 +56,16 @@ def max_abs_diagonal(matrix: object) -> float:
 
 
 def node_dof_indices(node_numbers: Iterable[int], dof: int) -> IntArray:
-    node_numbers = as_int_array(list(node_numbers)).ravel()
-    indices = []
-    for node in node_numbers:
-        start = (int(node) - 1) * dof
-        indices.extend(range(start, start + dof))
-    return np.asarray(indices, dtype=int)
+    return element_dof_indices(node_numbers, dof).reshape(-1)
+
+
+def element_dof_indices(
+    node_numbers: object, dof: int, *, one_based: bool = True
+) -> IntArray:
+    nodes = as_int_array(node_numbers)
+    zero_based = nodes - 1 if one_based else nodes
+    offsets = np.arange(dof, dtype=int)
+    return (zero_based[..., None] * dof + offsets).reshape(*nodes.shape[:-1], -1)
 
 
 def topology_nodes(topology_row: object) -> IntArray:
