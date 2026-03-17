@@ -1640,7 +1640,7 @@ The $n\times n$ stiffness matrix $K_{ij}=ij/(i+j-1)$ is a weighted Hilbert matri
 \node[red!50, font=\small] at (axis cs:3000,2e1) {$O(n^3)$};
 \end{axis}
 \end{tikzpicture}
-\caption{Assembly and solve time vs.\ $n$ (16-thread OpenBLAS Cholesky).  Assembly scales as $O(n^2)$ (fill $n^2$ entries); the Cholesky solve scales as $O(n^3)$.  At $n=10{,}000$ the $10^8$-entry matrix is assembled in 0.44\,s and solved in 11\,s.}
+\caption{Assembly and solve time vs.\ $n$ (Vectorized Assembly, CUDA GPU Solve for $n \ge 256$). Assembly scales as $O(n^2)$ (fill $n^2$ entries); the solve scales as $O(n^3)$ but highly offloads computation to the GPU.}
 \label{fig:timing}
 \end{figure}
 
@@ -1704,7 +1704,7 @@ Both FEM tools reproduce the exact piecewise-linear solution to machine precisio
 Q2 stiffness &
 FemLab's Q4 element stiffness matches the analytical $2\times 2$ Gauss result to relative error $\sim 10^{-16}$.  Rank = 5 with 3 rigid-body modes confirmed. \\[3pt]
 Large-scale &
-The $n\times n$ system was assembled and solved up to $n=10{,}000$ ($10^8$-entry matrix) using 16-thread OpenBLAS Cholesky.  Assembly scales as $O(n^2)$, solve as $O(n^3)$.  The Hilbert-like condition number $\kappa_2\sim 10^{22}$ prevents convergence beyond $n\approx 15$---motivating local FEM bases over global polynomials. \\
+The $n\times n$ system was assembled without loops and solved up to $n=10{,}000$ using vectorization and CUDA GPU offloading. Assembly scales as $O(n^2)$, GPU solve as $O(n^3)$.  The Hilbert-like condition number $\kappa_2\sim 10^{22}$ prevents convergence beyond $n\approx 15$---motivating local FEM bases over global polynomials. \\
 \bottomrule
 \end{tabular}
 \caption{Summary of key findings.}
