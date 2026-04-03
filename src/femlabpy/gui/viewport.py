@@ -307,10 +307,10 @@ class Viewport(QtInteractor):
         ne = S.shape[0]
         if dof == 2:
             if etype == "T3":
-                # S shape (ne, 3): [σx, σy, τxy] per element
+                # S shape (ne, 3): [sxx, syy, txy] per element
                 sxx, syy, sxy = S[:, 0], S[:, 1], S[:, 2]
             elif etype == "Q4":
-                # S shape (ne, 12): 4 GPs × [σx, σy, τxy], flattened
+                # S shape (ne, 12): 4 GPs x [sigma_x, sigma_y, tau_xy], flattened
                 S4 = S.reshape(ne, 4, 3)
                 sxx = S4[:, :, 0].mean(axis=1)
                 syy = S4[:, :, 1].mean(axis=1)
@@ -321,10 +321,10 @@ class Viewport(QtInteractor):
         else:
             # Potential problem — gradient magnitude
             if etype == "T3":
-                # S shape (ne, 2): [∂T/∂x, ∂T/∂y]
+                # S shape (ne, 2): [dT/dx, dT/dy]
                 return np.sqrt(S[:, 0] ** 2 + S[:, 1] ** 2)
             elif etype == "Q4":
-                # S shape (ne, 8): 4 GPs × [∂T/∂x, ∂T/∂y]
+                # S shape (ne, 8): 4 GPs x [dT/dx, dT/dy]
                 S4 = S.reshape(ne, 4, 2)
                 gx = S4[:, :, 0].mean(axis=1)
                 gy = S4[:, :, 1].mean(axis=1)

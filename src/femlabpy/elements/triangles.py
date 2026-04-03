@@ -149,7 +149,7 @@ def ket3e(Xe, Ge):
     """
     Compute the element stiffness matrix for a 3-node triangular element (CST).
 
-    This function computes the 6×6 stiffness matrix for a constant strain
+    This function computes the 6x6 stiffness matrix for a constant strain
     triangle (T3/CST) element under plane stress or plane strain conditions.
 
     Parameters
@@ -227,15 +227,15 @@ def qet3e(Xe, Ge, Ue):
         Element internal force vector.
 
     Se : ndarray, shape (3,)
-        Stress components [σxx, σyy, τxy].
+        Stress components [sxx, syy, txy].
 
     Ee : ndarray, shape (3,)
-        Strain components [εxx, εyy, γxy].
+        Strain components [exx, eyy, gxy].
 
     Examples
     --------
     >>> qe, stress, strain = qet3e(Xe, Ge, Ue)
-    >>> print(f"σxx = {stress[0]:.2f}, σyy = {stress[1]:.2f}, τxy = {stress[2]:.2f}")
+    >>> print(f"sxx = {stress[0]:.2f}, syy = {stress[1]:.2f}, txy = {stress[2]:.2f}")
     """
     a, area = _triangle_geometry(Xe)
     dN = (1.0 / (2.0 * area)) * np.column_stack([-a[:, 1], a[:, 0]])
@@ -367,15 +367,15 @@ def qt3e(q, T, X, G, u):
         Updated internal force vector.
 
     S : ndarray, shape (nel, 3)
-        Stress at each element centroid: [σxx, σyy, τxy].
+        Stress at each element centroid: [sxx, syy, txy].
 
     E : ndarray, shape (nel, 3)
-        Strain at each element centroid: [εxx, εyy, γxy].
+        Strain at each element centroid: [exx, eyy, gxy].
 
     Examples
     --------
     >>> q, stresses, strains = qt3e(q, T, X, G, u)
-    >>> max_stress = np.max(np.abs(stresses[:, 0]))  # max σxx
+    >>> max_stress = np.max(np.abs(stresses[:, 0]))  # max sxx
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)

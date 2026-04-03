@@ -206,7 +206,7 @@ def keq4e(Xe, Ge):
     """
     Compute element stiffness matrix for a 4-node quadrilateral (Q4) element.
 
-    Uses 2×2 Gauss quadrature for numerical integration.
+    Uses 2x2 Gauss quadrature for numerical integration.
 
     Parameters
     ----------
@@ -229,7 +229,7 @@ def keq4e(Xe, Ge):
     Notes
     -----
     The Q4 element uses bilinear shape functions:
-    N_i = (1/4)(1 + ξ_i·ξ)(1 + η_i·η)
+    N_i = (1/4)(1 + xi_i*xi)(1 + eta_i*eta)
 
     Examples
     --------
@@ -278,10 +278,10 @@ def qeq4e(Xe, Ge, Ue):
         Element internal force vector.
 
     Se : ndarray, shape (4, 3)
-        Stresses at 4 Gauss points: [σxx, σyy, τxy] per row.
+        Stresses at 4 Gauss points: [sxx, syy, txy] per row.
 
     Ee : ndarray, shape (4, 3)
-        Strains at 4 Gauss points: [εxx, εyy, γxy] per row.
+        Strains at 4 Gauss points: [exx, eyy, gxy] per row.
 
     Examples
     --------
@@ -377,7 +377,7 @@ def qq4e(q, T, X, G, u):
 
     S : ndarray, shape (nel, 12)
         Stresses at 4 Gauss points per element.
-        Each row: [σxx_1, σyy_1, τxy_1, σxx_2, ..., τxy_4]
+        Each row: [sxx_1, syy_1, txy_1, sxx_2, ..., txy_4]
 
     E : ndarray, shape (nel, 12)
         Strains at 4 Gauss points per element.

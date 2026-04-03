@@ -186,7 +186,7 @@ class MaterialDialog(QDialog):
         self.nu_spin.setRange(0, 0.5)
         self.nu_spin.setDecimals(4)
         self.nu_spin.setValue(props[1] if len(props) > 1 else 0.3)
-        layout.addRow("ν (Poisson ratio):", self.nu_spin)
+        layout.addRow("nu (Poisson ratio):", self.nu_spin)
 
         self.ptype_combo = QComboBox()
         self.ptype_combo.addItems(["1 — Plane stress", "2 — Plane strain"])
@@ -315,7 +315,7 @@ class ModelPanel(QWidget):
         # -- Material tab --
         mat_widget = QWidget()
         mat_layout = QVBoxLayout(mat_widget)
-        self.mat_label = QLabel("E=1.0  ν=0.3  type=1")
+        self.mat_label = QLabel("E=1.0  nu=0.3  type=1")
         mat_layout.addWidget(self.mat_label)
         self.edit_mat_btn = QPushButton("Edit Material…")
         mat_layout.addWidget(self.edit_mat_btn)
@@ -401,7 +401,7 @@ class ModelPanel(QWidget):
             mat = m.materials[0]
             p = mat.props
             self.mat_label.setText(
-                f"E={p[0]:.4g}  ν={p[1] if len(p) > 1 else '?'}  "
+                f"E={p[0]:.4g}  nu={p[1] if len(p) > 1 else '?'}  "
                 f"type={int(p[2]) if len(p) > 2 else '?'}"
             )
 
@@ -551,9 +551,9 @@ class ResultsPanel(QWidget):
         if u is not None:
             u_flat = u.ravel()
             lines.append(f"max |u| = {np.max(np.abs(u_flat)):.6g}")
-            lines.append(f"‖u‖ = {np.linalg.norm(u_flat):.6g}")
+            lines.append(f"||u|| = {np.linalg.norm(u_flat):.6g}")
         if S is not None:
-            lines.append(f"max |σ| = {np.max(np.abs(S)):.6g}")
+            lines.append(f"max |S| = {np.max(np.abs(S)):.6g}")
         if R is not None:
             lines.append(f"Reactions: {R.shape[0]} entries")
         self.summary_label.setText("\n".join(lines) if lines else "No results")

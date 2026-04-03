@@ -108,7 +108,7 @@ def setbc(K, p, C, dof: int = 1):
 
     This is the standard textbook direct-elimination approach matching
     the Scilab FemLab ``setbc.sci`` convention (row/column zeroing with
-    ``ks = 0.1 × max(diag(K))``), with the additional correction that
+    ``ks = 0.1 * max(diag(K))``), with the additional correction that
     coupling forces are transferred to the RHS *before* zeroing, so
     non-zero prescribed displacements are handled correctly.
 

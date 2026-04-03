@@ -33,7 +33,7 @@ def init(nn: int, dof: int, *, use_sparse: bool | None = None):
 
     Notes
     -----
-    Total DOFs = nn × dof
+    Total DOFs = nn * dof
 
     Examples
     --------
