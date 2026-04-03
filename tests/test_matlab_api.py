@@ -1,7 +1,12 @@
 import numpy as np
 
 import femlabpy as fp
-from femlabpy.examples import run_bar01_nlbar, run_cantilever, run_square_plastpe, run_square_plastps
+from femlabpy.examples import (
+    run_bar01_nlbar,
+    run_cantilever,
+    run_square_plastpe,
+    run_square_plastps,
+)
 
 
 def test_matlab_data_aliases_expose_original_inputs():
@@ -16,7 +21,9 @@ def test_matlab_data_aliases_expose_original_inputs():
 
 def test_elastic_alias_matches_cantilever_runner():
     data = fp.canti()
-    result = fp.elastic(data["T"], data["X"], data["G"], data["C"], data["P"], dof=int(data["dof"]))
+    result = fp.elastic(
+        data["T"], data["X"], data["G"], data["C"], data["P"], dof=int(data["dof"])
+    )
     reference = run_cantilever(plot=False)
     np.testing.assert_allclose(result["u"], reference["u"])
     np.testing.assert_allclose(result["S"], reference["S"])
@@ -83,7 +90,10 @@ def test_plastic_aliases_match_legacy_runners():
     )
     reference_ps = run_square_plastps(plot=False)
     np.testing.assert_allclose(result_ps["u"], reference_ps["u"])
-    np.testing.assert_allclose(np.asarray(result_ps["E"]).reshape(-1), np.asarray(reference_ps["E"]).reshape(-1))
+    np.testing.assert_allclose(
+        np.asarray(result_ps["E"]).reshape(-1),
+        np.asarray(reference_ps["E"]).reshape(-1),
+    )
 
     square_pe = fp.square(plane_strain=True)
     result_pe = fp.plastpe(
@@ -100,7 +110,10 @@ def test_plastic_aliases_match_legacy_runners():
     )
     reference_pe = run_square_plastpe(plot=False)
     np.testing.assert_allclose(result_pe["u"], reference_pe["u"])
-    np.testing.assert_allclose(np.asarray(result_pe["E"]).reshape(-1), np.asarray(reference_pe["E"]).reshape(-1))
+    np.testing.assert_allclose(
+        np.asarray(result_pe["E"]).reshape(-1),
+        np.asarray(reference_pe["E"]).reshape(-1),
+    )
 
 
 def test_matlab_api_docstrings_present():

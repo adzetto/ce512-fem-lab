@@ -79,7 +79,9 @@ class FEModel:
             row = connectivity + [prop]
         else:
             row = connectivity + [prop]
-        cols = max(len(row), self.elements.shape[1]) if self.n_elements > 0 else len(row)
+        cols = (
+            max(len(row), self.elements.shape[1]) if self.n_elements > 0 else len(row)
+        )
         if self.n_elements == 0:
             self.elements = np.array([row], dtype=int)
         else:
@@ -144,8 +146,7 @@ class FEModel:
         if "G" in data:
             G = np.atleast_2d(np.array(data["G"], dtype=float))
             self.materials = [
-                Material(f"Material {i + 1}", row.tolist())
-                for i, row in enumerate(G)
+                Material(f"Material {i + 1}", row.tolist()) for i, row in enumerate(G)
             ]
         if "C" in data:
             self.bcs = np.array(data["C"], dtype=float)

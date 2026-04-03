@@ -174,9 +174,7 @@ class MainWindow(QMainWindow):
         tb.addAction("Cantilever").triggered.connect(
             lambda: self._load_example("cantilever")
         )
-        tb.addAction("Flow").triggered.connect(
-            lambda: self._load_example("flow_q4")
-        )
+        tb.addAction("Flow").triggered.connect(lambda: self._load_example("flow_q4"))
         tb.addAction("Triangle").triggered.connect(
             lambda: self._load_example("gmsh_triangle")
         )
@@ -184,9 +182,7 @@ class MainWindow(QMainWindow):
         solve_btn = tb.addAction("▶ Solve (F5)")
         solve_btn.triggered.connect(self._run_solver)
         tb.addSeparator()
-        tb.addAction("Displacement").triggered.connect(
-            self.viewport.show_displacement
-        )
+        tb.addAction("Displacement").triggered.connect(self.viewport.show_displacement)
         tb.addAction("Stress").triggered.connect(self.viewport.show_stress)
         tb.addAction("Mesh").triggered.connect(self.viewport.show_mesh_only)
 
@@ -196,9 +192,12 @@ class MainWindow(QMainWindow):
     def _on_model_changed(self) -> None:
         log.debug(
             "model_changed: etype=%s nodes=%d elems=%d dof=%d BCs=%d loads=%d",
-            self.model.element_type, self.model.n_nodes,
-            self.model.n_elements, self.model.dof,
-            self.model.bcs.shape[0], self.model.loads.shape[0],
+            self.model.element_type,
+            self.model.n_nodes,
+            self.model.n_elements,
+            self.model.dof,
+            self.model.bcs.shape[0],
+            self.model.loads.shape[0],
         )
         self.panel.refresh()
         self.viewport.refresh()
@@ -226,9 +225,12 @@ class MainWindow(QMainWindow):
             log.info(
                 "example loaded: nodes=%d elems=%d etype=%s dof=%d "
                 "BCs=%d loads=%d materials=%d",
-                self.model.n_nodes, self.model.n_elements,
-                self.model.element_type, self.model.dof,
-                self.model.bcs.shape[0], self.model.loads.shape[0],
+                self.model.n_nodes,
+                self.model.n_elements,
+                self.model.element_type,
+                self.model.dof,
+                self.model.bcs.shape[0],
+                self.model.loads.shape[0],
                 len(self.model.materials),
             )
             self.panel.set_model(self.model)
@@ -279,9 +281,7 @@ class MainWindow(QMainWindow):
         log.info("run_solver requested")
         if self.model.n_nodes == 0 or self.model.n_elements == 0:
             log.warning("cannot solve: no nodes/elements")
-            QMessageBox.warning(
-                self, "Cannot solve", "Model has no nodes or elements."
-            )
+            QMessageBox.warning(self, "Cannot solve", "Model has no nodes or elements.")
             return
         if self.model.bcs.shape[0] == 0:
             log.warning("cannot solve: no BCs")
@@ -294,9 +294,12 @@ class MainWindow(QMainWindow):
 
         log.info(
             "solving: etype=%s dof=%d nodes=%d elems=%d BCs=%d loads=%d",
-            self.model.element_type, self.model.dof,
-            self.model.n_nodes, self.model.n_elements,
-            self.model.bcs.shape[0], self.model.loads.shape[0],
+            self.model.element_type,
+            self.model.dof,
+            self.model.n_nodes,
+            self.model.n_elements,
+            self.model.bcs.shape[0],
+            self.model.loads.shape[0],
         )
         self.status.showMessage("Solving…")
         QApplication.processEvents()
@@ -309,9 +312,7 @@ class MainWindow(QMainWindow):
                 results["R"].shape if results["R"] is not None else None,
             )
             self.panel.refresh()
-            self.results_panel.set_results(
-                results["u"], results["S"], results["R"]
-            )
+            self.results_panel.set_results(results["u"], results["S"], results["R"])
             self.viewport.show_displacement()
             self.status.showMessage(
                 f"Solved — max |u| = {np.max(np.abs(results['u'])):.6g}"
@@ -319,9 +320,7 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             log.exception("Solver failed")
             tb = traceback.format_exc()
-            QMessageBox.critical(
-                self, "Solver Error", f"Solver failed:\n{exc}\n\n{tb}"
-            )
+            QMessageBox.critical(self, "Solver Error", f"Solver failed:\n{exc}\n\n{tb}")
             self.status.showMessage("Solver failed")
 
     def _export_results(self) -> None:

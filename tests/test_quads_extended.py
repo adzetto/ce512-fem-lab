@@ -5,14 +5,11 @@ import pytest
 
 from femlabpy import keq4e, keq4p, kq4e, kq4p, qeq4e, qeq4p, qq4e, qq4p
 
-
 Q4_ELASTIC_CASES = [
     pytest.param(
         np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 1.0], [0.0, 1.0]], dtype=float),
         np.array([210.0, 0.30], dtype=float),
-        np.array(
-            [[0.00, 0.00], [0.02, 0.00], [0.03, 0.01], [0.00, 0.02]], dtype=float
-        ),
+        np.array([[0.00, 0.00], [0.02, 0.00], [0.03, 0.01], [0.00, 0.02]], dtype=float),
         id="rectangle-plane-stress",
     ),
     pytest.param(
@@ -26,17 +23,13 @@ Q4_ELASTIC_CASES = [
     pytest.param(
         np.array([[1.0, 0.0], [4.0, 0.0], [4.0, 2.0], [1.0, 2.0]], dtype=float),
         np.array([170.0, 0.22, 2.0], dtype=float),
-        np.array(
-            [[0.00, 0.00], [0.02, 0.01], [0.05, 0.03], [0.01, 0.04]], dtype=float
-        ),
+        np.array([[0.00, 0.00], [0.02, 0.01], [0.05, 0.03], [0.01, 0.04]], dtype=float),
         id="rectangle-plane-strain",
     ),
     pytest.param(
         np.array([[0.0, 0.0], [2.0, 0.0], [3.0, 1.0], [1.0, 1.0]], dtype=float),
         np.array([160.0, 0.20, 2.0], dtype=float),
-        np.array(
-            [[0.00, 0.00], [0.01, 0.00], [0.04, 0.02], [0.01, 0.02]], dtype=float
-        ),
+        np.array([[0.00, 0.00], [0.01, 0.00], [0.04, 0.02], [0.01, 0.02]], dtype=float),
         id="parallelogram-plane-strain",
     ),
 ]
@@ -119,7 +112,9 @@ Q4_POTENTIAL_CASES = [
     ),
 ]
 
-ZERO_Q4_POTENTIAL_CASES = [(case.values[0], case.values[1]) for case in Q4_POTENTIAL_CASES]
+ZERO_Q4_POTENTIAL_CASES = [
+    (case.values[0], case.values[1]) for case in Q4_POTENTIAL_CASES
+]
 
 
 @pytest.mark.parametrize(("Xe", "Ge", "u"), Q4_ELASTIC_CASES)

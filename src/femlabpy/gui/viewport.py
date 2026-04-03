@@ -223,9 +223,6 @@ class Viewport(QtInteractor):
             scale = 0.15 * max(bbox) / max_mag
             vectors = vectors * scale
 
-        arrows = pv.Arrow(
-            start=(0, 0, 0), direction=(1, 0, 0), tip_length=0.3, shaft_radius=0.05
-        )
         for i in range(len(origins)):
             direction = vectors[i]
             norm = np.linalg.norm(direction)
@@ -271,14 +268,10 @@ class Viewport(QtInteractor):
 
                 # Draw deformed shape
                 if m.dof == 2 and len(u) == 2 * grid.n_points:
-                    disp3 = np.column_stack(
-                        [u[0::2], u[1::2], np.zeros(grid.n_points)]
-                    )
+                    disp3 = np.column_stack([u[0::2], u[1::2], np.zeros(grid.n_points)])
                     scale_factor = (
                         0.1
-                        * max(
-                            m.nodes.max(axis=0) - m.nodes.min(axis=0)
-                        )
+                        * max(m.nodes.max(axis=0) - m.nodes.min(axis=0))
                         / max(u_mag.max(), 1e-30)
                     )
                     deformed = grid.copy()
@@ -307,9 +300,7 @@ class Viewport(QtInteractor):
                 )
 
     @staticmethod
-    def _compute_von_mises(
-        S: np.ndarray, etype: str, dof: int
-    ) -> np.ndarray | None:
+    def _compute_von_mises(S: np.ndarray, etype: str, dof: int) -> np.ndarray | None:
         """Compute von Mises (or magnitude for potential) per element."""
         if S is None or S.size == 0:
             return None

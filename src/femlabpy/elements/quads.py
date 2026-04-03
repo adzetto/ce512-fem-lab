@@ -8,6 +8,21 @@ from ..materials import devstress, eqstress, stressdp, stressvm
 
 
 def _plane_elastic_matrix(Ge, *, plane_strain: bool = False):
+    """
+    Build the plane constitutive tangent used by plastic Q4 updates.
+
+    Parameters
+    ----------
+    Ge:
+        Material row containing at least ``[E, nu]``.
+    plane_strain:
+        Select the plane-strain form when ``True``; otherwise use plane stress.
+
+    Returns
+    -------
+    ndarray
+        Constitutive matrix in Voigt form.
+    """
     props = as_float_array(Ge).reshape(-1)
     E = props[0]
     nu = props[1]
@@ -36,6 +51,21 @@ def _plane_elastic_matrix(Ge, *, plane_strain: bool = False):
 
 
 def _plane_elastic_matrix_2d(Ge, *, plane_strain: bool = False):
+    """
+    Build the reduced ``3 x 3`` plane constitutive matrix for elastic Q4 kernels.
+
+    Parameters
+    ----------
+    Ge:
+        Material row containing at least ``[E, nu]``.
+    plane_strain:
+        Select the plane-strain form when ``True``; otherwise use plane stress.
+
+    Returns
+    -------
+    ndarray
+        Reduced constitutive matrix in ``[xx, yy, xy]`` Voigt order.
+    """
     props = as_float_array(Ge).reshape(-1)
     E = props[0]
     nu = props[1]
@@ -63,6 +93,22 @@ def _plane_elastic_matrix_2d(Ge, *, plane_strain: bool = False):
 
 
 def _q4_dN(r_i: float, r_j: float, nnodes: int):
+    """
+    Evaluate Q4 or Q8 shape-function derivatives in parent coordinates.
+
+    Parameters
+    ----------
+    r_i, r_j:
+        Parent-space Gauss-point coordinates ``(xi, eta)``.
+    nnodes:
+        Number of element nodes. ``4`` yields bilinear Q4 derivatives and ``8``
+        yields serendipity Q8 derivatives.
+
+    Returns
+    -------
+    ndarray
+        Parent-space derivative matrix with shape ``(2, nnodes)``.
+    """
     dN = (
         np.array(
             [
@@ -101,6 +147,19 @@ def _q4_dN(r_i: float, r_j: float, nnodes: int):
 
 
 def _q4_B(dN):
+    """
+    Assemble the plane-strain/plane-stress strain-displacement matrix.
+
+    Parameters
+    ----------
+    dN:
+        Global shape-function gradients with shape ``(2, nnodes)``.
+
+    Returns
+    -------
+    ndarray
+        ``3 x (2 * nnodes)`` strain-displacement matrix.
+    """
     nnodes = dN.shape[1]
     B = np.zeros((3, 2 * nnodes), dtype=float)
     for k in range(nnodes):
@@ -112,12 +171,34 @@ def _q4_B(dN):
 
 
 def _q4_gauss_points():
+    """
+    Return the standard ``2 x 2`` Gauss rule used by Q4 integration.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray]
+        One-dimensional Gauss abscissas and weights. Tensor products of these
+        arrays define the four Q4 integration points.
+    """
     r = np.array([-1.0, 1.0], dtype=float) / np.sqrt(3.0)
     w = np.array([1.0, 1.0], dtype=float)
     return r, w
 
 
 def _q4_gp_index(i: int, j: int) -> int:
+    """
+    Map tensor-product Gauss indices to FemLab's flattened point numbering.
+
+    Parameters
+    ----------
+    i, j:
+        Zero-based indices in the ``xi`` and ``eta`` directions.
+
+    Returns
+    -------
+    int
+        Flattened Gauss-point index in ``[0, 3]``.
+    """
     return i + 3 * j - 2 * i * j
 
 
@@ -324,7 +405,22 @@ def qq4e(q, T, X, G, u):
 
 
 def keq4p(Xe, Ge):
-    """Compute the element conductivity matrix for a 4-node potential quadrilateral."""
+    """
+    Compute the scalar conductivity matrix for a 4-node quadrilateral.
+
+    Parameters
+    ----------
+    Xe:
+        Element coordinates with shape ``(4, 2)``.
+    Ge:
+        Material row ``[k]`` or ``[k, b]`` where ``b`` is an optional reaction
+        coefficient.
+
+    Returns
+    -------
+    ndarray
+        ``4 x 4`` conductivity matrix integrated with ``2 x 2`` Gauss points.
+    """
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
     k = props[0]
@@ -354,7 +450,23 @@ def keq4p(Xe, Ge):
 
 
 def qeq4p(Xe, Ge, Ue):
-    """Compute gradient and flux results for one Q4 potential element."""
+    """
+    Recover gradients and fluxes for one Q4 scalar potential element.
+
+    Parameters
+    ----------
+    Xe:
+        Element coordinates with shape ``(4, 2)``.
+    Ge:
+        Material row ``[k]`` or ``[k, b]``.
+    Ue:
+        Element nodal potentials.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Element flux vector, Gauss-point fluxes, and Gauss-point gradients.
+    """
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
     k = props[0]
@@ -377,7 +489,25 @@ def qeq4p(Xe, Ge, Ue):
 
 
 def kq4p(K, T, X, G):
-    """Assemble Q4 potential-element conductivities into the global matrix."""
+    """
+    Assemble Q4 scalar conductivity matrices into the global system.
+
+    Parameters
+    ----------
+    K:
+        Global conductivity matrix.
+    T:
+        Topology table ``[n1, n2, n3, n4, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table with conductivity rows.
+
+    Returns
+    -------
+    ndarray or sparse matrix
+        Updated global conductivity matrix.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     for row in topology:
@@ -388,7 +518,28 @@ def kq4p(K, T, X, G):
 
 
 def qq4p(q, T, X, G, u):
-    """Compute Q4 potential-element fluxes and assemble nodal fluxes."""
+    """
+    Recover Q4 scalar gradients and assemble equivalent nodal fluxes.
+
+    Parameters
+    ----------
+    q:
+        Global nodal flux vector.
+    T:
+        Topology table ``[n1, n2, n3, n4, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table with conductivity rows.
+    u:
+        Global nodal potentials.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Updated nodal flux vector, Gauss-point fluxes, and Gauss-point
+        gradients.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     potentials = as_float_array(u).reshape(-1, 1)
@@ -407,6 +558,23 @@ def qq4p(q, T, X, G, u):
 
 
 def _ensure_state_width(state, element_count: int, width: int):
+    """
+    Normalize plastic history arrays to a fixed per-element storage width.
+
+    Parameters
+    ----------
+    state:
+        Existing history array.
+    element_count:
+        Expected number of elements.
+    width:
+        Required state width per element.
+
+    Returns
+    -------
+    ndarray
+        History array with shape ``(element_count, width)``.
+    """
     state = as_float_array(state)
     if state.size == 0:
         return np.zeros((element_count, width), dtype=float)
@@ -420,7 +588,25 @@ def _ensure_state_width(state, element_count: int, width: int):
 
 
 def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
-    """Compute the consistent tangent stiffness of a plane-stress plastic Q4 element."""
+    """
+    Compute the consistent tangent of a plane-stress elastoplastic Q4 element.
+
+    Parameters
+    ----------
+    Xe:
+        Element coordinates with shape ``(4, 2)``.
+    Ge:
+        Material row ``[E, nu, Sy0, H]`` or ``[E, nu, Sy0, H, phi]``.
+    Se, Ee:
+        Previous Gauss-point stress and history tables with shape ``(4, 4)``.
+    mtype:
+        ``1`` for von Mises and ``2`` for Drucker-Prager.
+
+    Returns
+    -------
+    ndarray
+        ``8 x 8`` consistent tangent stiffness matrix.
+    """
     _VonMises = 1  # noqa: F841
     DruckerPrager = 2
     Xe = as_float_array(Xe)
@@ -490,7 +676,26 @@ def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
 
 
 def qeq4eps(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
-    """Update plane-stress plastic Q4 response at Gauss points."""
+    """
+    Update plane-stress elastoplastic Q4 response at the four Gauss points.
+
+    Parameters
+    ----------
+    Xe, Ge:
+        Element coordinates and material row.
+    Ue:
+        Element displacement vector.
+    Se, Ee:
+        Previous Gauss-point stress and history tables with shape ``(4, 4)``.
+    mtype:
+        ``1`` for von Mises and ``2`` for Drucker-Prager.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Element internal-force vector together with updated stress and history
+        tables.
+    """
     _VonMises = 1  # noqa: F841
     DruckerPrager = 2
     Xe = as_float_array(Xe)
@@ -594,7 +799,25 @@ def qq4eps(q, T, X, G, u, S, E, mtype: int = 1):
 
 
 def keq4epe(Xe, Ge, Se, Ee, mtype: int = 1):
-    """Compute the consistent tangent stiffness of a plane-strain plastic Q4 element."""
+    """
+    Compute the consistent tangent of a plane-strain elastoplastic Q4 element.
+
+    Parameters
+    ----------
+    Xe:
+        Element coordinates with shape ``(4, 2)``.
+    Ge:
+        Material row ``[E, nu, Sy0, H]`` or ``[E, nu, Sy0, H, phi]``.
+    Se, Ee:
+        Previous Gauss-point stress and history tables with shape ``(4, 5)``.
+    mtype:
+        ``1`` for von Mises and ``2`` for Drucker-Prager.
+
+    Returns
+    -------
+    ndarray
+        ``8 x 8`` consistent tangent stiffness matrix.
+    """
     DruckerPrager = 2
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
@@ -693,7 +916,26 @@ def keq4epe(Xe, Ge, Se, Ee, mtype: int = 1):
 
 
 def qeq4epe(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
-    """Update plane-strain plastic Q4 response at Gauss points."""
+    """
+    Update plane-strain elastoplastic Q4 response at the four Gauss points.
+
+    Parameters
+    ----------
+    Xe, Ge:
+        Element coordinates and material row.
+    Ue:
+        Element displacement vector.
+    Se, Ee:
+        Previous Gauss-point stress and history tables with shape ``(4, 5)``.
+    mtype:
+        ``1`` for von Mises and ``2`` for Drucker-Prager.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Element internal-force vector together with updated stress and history
+        tables.
+    """
     DruckerPrager = 2
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)

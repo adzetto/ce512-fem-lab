@@ -21,7 +21,15 @@ from .. import (
 
 
 def default_mesh_path() -> Path:
-    return Path(__file__).resolve().parents[3] / "src" / "femlabpy" / "data" / "meshes" / "deneme.msh"
+    """Return the repository path to the packaged classroom Gmsh mesh."""
+    return (
+        Path(__file__).resolve().parents[3]
+        / "src"
+        / "femlabpy"
+        / "data"
+        / "meshes"
+        / "deneme.msh"
+    )
 
 
 def gmsh_triangle_data(mesh_path: str | Path | None = None):
@@ -37,7 +45,7 @@ def gmsh_triangle_data(mesh_path: str | Path | None = None):
     """
 
     if mesh_path is None:
-        packaged_mesh = files("femlabpy.data").joinpath("meshes", "deneme.msh")
+        packaged_mesh = files("femlabpy.data").joinpath("meshes").joinpath("deneme.msh")
         with as_file(packaged_mesh) as resolved_mesh:
             mesh = load_gmsh(resolved_mesh)
     else:

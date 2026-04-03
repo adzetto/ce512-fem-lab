@@ -9,7 +9,7 @@ from ..solvers import solve_nlbar, solve_plastic
 
 
 def _case_directory(case_name: str):
-    return files("femlabpy.data").joinpath("cases", case_name)
+    return files("femlabpy.data").joinpath("cases").joinpath(case_name)
 
 
 def _load_case(case_name: str) -> dict[str, np.ndarray | int]:
@@ -87,7 +87,9 @@ def hole_data(*, plane_strain: bool = False):
     return _load_case(case_name)
 
 
-def _plot_bar_solution(data: dict[str, np.ndarray | int], result: dict[str, np.ndarray]):
+def _plot_bar_solution(
+    data: dict[str, np.ndarray | int], result: dict[str, np.ndarray]
+):
     from matplotlib import pyplot as plt
 
     figures = []
@@ -106,7 +108,9 @@ def _plot_bar_solution(data: dict[str, np.ndarray | int], result: dict[str, np.n
     if "elaxis" in data:
         flat = np.asarray(data["elaxis"], dtype=float).reshape(-1)
         if flat.size == 4:
-            ax_geom.axis(flat)
+            ax_geom.axis(
+                (float(flat[0]), float(flat[1]), float(flat[2]), float(flat[3]))
+            )
         elif flat.size == 6 and hasattr(ax_geom, "set_zlim"):
             ax_geom.set_xlim(flat[0], flat[1])
             ax_geom.set_ylim(flat[2], flat[3])
@@ -121,7 +125,9 @@ def _plot_bar_solution(data: dict[str, np.ndarray | int], result: dict[str, np.n
     if "plotaxis" in data:
         flat = np.asarray(data["plotaxis"], dtype=float).reshape(-1)
         if flat.size == 4:
-            ax_path.axis(flat)
+            ax_path.axis(
+                (float(flat[0]), float(flat[1]), float(flat[2]), float(flat[3]))
+            )
     figures.append(fig_path)
     return figures
 
@@ -145,7 +151,9 @@ def _plot_plastic_solution(
     if "elaxis" in data:
         flat = np.asarray(data["elaxis"], dtype=float).reshape(-1)
         if flat.size == 4:
-            ax_field.axis(flat)
+            ax_field.axis(
+                (float(flat[0]), float(flat[1]), float(flat[2]), float(flat[3]))
+            )
     if "strainaxis" in data:
         flat = np.asarray(data["strainaxis"], dtype=float).reshape(-1)
         if flat.size == 2 and ax_field.collections:
@@ -161,7 +169,9 @@ def _plot_plastic_solution(
     return figures
 
 
-def _bundle_result(data: dict[str, np.ndarray | int], result: dict[str, np.ndarray], figures):
+def _bundle_result(
+    data: dict[str, np.ndarray | int], result: dict[str, np.ndarray], figures
+):
     return {**result, "data": data, "figures": figures}
 
 

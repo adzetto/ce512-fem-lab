@@ -11,6 +11,19 @@ except ImportError:  # pragma: no cover
 
 
 def _elastic3d_matrix(Ge):
+    """
+    Build the isotropic 3D constitutive matrix for one material row.
+
+    Parameters
+    ----------
+    Ge:
+        Material row containing at least ``[E, nu]``.
+
+    Returns
+    -------
+    ndarray
+        ``6 x 6`` 3D elastic matrix in Voigt order.
+    """
     props = as_float_array(Ge).reshape(-1)
     E = props[0]
     nu = props[1]
@@ -32,6 +45,19 @@ def _elastic3d_matrix(Ge):
 
 
 def _elastic3d_matrix_batch(Ge):
+    """
+    Vectorize :func:`_elastic3d_matrix` over multiple materials.
+
+    Parameters
+    ----------
+    Ge:
+        Material table with one row per element.
+
+    Returns
+    -------
+    ndarray
+        Batched constitutive matrices with shape ``(n, 6, 6)``.
+    """
     props = as_float_array(Ge)
     if props.ndim == 1:
         props = props.reshape(1, -1)
@@ -54,6 +80,19 @@ def _elastic3d_matrix_batch(Ge):
 
 
 def _solid_B(dN):
+    """
+    Assemble the 3D strain-displacement matrix for one solid element.
+
+    Parameters
+    ----------
+    dN:
+        Global shape-function gradients with shape ``(3, nnodes)``.
+
+    Returns
+    -------
+    ndarray
+        ``6 x (3 * nnodes)`` strain-displacement matrix.
+    """
     nnodes = dN.shape[1]
     B = np.zeros((6, nnodes * 3), dtype=float)
     B[0, 0::3] = dN[0]
@@ -69,6 +108,19 @@ def _solid_B(dN):
 
 
 def _solid_B_batch(dN):
+    """
+    Vectorize :func:`_solid_B` over one or more integration points.
+
+    Parameters
+    ----------
+    dN:
+        Batched global shape-function gradients.
+
+    Returns
+    -------
+    ndarray
+        Batched strain-displacement matrices.
+    """
     nnodes = dN.shape[-1]
     B = np.zeros(dN.shape[:-2] + (6, nnodes * 3), dtype=float)
     B[..., 0, 0::3] = dN[..., 0, :]
@@ -84,7 +136,21 @@ def _solid_B_batch(dN):
 
 
 def keT4e(Xe, Ge):
-    """Compute the element stiffness matrix for a 4-node tetrahedral solid."""
+    """
+    Compute the stiffness matrix for a 4-node tetrahedral solid element.
+
+    Parameters
+    ----------
+    Xe:
+        Tetrahedral nodal coordinates with shape ``(4, 3)``.
+    Ge:
+        Material row ``[E, nu]``.
+
+    Returns
+    -------
+    ndarray
+        ``12 x 12`` element stiffness matrix.
+    """
     Xe = as_float_array(Xe)
     dN = np.array(
         [[1.0, 0.0, 0.0, -1.0], [0.0, 1.0, 0.0, -1.0], [0.0, 0.0, 1.0, -1.0]],
@@ -98,7 +164,23 @@ def keT4e(Xe, Ge):
 
 
 def qeT4e(Xe, Ge, Ue):
-    """Compute stress and strain results for one tetrahedral solid element."""
+    """
+    Recover stress and strain for one tetrahedral solid element.
+
+    Parameters
+    ----------
+    Xe:
+        Tetrahedral nodal coordinates with shape ``(4, 3)``.
+    Ge:
+        Material row ``[E, nu]``.
+    Ue:
+        Element displacement vector.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Element internal-force vector, stress vector, and strain vector.
+    """
     Xe = as_float_array(Xe)
     Ue = as_float_array(Ue).reshape(-1, 1)
     dN = np.array(
@@ -116,7 +198,25 @@ def qeT4e(Xe, Ge, Ue):
 
 
 def kT4e(K, T, X, G):
-    """Assemble T4 solid element stiffness contributions into the global matrix."""
+    """
+    Assemble T4 solid element stiffness contributions into the global matrix.
+
+    Parameters
+    ----------
+    K:
+        Global stiffness matrix.
+    T:
+        Topology table ``[n1, n2, n3, n4, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table.
+
+    Returns
+    -------
+    ndarray or sparse matrix
+        Updated global stiffness matrix.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     nodes = topology[:, :4].astype(int) - 1
@@ -131,13 +231,19 @@ def kT4e(K, T, X, G):
     B = _solid_B_batch(dN_global)
     D = _elastic3d_matrix_batch(materials)
     detJ = np.linalg.det(J)
-    element_matrices = 2.0 * detJ[:, None, None] * np.einsum(
-        "eik,ekl,elj->eij", B.transpose(0, 2, 1), D, B
+    element_matrices = (
+        2.0
+        * detJ[:, None, None]
+        * np.einsum("eik,ekl,elj->eij", B.transpose(0, 2, 1), D, B)
     )
     indices = element_dof_indices(nodes, 3, one_based=False)
     if is_sparse(K) and sp is not None:
-        scatter_rows = np.broadcast_to(indices[:, :, None], element_matrices.shape).reshape(-1)
-        scatter_cols = np.broadcast_to(indices[:, None, :], element_matrices.shape).reshape(-1)
+        scatter_rows = np.broadcast_to(
+            indices[:, :, None], element_matrices.shape
+        ).reshape(-1)
+        scatter_cols = np.broadcast_to(
+            indices[:, None, :], element_matrices.shape
+        ).reshape(-1)
         delta = sp.coo_matrix(
             (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
             shape=K.shape,
@@ -149,7 +255,27 @@ def kT4e(K, T, X, G):
 
 
 def qT4e(q, T, X, G, u):
-    """Compute T4 solid stresses and assemble internal forces."""
+    """
+    Recover T4 solid stresses and assemble internal forces.
+
+    Parameters
+    ----------
+    q:
+        Global internal-force vector.
+    T:
+        Topology table ``[n1, n2, n3, n4, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table.
+    u:
+        Global displacement vector.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Updated internal-force vector, element stresses, and element strains.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     U = as_float_array(u).reshape(coordinates.shape[0], coordinates.shape[1])
@@ -168,15 +294,26 @@ def qT4e(q, T, X, G, u):
     element_displacements = U[nodes].reshape(topology.shape[0], -1)
     E = np.einsum("eij,ej->ei", B, element_displacements)
     S = np.einsum("ei,eij->ej", E, D)
-    element_vectors = detJ[:, None] * np.einsum(
-        "eij,ej->ei", B.transpose(0, 2, 1), S
-    )
+    element_vectors = detJ[:, None] * np.einsum("eij,ej->ei", B.transpose(0, 2, 1), S)
     indices = element_dof_indices(nodes, coordinates.shape[1], one_based=False)
     np.add.at(q[:, 0], indices.reshape(-1), element_vectors.reshape(-1))
     return q, S, E
 
 
 def _hexa_dN(r_i: float, r_j: float, r_k: float):
+    """
+    Evaluate H8 parent-space shape-function derivatives.
+
+    Parameters
+    ----------
+    r_i, r_j, r_k:
+        Parent-space Gauss-point coordinates ``(xi, eta, zeta)``.
+
+    Returns
+    -------
+    ndarray
+        Parent-space derivatives with shape ``(3, 8)``.
+    """
     dNi = (
         np.array(
             [
@@ -229,51 +366,88 @@ def _hexa_dN(r_i: float, r_j: float, r_k: float):
 
 
 def _hexa_dN_batch(points):
+    """
+    Vectorize :func:`_hexa_dN` over a batch of parent-space points.
+
+    Parameters
+    ----------
+    points:
+        Parent-space coordinates with shape ``(n, 3)``.
+
+    Returns
+    -------
+    ndarray
+        Batched derivatives with shape ``(n, 3, 8)``.
+    """
     points = as_float_array(points)
     r_i = points[:, 0][:, None]
     r_j = points[:, 1][:, None]
     r_k = points[:, 2][:, None]
-    dNi = np.hstack(
-        [
-            -(1.0 - r_j) * (1.0 - r_k),
-            (1.0 - r_j) * (1.0 - r_k),
-            (1.0 + r_j) * (1.0 - r_k),
-            -(1.0 + r_j) * (1.0 - r_k),
-            -(1.0 - r_j) * (1.0 + r_k),
-            (1.0 - r_j) * (1.0 + r_k),
-            (1.0 + r_j) * (1.0 + r_k),
-            -(1.0 + r_j) * (1.0 + r_k),
-        ]
-    ) / 8.0
-    dNj = np.hstack(
-        [
-            -(1.0 - r_i) * (1.0 - r_k),
-            -(1.0 + r_i) * (1.0 - r_k),
-            (1.0 + r_i) * (1.0 - r_k),
-            (1.0 - r_i) * (1.0 - r_k),
-            -(1.0 - r_i) * (1.0 + r_k),
-            -(1.0 + r_i) * (1.0 + r_k),
-            (1.0 + r_i) * (1.0 + r_k),
-            (1.0 - r_i) * (1.0 + r_k),
-        ]
-    ) / 8.0
-    dNk = np.hstack(
-        [
-            -(1.0 - r_i) * (1.0 - r_j),
-            -(1.0 + r_i) * (1.0 - r_j),
-            -(1.0 + r_i) * (1.0 + r_j),
-            -(1.0 - r_i) * (1.0 + r_j),
-            (1.0 - r_i) * (1.0 - r_j),
-            (1.0 + r_i) * (1.0 - r_j),
-            (1.0 + r_i) * (1.0 + r_j),
-            (1.0 - r_i) * (1.0 + r_j),
-        ]
-    ) / 8.0
+    dNi = (
+        np.hstack(
+            [
+                -(1.0 - r_j) * (1.0 - r_k),
+                (1.0 - r_j) * (1.0 - r_k),
+                (1.0 + r_j) * (1.0 - r_k),
+                -(1.0 + r_j) * (1.0 - r_k),
+                -(1.0 - r_j) * (1.0 + r_k),
+                (1.0 - r_j) * (1.0 + r_k),
+                (1.0 + r_j) * (1.0 + r_k),
+                -(1.0 + r_j) * (1.0 + r_k),
+            ]
+        )
+        / 8.0
+    )
+    dNj = (
+        np.hstack(
+            [
+                -(1.0 - r_i) * (1.0 - r_k),
+                -(1.0 + r_i) * (1.0 - r_k),
+                (1.0 + r_i) * (1.0 - r_k),
+                (1.0 - r_i) * (1.0 - r_k),
+                -(1.0 - r_i) * (1.0 + r_k),
+                -(1.0 + r_i) * (1.0 + r_k),
+                (1.0 + r_i) * (1.0 + r_k),
+                (1.0 - r_i) * (1.0 + r_k),
+            ]
+        )
+        / 8.0
+    )
+    dNk = (
+        np.hstack(
+            [
+                -(1.0 - r_i) * (1.0 - r_j),
+                -(1.0 + r_i) * (1.0 - r_j),
+                -(1.0 + r_i) * (1.0 + r_j),
+                -(1.0 - r_i) * (1.0 + r_j),
+                (1.0 - r_i) * (1.0 - r_j),
+                (1.0 + r_i) * (1.0 - r_j),
+                (1.0 + r_i) * (1.0 + r_j),
+                (1.0 - r_i) * (1.0 + r_j),
+            ]
+        )
+        / 8.0
+    )
     return np.stack([dNi, dNj, dNk], axis=1)
 
 
 def keh8e(Xe, Ge):
-    """Compute the element stiffness matrix for an 8-node hexahedral solid."""
+    """
+    Compute the stiffness matrix for an 8-node hexahedral solid element.
+
+    Parameters
+    ----------
+    Xe:
+        Hexahedral nodal coordinates with shape ``(8, 3)``.
+    Ge:
+        Material row ``[E, nu]``.
+
+    Returns
+    -------
+    ndarray
+        ``24 x 24`` element stiffness matrix integrated with ``2 x 2 x 2``
+        Gauss quadrature.
+    """
     Xe = as_float_array(Xe)
     if Xe.shape[0] == 20:
         raise NotImplementedError(
@@ -307,7 +481,24 @@ def keh8e(Xe, Ge):
 
 
 def qeh8e(Xe, Ge, Ue):
-    """Compute stress and strain results for one H8 solid element."""
+    """
+    Recover stress and strain at the eight H8 Gauss points.
+
+    Parameters
+    ----------
+    Xe:
+        Hexahedral nodal coordinates with shape ``(8, 3)``.
+    Ge:
+        Material row ``[E, nu]``.
+    Ue:
+        Element displacement vector.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Element internal-force vector, Gauss-point stresses, and Gauss-point
+        strains.
+    """
     Xe = as_float_array(Xe)
     if Xe.shape[0] == 20:
         raise NotImplementedError(
@@ -344,7 +535,25 @@ def qeh8e(Xe, Ge, Ue):
 
 
 def kh8e(K, T, X, G):
-    """Assemble H8 solid element stiffness contributions into the global matrix."""
+    """
+    Assemble H8 solid element stiffness contributions into the global matrix.
+
+    Parameters
+    ----------
+    K:
+        Global stiffness matrix.
+    T:
+        Topology table ``[n1, ..., n8, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table.
+
+    Returns
+    -------
+    ndarray or sparse matrix
+        Updated global stiffness matrix.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     nodes = topology[:, :8].astype(int) - 1
@@ -380,8 +589,12 @@ def kh8e(K, T, X, G):
     )
     indices = element_dof_indices(nodes, 3, one_based=False)
     if is_sparse(K) and sp is not None:
-        scatter_rows = np.broadcast_to(indices[:, :, None], element_matrices.shape).reshape(-1)
-        scatter_cols = np.broadcast_to(indices[:, None, :], element_matrices.shape).reshape(-1)
+        scatter_rows = np.broadcast_to(
+            indices[:, :, None], element_matrices.shape
+        ).reshape(-1)
+        scatter_cols = np.broadcast_to(
+            indices[:, None, :], element_matrices.shape
+        ).reshape(-1)
         delta = sp.coo_matrix(
             (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
             shape=K.shape,
@@ -393,7 +606,28 @@ def kh8e(K, T, X, G):
 
 
 def qh8e(q, T, X, G, u):
-    """Compute H8 solid stresses and assemble internal forces."""
+    """
+    Recover H8 solid stresses and assemble internal forces.
+
+    Parameters
+    ----------
+    q:
+        Global internal-force vector.
+    T:
+        Topology table ``[n1, ..., n8, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table.
+    u:
+        Global displacement vector.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Updated internal-force vector, flattened Gauss-point stresses, and
+        flattened Gauss-point strains.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     U = as_float_array(u).reshape(coordinates.shape[0], coordinates.shape[1])
@@ -422,7 +656,9 @@ def qh8e(q, T, X, G, u):
     D = _elastic3d_matrix_batch(materials)
     detJ = np.linalg.det(Jt)
     element_displacements = U[nodes].reshape(topology.shape[0], -1)
-    E = np.einsum("egij,ej->egi", B, element_displacements).reshape(topology.shape[0], -1)
+    E = np.einsum("egij,ej->egi", B, element_displacements).reshape(
+        topology.shape[0], -1
+    )
     strain_gp = E.reshape(topology.shape[0], 8, 6)
     stress_gp = np.einsum("egi,eij->egj", strain_gp, D)
     element_vectors = np.einsum(

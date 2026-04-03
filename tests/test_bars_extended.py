@@ -86,9 +86,7 @@ MULTI_BAR_CASES = [
         id="2d-chain",
     ),
     pytest.param(
-        np.array(
-            [[0.0, 0.0, 0.0], [1.0, 2.0, 0.0], [2.0, 2.0, 1.0]], dtype=float
-        ),
+        np.array([[0.0, 0.0, 0.0], [1.0, 2.0, 0.0], [2.0, 2.0, 1.0]], dtype=float),
         np.array([[0.8, 75.0], [1.1, 110.0]], dtype=float),
         np.array([[1.0, 2.0, 1.0], [2.0, 3.0, 2.0]], dtype=float),
         np.array(
@@ -97,9 +95,7 @@ MULTI_BAR_CASES = [
         id="3d-two-bars",
     ),
     pytest.param(
-        np.array(
-            [[0.0, 1.0, 0.0], [2.0, 1.5, 0.5], [3.5, 2.0, 1.0]], dtype=float
-        ),
+        np.array([[0.0, 1.0, 0.0], [2.0, 1.5, 0.5], [3.5, 2.0, 1.0]], dtype=float),
         np.array([[1.3, 80.0], [0.7, 130.0]], dtype=float),
         np.array([[1.0, 2.0, 1.0], [2.0, 3.0, 2.0]], dtype=float),
         np.array(

@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from femlabpy.examples import run_cantilever, run_flow_q4, run_flow_t3, run_gmsh_triangle
+from femlabpy.examples import (
+    run_cantilever,
+    run_flow_q4,
+    run_flow_t3,
+    run_gmsh_triangle,
+)
 
 
 def test_cantilever_runs_and_deflects_downward():

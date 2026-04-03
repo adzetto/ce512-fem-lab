@@ -20,9 +20,9 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSpinBox,
-    QTabWidget,
     QTableWidget,
     QTableWidgetItem,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -380,9 +380,7 @@ class ModelPanel(QWidget):
         # Elements
         if m.n_elements > 0:
             idx = np.arange(1, m.n_elements + 1).reshape(-1, 1)
-            self.elem_table.set_data(
-                np.hstack([idx, m.elements]).astype(float)
-            )
+            self.elem_table.set_data(np.hstack([idx, m.elements]).astype(float))
         else:
             self.elem_table.setRowCount(0)
 
@@ -432,9 +430,7 @@ class ModelPanel(QWidget):
         if not self._model or self._model.n_nodes == 0:
             QMessageBox.warning(self, "No nodes", "Add nodes first.")
             return
-        dlg = AddElementDialog(
-            self._model.n_nodes, self._model.element_type, self
-        )
+        dlg = AddElementDialog(self._model.n_nodes, self._model.element_type, self)
         if dlg.exec():
             nodes = [s.value() for s in dlg.node_spins]
             self._model.add_element(nodes, dlg.prop_spin.value())

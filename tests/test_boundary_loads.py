@@ -56,7 +56,9 @@ def test_addload_accumulates_components(dof):
         ),
     ],
 )
-def test_setbc_constrains_specified_dofs(dof, constraints, expected_indices, expected_values):
+def test_setbc_constrains_specified_dofs(
+    dof, constraints, expected_indices, expected_values
+):
     K = np.eye(6, dtype=float)
     p = np.zeros((6, 1), dtype=float)
     updated_K, updated_p, ks = setbc(K.copy(), p.copy(), constraints, dof=dof)

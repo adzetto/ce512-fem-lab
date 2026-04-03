@@ -121,8 +121,8 @@ def qbar(q, T, X, G, u=None):
     modulus = props[:, 1] if props.shape[1] > 1 else np.ones_like(area)
     strain = (0.5 * (l1**2 - l0**2) / l0**2).reshape(-1, 1)
     stress = (modulus[:, None] * strain).reshape(-1, 1)
-    element_vectors = (
-        (area * stress[:, 0] / l0)[:, None] * np.concatenate([-a1, a1], axis=1)
+    element_vectors = (area * stress[:, 0] / l0)[:, None] * np.concatenate(
+        [-a1, a1], axis=1
     )
     indices = element_dof_indices(element_nodes, cols(X), one_based=False)
     np.add.at(q[:, 0], indices.reshape(-1), element_vectors.reshape(-1))

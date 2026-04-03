@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from femlabpy import keT4e, keh8e
+from femlabpy import keh8e, keT4e
 
 
 def test_tetra_stiffness_shape_and_symmetry():

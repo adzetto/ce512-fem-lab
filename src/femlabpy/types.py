@@ -17,6 +17,7 @@ class GmshMesh:
     ``nbTriangles``, ``MIN``, and ``MAX`` are exposed through ``__getattr__``
     to mimic the original MATLAB loaders.
     """
+
     _LEGACY_FIELD_MAP: ClassVar[dict[str, tuple[str | None, int | None]]] = {
         "POS": ("positions", None),
         "ELE_INFOS": ("legacy_element_infos", None),
@@ -139,6 +140,23 @@ class GmshMesh:
     def property_numbers(
         self, element_refs: np.ndarray, *, info_column: int | None = None
     ) -> np.ndarray:
+        """
+        Return property numbers or info columns for one-based element references.
+
+        Parameters
+        ----------
+        element_refs:
+            One-based element numbers.
+        info_column:
+            Optional zero-based column index into ``element_infos``. When omitted,
+            the first entry of ``element_tags`` is returned, matching the legacy
+            FemLab interpretation of physical-region numbers.
+
+        Returns
+        -------
+        ndarray
+            Integer property numbers aligned with ``element_refs``.
+        """
         refs = np.asarray(element_refs, dtype=int).ravel()
         if refs.size == 0:
             return np.zeros((0,), dtype=int)
@@ -166,19 +184,31 @@ class GmshMesh:
             if element_type is not None and element_type not in self.explicit_types:
                 raise AttributeError(
                     f"{name} is not available for this mesh instance. "
-                    "Use load_gmsh2(..., which=<types>) to request explicit type arrays."
+                    "Use load_gmsh2(..., which=<types>) to request "
+                    "explicit type arrays."
                 )
-            if field_name == "legacy_element_infos" and self.legacy_element_infos.size == 0:
+            if (
+                field_name == "legacy_element_infos"
+                and self.legacy_element_infos.size == 0
+            ):
                 return self.element_infos
-            if field_name == "legacy_element_tags" and self.legacy_element_tags.size == 0:
+            if (
+                field_name == "legacy_element_tags"
+                and self.legacy_element_tags.size == 0
+            ):
                 return self.element_tags
+            if field_name is None:
+                raise AttributeError(
+                    f"{type(self).__name__!s} has no attribute {name!r}"
+                )
             return getattr(self, field_name)
         if name in self._LEGACY_COUNT_MAP:
             field_name, element_type = self._LEGACY_COUNT_MAP[name]
             if element_type not in self.explicit_types:
                 raise AttributeError(
                     f"{name} is not available for this mesh instance. "
-                    "Use load_gmsh2(..., which=<types>) to request explicit type arrays."
+                    "Use load_gmsh2(..., which=<types>) to request "
+                    "explicit type arrays."
                 )
             return int(getattr(self, field_name).shape[0])
         raise AttributeError(f"{type(self).__name__!s} has no attribute {name!r}")

@@ -7,7 +7,25 @@ from .invariants import devstress, eqstress
 
 
 def yieldvm(S, G, dL, Sy):
-    """Evaluate the legacy von Mises yield function with isotropic hardening."""
+    """
+    Evaluate the legacy von Mises consistency function.
+
+    Parameters
+    ----------
+    S:
+        Current stress vector in plane form.
+    G:
+        Material row ``[E, nu, Sy0, H, ...]``.
+    dL:
+        Plastic-multiplier increment.
+    Sy:
+        Current yield stress including prior hardening.
+
+    Returns
+    -------
+    float
+        Residual of the scalar return-mapping equation.
+    """
     stress = as_float_array(S).reshape(-1)
     material = as_float_array(G).reshape(-1)
     E = material[0]
@@ -26,7 +44,19 @@ def yieldvm(S, G, dL, Sy):
 
 
 def dyieldvm(S, G, dL, Sy):
-    """Differentiate the legacy von Mises yield function with respect to dL."""
+    """
+    Differentiate :func:`yieldvm` with respect to the plastic multiplier.
+
+    Parameters
+    ----------
+    S, G, dL, Sy:
+        Same quantities passed to :func:`yieldvm`.
+
+    Returns
+    -------
+    float
+        Derivative of the consistency residual with respect to ``dL``.
+    """
     stress = as_float_array(S).reshape(-1)
     material = as_float_array(G).reshape(-1)
     E = material[0]
@@ -47,7 +77,23 @@ def dyieldvm(S, G, dL, Sy):
 
 
 def stressvm(S, G, Sy):
-    """Perform a legacy von Mises return-mapping update."""
+    """
+    Perform the legacy plane-stress von Mises return mapping.
+
+    Parameters
+    ----------
+    S:
+        Trial stress vector.
+    G:
+        Material row ``[E, nu, Sy0, H, ...]``.
+    Sy:
+        Current yield stress including prior hardening.
+
+    Returns
+    -------
+    tuple[ndarray, float]
+        Updated stress vector and plastic-multiplier increment.
+    """
     stress = as_float_array(S, copy=True).reshape(-1)
     material = as_float_array(G).reshape(-1)
     E = material[0]
@@ -74,7 +120,27 @@ def stressvm(S, G, Sy):
 
 
 def stressdp(S, G, Sy0, dE, dS):
-    """Perform a Drucker-Prager stress update with Newton iterations."""
+    """
+    Perform a Drucker-Prager stress correction with Newton iterations.
+
+    Parameters
+    ----------
+    S:
+        Trial stress vector.
+    G:
+        Material row ``[E, nu, Sy0, H, phi]``.
+    Sy0:
+        Current yield stress before the increment.
+    dE:
+        Strain increment at the integration point.
+    dS:
+        Elastic trial stress increment.
+
+    Returns
+    -------
+    tuple[ndarray, float]
+        Corrected stress vector and plastic-multiplier increment.
+    """
     stress = as_float_array(S, copy=True).reshape(-1, 1)
     material = as_float_array(G).reshape(-1)
     dE = as_float_array(dE).reshape(-1, 1)

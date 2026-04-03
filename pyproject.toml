@@ -42,6 +42,41 @@ dev = [
   "pytest>=8.0",
   "build",
   "twine",
+  "gmsh>=4.11,<5",
+  "black>=24.0",
+  "isort>=5.13",
+  "ruff>=0.4",
+  "pydocstyle>=6.3",
+  "mypy>=1.10",
+]
+mesh = [
+  "gmsh>=4.11,<5",
+]
+gui = [
+  "PySide6>=6.7",
+  "pyvista>=0.43",
+  "pyvistaqt>=0.11",
+]
+lint = [
+  "black>=24.0",
+  "isort>=5.13",
+  "ruff>=0.4",
+  "pydocstyle>=6.3",
+  "mypy>=1.10",
+]
+all = [
+  "gmsh>=4.11,<5",
+  "PySide6>=6.7",
+  "pyvista>=0.43",
+  "pyvistaqt>=0.11",
+  "black>=24.0",
+  "isort>=5.13",
+  "ruff>=0.4",
+  "pydocstyle>=6.3",
+  "mypy>=1.10",
+  "pytest>=8.0",
+  "build",
+  "twine",
 ]
 
 [project.scripts]
@@ -67,3 +102,42 @@ femlabpy = ["data/cases/*/*.tsv", "data/meshes/*.msh"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+src_paths = ["src", "tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["B", "D", "E", "F", "I", "NPY", "UP"]
+ignore = ["D100", "D101", "D102", "D104", "D105", "D107", "D202", "D301", "D401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.pydocstyle]
+convention = "numpy"
+add-ignore = ["D100", "D101", "D102", "D104", "D105", "D107", "D202", "D301", "D401"]
+match = ".*\\.py"
+match-dir = "[^\\.].*"
+
+[tool.mypy]
+python_version = "3.9"
+files = ["src/femlabpy"]
+exclude = ["^src/femlabpy/gui/"]
+ignore_missing_imports = true
+disable_error_code = ["var-annotated"]
+pretty = true
+warn_unused_ignores = true

@@ -6,7 +6,16 @@ from .. import init, kq4p, kt3p, plotelem, plotq4, plott3, plotu, qq4p, qt3p, se
 
 
 def flow_data():
-    """Return the packaged potential-flow benchmark for both Q4 and T3 meshes."""
+    """
+    Return the packaged potential-flow benchmark for both Q4 and T3 meshes.
+
+    Returns
+    -------
+    dict
+        Dictionary containing shared node coordinates ``X``, Q4 topology
+        ``T1``, T3 topology ``T2``, material data ``G``, prescribed nodal
+        potentials ``C``, and ``dof=1``.
+    """
     X = np.array(
         [
             [0.0, 0.0],
@@ -138,6 +147,7 @@ def flow_data():
 
 
 def _solve_potential(T, X, G, C, assembler, postprocessor):
+    """Solve one scalar potential problem given assembly and recovery kernels."""
     K, p, q = init(X.shape[0], 1, use_sparse=False)
     K = assembler(K, T, X, G)
     K, p, _ = setbc(K, p, C, 1)
@@ -147,7 +157,20 @@ def _solve_potential(T, X, G, C, assembler, postprocessor):
 
 
 def run_flow_q4(*, plot: bool = False):
-    """Solve the packaged Q4 potential-flow benchmark and optionally plot it."""
+    """
+    Solve the packaged Q4 potential-flow benchmark and optionally plot it.
+
+    Parameters
+    ----------
+    plot:
+        When ``True``, return a four-panel Matplotlib figure.
+
+    Returns
+    -------
+    dict
+        Potential solution, fluxes, gradients, benchmark data, and optional
+        figures.
+    """
     data = flow_data()
     result = _solve_potential(data["T1"], data["X"], data["G"], data["C"], kq4p, qq4p)
     result["data"] = data
@@ -165,7 +188,20 @@ def run_flow_q4(*, plot: bool = False):
 
 
 def run_flow_t3(*, plot: bool = False):
-    """Solve the packaged T3 potential-flow benchmark and optionally plot it."""
+    """
+    Solve the packaged T3 potential-flow benchmark and optionally plot it.
+
+    Parameters
+    ----------
+    plot:
+        When ``True``, return a four-panel Matplotlib figure.
+
+    Returns
+    -------
+    dict
+        Potential solution, fluxes, gradients, benchmark data, and optional
+        figures.
+    """
     data = flow_data()
     result = _solve_potential(data["T2"], data["X"], data["G"], data["C"], kt3p, qt3p)
     result["data"] = data

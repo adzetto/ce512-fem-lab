@@ -13,12 +13,21 @@ from . import __version__
 
 
 def main():
+    """
+    Run the lightweight command-line interface for package metadata display.
+
+    Returns
+    -------
+    int
+        Process exit status.
+    """
     parser = argparse.ArgumentParser(
         prog="femlabpy",
         description="FemLab Python - Finite Element Method Library",
     )
     parser.add_argument(
-        "-V", "--version",
+        "-V",
+        "--version",
         action="version",
         version=f"femlabpy {__version__}",
     )
@@ -27,9 +36,9 @@ def main():
         action="store_true",
         help="Show package information and available functions",
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.info:
         print(f"femlabpy v{__version__}")
         print("=" * 50)
@@ -55,7 +64,7 @@ def main():
         print("  K = kq4e(K, T, X, G)")
         print("  u = np.linalg.solve(K, p)")
         return 0
-    
+
     # If no arguments, show help
     parser.print_help()
     return 0

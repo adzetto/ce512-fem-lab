@@ -35,8 +35,15 @@ def solve_model(model: FEModel) -> dict:
     log.info(
         "solve_model: etype=%s dof=%d nn=%d ne=%d "
         "T.shape=%s X.shape=%s G.shape=%s C.shape=%s P.shape=%s",
-        etype, dof, nn, T.shape[0],
-        T.shape, X.shape, G.shape, C.shape, P.shape,
+        etype,
+        dof,
+        nn,
+        T.shape[0],
+        T.shape,
+        X.shape,
+        G.shape,
+        C.shape,
+        P.shape,
     )
 
     K, p, q = init(nn, dof)

@@ -11,6 +11,20 @@ except ImportError:  # pragma: no cover
 
 
 def _triangle_geometry(Xe):
+    """
+    Return edge-difference helpers and area for one T3 triangle.
+
+    Parameters
+    ----------
+    Xe:
+        Element coordinates with shape ``(3, 2)``.
+
+    Returns
+    -------
+    tuple[ndarray, float]
+        Edge-difference matrix used by the CST shape-function gradients and the
+        absolute triangle area.
+    """
     Xe = as_float_array(Xe)
     a = np.vstack([Xe[2] - Xe[1], Xe[0] - Xe[2], Xe[1] - Xe[0]])
     area = 0.5 * abs(np.linalg.det(a[0:2, 0:2]))
@@ -18,6 +32,22 @@ def _triangle_geometry(Xe):
 
 
 def _elastic_matrix(Ge, *, plane_strain: bool = False):
+    """
+    Build the 2D isotropic elastic constitutive matrix for one material row.
+
+    Parameters
+    ----------
+    Ge:
+        Material row containing at least ``[E, nu]``.
+    plane_strain:
+        When ``True``, return the plane-strain tangent; otherwise return the
+        plane-stress tangent.
+
+    Returns
+    -------
+    ndarray
+        ``3 x 3`` constitutive matrix in Voigt form ``[xx, yy, xy]``.
+    """
     material = as_float_array(Ge).reshape(-1)
     E = material[0]
     nu = material[1]
@@ -45,6 +75,21 @@ def _elastic_matrix(Ge, *, plane_strain: bool = False):
 
 
 def _elastic_matrix_batch(materials, plane_strain):
+    """
+    Vectorize :func:`_elastic_matrix` over multiple materials.
+
+    Parameters
+    ----------
+    materials:
+        Material table with one material row per element.
+    plane_strain:
+        Boolean selector per element, or a scalar flag broadcast to every row.
+
+    Returns
+    -------
+    ndarray
+        Batched constitutive matrices with shape ``(n, 3, 3)``.
+    """
     materials = as_float_array(materials)
     if materials.ndim == 1:
         materials = materials.reshape(1, -1)
@@ -68,9 +113,7 @@ def _elastic_matrix_batch(materials, plane_strain):
     plane_strain_matrix[:, 1, 0] = nu
     plane_strain_matrix[:, 1, 1] = 1.0 - nu
     plane_strain_matrix[:, 2, 2] = (1.0 - 2.0 * nu) / 2.0
-    plane_strain_matrix *= (
-        modulus / ((1.0 + nu) * (1.0 - 2.0 * nu))
-    )[:, None, None]
+    plane_strain_matrix *= (modulus / ((1.0 + nu) * (1.0 - 2.0 * nu)))[:, None, None]
 
     return np.where(
         plane_strain[:, None, None], plane_strain_matrix, plane_stress_matrix
@@ -78,8 +121,23 @@ def _elastic_matrix_batch(materials, plane_strain):
 
 
 def _triangle_batch_geometry(Xe):
+    """
+    Vectorize the CST geometry extraction over a batch of triangles.
+
+    Parameters
+    ----------
+    Xe:
+        Element coordinates with shape ``(n, 3, 2)``.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray]
+        Edge-difference arrays and triangle areas for every element.
+    """
     Xe = as_float_array(Xe)
-    edges = np.stack([Xe[:, 2] - Xe[:, 1], Xe[:, 0] - Xe[:, 2], Xe[:, 1] - Xe[:, 0]], axis=1)
+    edges = np.stack(
+        [Xe[:, 2] - Xe[:, 1], Xe[:, 0] - Xe[:, 2], Xe[:, 1] - Xe[:, 0]], axis=1
+    )
     area = 0.5 * np.abs(
         (Xe[:, 1, 0] - Xe[:, 0, 0]) * (Xe[:, 2, 1] - Xe[:, 0, 1])
         - (Xe[:, 2, 0] - Xe[:, 0, 0]) * (Xe[:, 1, 1] - Xe[:, 0, 1])
@@ -246,9 +304,10 @@ def kt3e(K, T, X, G):
     nodes = topology[:, :3].astype(int) - 1
     materials = as_float_array(G)[topology[:, -1].astype(int) - 1]
     edges, area = _triangle_batch_geometry(coordinates[nodes])
-    dN = np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1) / (2.0 * area)[
-        :, None, None
-    ]
+    dN = (
+        np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1)
+        / (2.0 * area)[:, None, None]
+    )
     B = np.zeros((topology.shape[0], 3, 6), dtype=float)
     B[:, 0, 0::2] = dN[:, 0, :]
     B[:, 1, 1::2] = dN[:, 1, :]
@@ -265,8 +324,12 @@ def kt3e(K, T, X, G):
     )
     indices = element_dof_indices(nodes, 2, one_based=False)
     if is_sparse(K) and sp is not None:
-        scatter_rows = np.broadcast_to(indices[:, :, None], element_matrices.shape).reshape(-1)
-        scatter_cols = np.broadcast_to(indices[:, None, :], element_matrices.shape).reshape(-1)
+        scatter_rows = np.broadcast_to(
+            indices[:, :, None], element_matrices.shape
+        ).reshape(-1)
+        scatter_cols = np.broadcast_to(
+            indices[:, None, :], element_matrices.shape
+        ).reshape(-1)
         delta = sp.coo_matrix(
             (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
             shape=K.shape,
@@ -320,9 +383,10 @@ def qt3e(q, T, X, G, u):
     nodes = topology[:, :3].astype(int) - 1
     materials = as_float_array(G)[topology[:, -1].astype(int) - 1]
     edges, area = _triangle_batch_geometry(coordinates[nodes])
-    dN = np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1) / (2.0 * area)[
-        :, None, None
-    ]
+    dN = (
+        np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1)
+        / (2.0 * area)[:, None, None]
+    )
     B = np.zeros((topology.shape[0], 3, 6), dtype=float)
     B[:, 0, 0::2] = dN[:, 0, :]
     B[:, 1, 1::2] = dN[:, 1, :]
@@ -337,16 +401,29 @@ def qt3e(q, T, X, G, u):
     element_displacements = U[nodes].reshape(topology.shape[0], -1)
     E = np.einsum("eij,ej->ei", B, element_displacements)
     S = np.einsum("ei,eij->ej", E, D)
-    element_vectors = area[:, None] * np.einsum(
-        "eij,ej->ei", B.transpose(0, 2, 1), S
-    )
+    element_vectors = area[:, None] * np.einsum("eij,ej->ei", B.transpose(0, 2, 1), S)
     indices = element_dof_indices(nodes, coordinates.shape[1], one_based=False)
     np.add.at(q[:, 0], indices.reshape(-1), element_vectors.reshape(-1))
     return q, S, E
 
 
 def ket3p(Xe, Ge):
-    """Compute the element conductivity matrix for a 3-node potential triangle."""
+    """
+    Compute the conductivity matrix for a 3-node scalar potential triangle.
+
+    Parameters
+    ----------
+    Xe:
+        Triangle coordinates with shape ``(3, 2)``.
+    Ge:
+        Material row ``[k]`` or ``[k, b]`` where ``k`` is conductivity and
+        ``b`` is an optional reaction term.
+
+    Returns
+    -------
+    ndarray
+        ``3 x 3`` element conductivity matrix.
+    """
     a, area = _triangle_geometry(Xe)
     props = as_float_array(Ge).reshape(-1)
     conductivity = props[0]
@@ -362,7 +439,23 @@ def ket3p(Xe, Ge):
 
 
 def qet3p(Xe, Ge, Ue):
-    """Compute gradient and flux results for one 3-node potential triangle."""
+    """
+    Recover gradients and fluxes for one 3-node scalar potential triangle.
+
+    Parameters
+    ----------
+    Xe:
+        Triangle coordinates with shape ``(3, 2)``.
+    Ge:
+        Material row ``[k]`` or ``[k, b]``.
+    Ue:
+        Element nodal potentials.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Element flux vector, flux components, and gradient components.
+    """
     a, area = _triangle_geometry(Xe)
     B = (1.0 / (2.0 * area)) * np.column_stack([-a[:, 1], a[:, 0]]).T
     conductivity = as_float_array(Ge).reshape(-1)[0]
@@ -375,29 +468,52 @@ def qet3p(Xe, Ge, Ue):
 
 
 def kt3p(K, T, X, G):
-    """Assemble T3 potential-element conductivities into the global matrix."""
+    """
+    Assemble T3 conductivity matrices into a global scalar system.
+
+    Parameters
+    ----------
+    K:
+        Global conductivity matrix.
+    T:
+        Topology table ``[n1, n2, n3, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table with conductivity rows.
+
+    Returns
+    -------
+    ndarray or sparse matrix
+        Updated global conductivity matrix.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     nodes = topology[:, :3].astype(int) - 1
     materials = as_float_array(G)[topology[:, -1].astype(int) - 1]
     edges, area = _triangle_batch_geometry(coordinates[nodes])
-    B = np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1) / (2.0 * area)[
-        :, None, None
-    ]
+    B = (
+        np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1)
+        / (2.0 * area)[:, None, None]
+    )
     conductivity = materials[:, 0]
-    element_matrices = area[:, None, None] * conductivity[:, None, None] * np.einsum(
-        "eik,ekj->eij", B.transpose(0, 2, 1), B
+    element_matrices = (
+        area[:, None, None]
+        * conductivity[:, None, None]
+        * np.einsum("eik,ekj->eij", B.transpose(0, 2, 1), B)
     )
     if materials.shape[1] > 1:
-        element_matrices = element_matrices + (
-            materials[:, 1] * area / 12.0
-        )[:, None, None] * np.array(
-            [[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]], dtype=float
-        )
+        element_matrices = element_matrices + (materials[:, 1] * area / 12.0)[
+            :, None, None
+        ] * np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]], dtype=float)
     indices = element_dof_indices(nodes, 1, one_based=False)
     if is_sparse(K) and sp is not None:
-        scatter_rows = np.broadcast_to(indices[:, :, None], element_matrices.shape).reshape(-1)
-        scatter_cols = np.broadcast_to(indices[:, None, :], element_matrices.shape).reshape(-1)
+        scatter_rows = np.broadcast_to(
+            indices[:, :, None], element_matrices.shape
+        ).reshape(-1)
+        scatter_cols = np.broadcast_to(
+            indices[:, None, :], element_matrices.shape
+        ).reshape(-1)
         delta = sp.coo_matrix(
             (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
             shape=K.shape,
@@ -409,23 +525,42 @@ def kt3p(K, T, X, G):
 
 
 def qt3p(q, T, X, G, u):
-    """Compute T3 potential-element fluxes and assemble nodal fluxes."""
+    """
+    Recover T3 scalar gradients and assemble equivalent nodal fluxes.
+
+    Parameters
+    ----------
+    q:
+        Global nodal flux vector.
+    T:
+        Topology table ``[n1, n2, n3, mat_id]``.
+    X:
+        Nodal coordinates.
+    G:
+        Material table with conductivity rows.
+    u:
+        Global nodal potentials.
+
+    Returns
+    -------
+    tuple[ndarray, ndarray, ndarray]
+        Updated nodal flux vector, element fluxes, and element gradients.
+    """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
     potentials = as_float_array(u).reshape(-1, 1)
     nodes = topology[:, :3].astype(int) - 1
     materials = as_float_array(G)[topology[:, -1].astype(int) - 1]
     edges, area = _triangle_batch_geometry(coordinates[nodes])
-    B = np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1) / (2.0 * area)[
-        :, None, None
-    ]
+    B = (
+        np.stack([-edges[:, :, 1], edges[:, :, 0]], axis=1)
+        / (2.0 * area)[:, None, None]
+    )
     conductivity = materials[:, 0]
     element_potentials = potentials[nodes, 0]
     E = np.einsum("eij,ej->ei", B, element_potentials)
     S = conductivity[:, None] * E
-    element_vectors = area[:, None] * np.einsum(
-        "eij,ej->ei", B.transpose(0, 2, 1), S
-    )
+    element_vectors = area[:, None] * np.einsum("eij,ej->ei", B.transpose(0, 2, 1), S)
     indices = element_dof_indices(nodes, 1, one_based=False)
     np.add.at(q[:, 0], indices.reshape(-1), element_vectors.reshape(-1))
     return q, S, E

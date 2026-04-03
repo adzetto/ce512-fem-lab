@@ -1,5 +1,5 @@
 """
-FemLab Python - Finite Element Method Library
+FemLab Python - Finite Element Method Library.
 
 A Python port of the legacy Scilab FemLab wrapper, derived from the original
 MATLAB FemLab teaching toolbox by O. Hededal and S. Krenk at Aalborg University.
@@ -52,6 +52,15 @@ from .elements import (
 )
 from .io import load_gmsh, load_gmsh2
 from .loads import addload, setload
+from .materials import (
+    devstres,
+    devstress,
+    dyieldvm,
+    eqstress,
+    stressdp,
+    stressvm,
+    yieldvm,
+)
 from .matlab import (
     bar01,
     bar02,
@@ -67,7 +76,6 @@ from .matlab import (
     plastps,
     square,
 )
-from .materials import devstres, devstress, dyieldvm, eqstress, stressdp, stressvm, yieldvm
 from .plotting import plotbc, plotelem, plotforces, plotq4, plott3, plotu
 from .postprocess import reaction
 from .solvers import solve_nlbar, solve_plastic
@@ -157,5 +165,12 @@ __all__ = [
 
 
 def get_version():
-    """Return the package version string."""
+    """
+    Return the installed ``femlabpy`` version string.
+
+    Returns
+    -------
+    str
+        Package version following :pep:`440`.
+    """
     return __version__

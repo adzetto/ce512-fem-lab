@@ -110,9 +110,7 @@ def run_ex_lag_mult():
     lagrange = solution[data["P"].shape[0] :, :] * a_g
     global_displacements = displacement[:, 0][dof_map]
     local_displacements = np.einsum("eab,eb->ea", transforms, global_displacements).T
-    member_forces = np.einsum(
-        "eab,eb->ea", local_stiffness, local_displacements.T
-    ).T
+    member_forces = np.einsum("eab,eb->ea", local_stiffness, local_displacements.T).T
     global_internal = np.einsum("eab,eb->ea", global_stiffness, global_displacements)
     q = np.einsum("eai,ea->i", selectors, global_internal).reshape(-1, 1)
 

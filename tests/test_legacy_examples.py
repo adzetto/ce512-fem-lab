@@ -16,7 +16,6 @@ from femlabpy.examples import (
     square_data,
 )
 
-
 REPO = Path(__file__).resolve().parents[1]
 
 
@@ -31,8 +30,12 @@ def test_top_level_legacy_helpers_are_exported():
     assert str(package_paths["examples"]) in sys.path
     assert np.allclose(devstres([3.0, 1.0, 2.0])[0], devstress([3.0, 1.0, 2.0])[0])
     assert np.isclose(eqstress([1.0, 0.5, 0.25]), eqstress(np.array([1.0, 0.5, 0.25])))
-    assert np.isfinite(yieldvm(np.array([1.0, 0.2, 0.1]), np.array([100.0, 0.3, 1.0, 10.0]), 0.0, 1.0))
-    updated_stress, plastic_increment = stressvm(np.array([2.0, 0.5, 0.1]), np.array([100.0, 0.3, 1.0, 10.0]), 1.0)
+    assert np.isfinite(
+        yieldvm(np.array([1.0, 0.2, 0.1]), np.array([100.0, 0.3, 1.0, 10.0]), 0.0, 1.0)
+    )
+    updated_stress, plastic_increment = stressvm(
+        np.array([2.0, 0.5, 0.1]), np.array([100.0, 0.3, 1.0, 10.0]), 1.0
+    )
     assert np.asarray(updated_stress, dtype=float).reshape(-1).shape == (3,)
     assert plastic_increment >= 0.0
 

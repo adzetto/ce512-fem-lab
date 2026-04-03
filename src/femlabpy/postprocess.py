@@ -6,7 +6,29 @@ from ._helpers import as_float_array
 
 
 def reaction(q, C, dof: int, comp: int | None = None):
-    """Extract support reactions at constrained degrees of freedom."""
+    """
+    Extract support reactions at constrained degrees of freedom.
+
+    Parameters
+    ----------
+    q:
+        Global internal-force vector.
+    C:
+        Legacy boundary-condition table ``[node, local_dof, value]``.
+    dof:
+        Degrees of freedom per node.
+    comp:
+        Optional one-based component selector. When supplied, only the matching
+        constraint rows are returned and the first column stores the filtered
+        constraint-row number, reproducing MATLAB's ``reaction(..., comp)``
+        behavior.
+
+    Returns
+    -------
+    ndarray
+        Reaction table with either ``[node, local_dof, reaction]`` columns or
+        ``[constraint_row, reaction]`` when ``comp`` is supplied.
+    """
     force = as_float_array(q).reshape(-1, 1)
     constraints = as_float_array(C)
     if comp is not None:

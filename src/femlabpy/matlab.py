@@ -15,7 +15,7 @@ def _legacy_bundle(
     P=None,
     *,
     dof: int | None = None,
-) -> dict[str, np.ndarray | int]:
+) -> dict[str, Any]:
     """Normalize a legacy FemLab input deck into a typed Python dictionary."""
 
     coords = as_float_array(X)
@@ -35,13 +35,23 @@ def _legacy_bundle(
 
 
 def _set_axis(ax, limits) -> None:
-    """Apply a MATLAB-style axis vector when one is supplied."""
+    """
+    Apply a MATLAB-style axis vector when one is supplied.
+
+    Parameters
+    ----------
+    ax:
+        Matplotlib axes instance.
+    limits:
+        Axis vector of length ``4`` for ``[xmin, xmax, ymin, ymax]`` or length
+        ``6`` for 3D axes.
+    """
 
     if limits is None:
         return
     flat = np.asarray(limits, dtype=float).reshape(-1)
     if flat.size == 4:
-        ax.axis(flat)
+        ax.axis((float(flat[0]), float(flat[1]), float(flat[2]), float(flat[3])))
     elif flat.size == 6:
         ax.set_xlim(flat[0], flat[1])
         ax.set_ylim(flat[2], flat[3])
@@ -281,7 +291,17 @@ def flowq4(
         plot=plot,
         triangle=False,
     )
-    return {**result, "data": {"T1": data["T"], "X": data["X"], "G": data["G"], "C": data["C"], "P": data["P"], "dof": data["dof"]}}
+    return {
+        **result,
+        "data": {
+            "T1": data["T"],
+            "X": data["X"],
+            "G": data["G"],
+            "C": data["C"],
+            "P": data["P"],
+            "dof": data["dof"],
+        },
+    }
 
 
 def flowt3(
@@ -329,10 +349,22 @@ def flowt3(
         plot=plot,
         triangle=True,
     )
-    return {**result, "data": {"T2": data["T"], "X": data["X"], "G": data["G"], "C": data["C"], "P": data["P"], "dof": data["dof"]}}
+    return {
+        **result,
+        "data": {
+            "T2": data["T"],
+            "X": data["X"],
+            "G": data["G"],
+            "C": data["C"],
+            "P": data["P"],
+            "dof": data["dof"],
+        },
+    }
 
 
-def _flow_driver(T, X, G, C, P, *, dof: int, plot: bool, triangle: bool) -> dict[str, Any]:
+def _flow_driver(
+    T, X, G, C, P, *, dof: int, plot: bool, triangle: bool
+) -> dict[str, Any]:
     """Internal helper implementing the classroom `flowq4.m` and `flowt3.m` drivers."""
 
     from .boundary import setbc
@@ -437,7 +469,9 @@ def nlbar(
         from matplotlib import pyplot as plt
 
         fig_path, ax_path = plt.subplots()
-        ax_path.plot(-result["U_path"][:, 0], -result["F_path"][:, 0], "k-o", markersize=3)
+        ax_path.plot(
+            -result["U_path"][:, 0], -result["F_path"][:, 0], "k-o", markersize=3
+        )
         ax_path.set_xlabel("Displacement")
         ax_path.set_ylabel("Load")
         ax_path.set_title("Nonlinear bar load-displacement path")
@@ -615,7 +649,9 @@ def _plast_driver(
         from matplotlib import pyplot as plt
 
         fig_path, ax_path = plt.subplots()
-        ax_path.plot(result["U_path"][:, 0], result["F_path"][:, 0], "k-o", markersize=3)
+        ax_path.plot(
+            result["U_path"][:, 0], result["F_path"][:, 0], "k-o", markersize=3
+        )
         ax_path.set_xlabel("Displacement")
         ax_path.set_ylabel("Load")
         ax_path.set_title("Elastoplastic load-displacement path")

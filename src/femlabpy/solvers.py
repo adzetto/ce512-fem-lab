@@ -19,14 +19,17 @@ except ImportError:  # pragma: no cover
 
 
 def _scalar(value: object) -> float:
+    """Return the first scalar entry from an arbitrary array-like object."""
     return float(as_float_array(value).reshape(-1)[0])
 
 
 def _column(values: list[float]) -> np.ndarray:
+    """Return a Python list as a floating-point column vector."""
     return np.asarray(values, dtype=float).reshape(-1, 1)
 
 
 def _solve_plastic_system(matrix, rhs, *, plane_strain: bool):
+    """Select the dense legacy fallback only for plane-strain plastic solves."""
     if plane_strain:
         return solve_legacy_symmetric_system(matrix, rhs)
     return solve_linear_system(matrix, rhs)
@@ -92,7 +95,7 @@ def solve_nlbar(
     F_path = [0.0]
 
     n = 1
-    i = int(i_d)
+    iteration_count = int(i_d)
     restarts = 0
     max_restarts = max(1, int(no_loadsteps) * int(i_max))
 
@@ -100,7 +103,7 @@ def solve_nlbar(
         if restarts > max_restarts:
             raise RuntimeError("Nonlinear bar solver exceeded the restart guard.")
 
-        if i < int(i_max):
+        if iteration_count < int(i_max):
             K = np.zeros((ndof, ndof), dtype=float)
             K = kbar(K, topology, coords, materials, u)
             Kt, df, _ = setbc(K.copy(), df, constraints, dof)
@@ -114,23 +117,23 @@ def solve_nlbar(
 
             if n == 1:
                 l0 = float(np.linalg.norm(du0))
-                l = l0
+                step_length = l0
                 l_max = 2.0 * l0
             else:
-                l = float(np.linalg.norm(du))
+                step_length = float(np.linalg.norm(du))
                 l0 = float(np.linalg.norm(du0))
 
-        if i_d <= i < int(i_max):
-            du = min(l / l0, l_max / l0) * du0
-        elif i < i_d:
-            du = min(2.0 * l / l0, l_max / l0) * du0
+        if i_d <= iteration_count < int(i_max):
+            du = min(step_length / l0, l_max / l0) * du0
+        elif iteration_count < i_d:
+            du = min(2.0 * step_length / l0, l_max / l0) * du0
         else:
             du0 = 0.5 * du0
             du = du0.copy()
             restarts += 1
 
         xi = 0.0
-        for i in range(1, int(i_max) + 1):
+        for _iteration_count in range(1, int(i_max) + 1):
             q = np.zeros((ndof, 1), dtype=float)
             q, S, E = qbar(q, topology, coords, materials, u + du)
             if not np.all(np.isfinite(q)):
@@ -139,14 +142,17 @@ def solve_nlbar(
             dq = q - f
             xi = float(((dq.T @ du) / (df.T @ du)).item())
             residual = -dq + xi * df
-            if rnorm(residual, constraints, dof) < float(tol) * rnorm(df, constraints, dof):
+            if rnorm(residual, constraints, dof) < float(tol) * rnorm(
+                df, constraints, dof
+            ):
                 break
 
             Kt, residual_bc, _ = setbc(K.copy(), residual, constraints, dof)
             delta_u = np.linalg.solve(Kt, residual_bc)
             du = du + delta_u
+        iteration_count = _iteration_count
 
-        if i >= int(i_max):
+        if iteration_count >= int(i_max):
             continue
 
         f = f + xi * df
@@ -244,7 +250,7 @@ def solve_plastic(
     F_path = [0.0]
 
     n = 1
-    i = int(i_d)
+    iteration_count = int(i_d)
     restarts = 0
     max_restarts = max(1, int(no_loadsteps) * int(i_max))
 
@@ -252,7 +258,7 @@ def solve_plastic(
         if restarts > max_restarts:
             raise RuntimeError("Plastic solver exceeded the restart guard.")
 
-        if i < int(i_max):
+        if iteration_count < int(i_max):
             K = np.zeros((ndof, ndof), dtype=float)
             if plane_strain:
                 K = kq4epe(K, topology, coords, materials, S, E, material_type)
@@ -271,28 +277,32 @@ def solve_plastic(
 
             if n == 1:
                 l0 = float(np.linalg.norm(du0))
-                l = l0
+                step_length = l0
                 l_max = 2.0 * l0
             else:
-                l = float(np.linalg.norm(du))
+                step_length = float(np.linalg.norm(du))
                 l0 = float(np.linalg.norm(du0))
 
-        if i_d <= i < int(i_max):
-            du = min(l / l0, l_max / l0) * du0
-        elif i < i_d:
-            du = min(2.0 * l / l0, l_max / l0) * du0
+        if i_d <= iteration_count < int(i_max):
+            du = min(step_length / l0, l_max / l0) * du0
+        elif iteration_count < i_d:
+            du = min(2.0 * step_length / l0, l_max / l0) * du0
         else:
             du0 = 0.5 * du0
             du = du0.copy()
             restarts += 1
 
         xi = 0.0
-        for i in range(1, int(i_max) + 1):
+        for _iteration_count in range(1, int(i_max) + 1):
             q = np.zeros((ndof, 1), dtype=float)
             if plane_strain:
-                q, Sn, En = qq4epe(q, topology, coords, materials, u + du, S, E, material_type)
+                q, Sn, En = qq4epe(
+                    q, topology, coords, materials, u + du, S, E, material_type
+                )
             else:
-                q, Sn, En = qq4eps(q, topology, coords, materials, u + du, S, E, material_type)
+                q, Sn, En = qq4eps(
+                    q, topology, coords, materials, u + du, S, E, material_type
+                )
 
             if not np.all(np.isfinite(q)):
                 raise RuntimeError("NaN/Inf encountered in the plastic solver.")
@@ -300,14 +310,17 @@ def solve_plastic(
             dq = q - f
             xi = float(((dq.T @ du) / (df.T @ du)).item())
             residual = -dq + xi * df
-            if rnorm(residual, constraints, dof) < float(tol) * rnorm(df, constraints, dof):
+            if rnorm(residual, constraints, dof) < float(tol) * rnorm(
+                df, constraints, dof
+            ):
                 break
 
             Kt, residual_bc, _ = setbc(system_matrix.copy(), residual, constraints, dof)
             delta_u = _solve_plastic_system(Kt, residual_bc, plane_strain=plane_strain)
             du = du + delta_u
+        iteration_count = _iteration_count
 
-        if i >= int(i_max):
+        if iteration_count >= int(i_max):
             continue
 
         f = f + xi * df

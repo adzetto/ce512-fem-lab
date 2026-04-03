@@ -32,6 +32,14 @@ The package currently covers:
 pip install femlabpy
 ```
 
+Optional extras:
+
+```bash
+pip install "femlabpy[mesh]"   # official Gmsh SDK for modern .msh 4.x files
+pip install "femlabpy[gui]"    # PySide6 + PyVista GUI stack
+pip install "femlabpy[all]"    # mesh, GUI, build, and lint tooling
+```
+
 Development install:
 
 ```bash
@@ -130,8 +138,38 @@ print(result["E"].shape)
 from femlabpy import load_gmsh2
 
 mesh = load_gmsh2("src/femlabpy/data/meshes/deneme.msh")
-print(mesh["positions"].shape)
-print(mesh["triangles"].shape)
+print(mesh.positions.shape)
+print(mesh.triangles.shape)
+```
+
+### Gmsh Python SDK workflow
+
+```python
+import gmsh
+from femlabpy import load_gmsh
+
+gmsh.initialize(readConfigFiles=False)
+gmsh.model.add("plate")
+p1 = gmsh.model.geo.addPoint(0.0, 0.0, 0.0, 0.2)
+p2 = gmsh.model.geo.addPoint(1.0, 0.0, 0.0, 0.2)
+p3 = gmsh.model.geo.addPoint(1.0, 1.0, 0.0, 0.2)
+p4 = gmsh.model.geo.addPoint(0.0, 1.0, 0.0, 0.2)
+l1 = gmsh.model.geo.addLine(p1, p2)
+l2 = gmsh.model.geo.addLine(p2, p3)
+l3 = gmsh.model.geo.addLine(p3, p4)
+l4 = gmsh.model.geo.addLine(p4, p1)
+loop = gmsh.model.geo.addCurveLoop([l1, l2, l3, l4])
+surface = gmsh.model.geo.addPlaneSurface([loop])
+gmsh.model.geo.synchronize()
+gmsh.model.addPhysicalGroup(2, [surface], tag=1, name="domain")
+gmsh.model.mesh.generate(2)
+gmsh.option.setNumber("Mesh.Binary", 0)
+gmsh.option.setNumber("Mesh.MshFileVersion", 4.1)
+gmsh.write("plate_v41.msh")
+gmsh.finalize()
+
+mesh = load_gmsh("plate_v41.msh")
+print(mesh.nbTriangles, mesh.bounds_min, mesh.bounds_max)
 ```
 
 ## Legacy FemLab Compatibility
@@ -143,6 +181,8 @@ print(mesh["triangles"].shape)
 - Lower-level kernels such as `ket3e`, `kq4e`, `qq4e`, `qbar`, `stressvm`, and `solve_lag`
 
 Packaged example data and reproducible drivers live in `femlabpy.examples`, while the preserved Scilab material remains under `legacy/scilab/`.
+
+`load_gmsh` and `load_gmsh2` read legacy Gmsh 2.x ASCII meshes directly. If the optional `mesh` extra is installed, they also accept modern Gmsh 4.x files by converting them through the official Gmsh SDK before applying the original FemLab-compatible parsing rules.
 
 ## Using `help()`
 

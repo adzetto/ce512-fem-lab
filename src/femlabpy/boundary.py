@@ -167,7 +167,8 @@ def setbc(K, p, C, dof: int = 1):
     else:
         cdofs = (
             (constraints[:, 0].astype(int) - 1) * dof
-            + constraints[:, 1].astype(int) - 1
+            + constraints[:, 1].astype(int)
+            - 1
         )
         cvals = constraints[:, -1]
 
@@ -196,7 +197,28 @@ def setbc(K, p, C, dof: int = 1):
 
 
 def solve_lag(K, p, C=None, dof: int = 1, *, return_lagrange: bool = False):
-    """Solve a linear system with Dirichlet constraints via Lagrange multipliers."""
+    """
+    Solve a linear system with nodal Dirichlet constraints via Lagrange multipliers.
+
+    Parameters
+    ----------
+    K, p:
+        Linear system ``K u = p`` before applying displacement constraints.
+    C:
+        Legacy constraint table. For scalar problems, each row is
+        ``[node, value]``. For vector problems, each row is
+        ``[node, local_dof, value]``.
+    dof:
+        Degrees of freedom per node.
+    return_lagrange:
+        When ``True``, also return the recovered Lagrange multipliers.
+
+    Returns
+    -------
+    ndarray or tuple[ndarray, ndarray]
+        Constrained solution vector, optionally paired with the multiplier
+        vector.
+    """
     if C is None:
         solution = solve_linear_system(K, p)
         if return_lagrange:
@@ -217,23 +239,42 @@ def solve_lag(K, p, C=None, dof: int = 1, *, return_lagrange: bool = False):
     if dof == 1:
         indices = constraints[:, 0].astype(int) - 1
     else:
-        indices = (constraints[:, 0].astype(int) - 1) * dof + constraints[
-            :, 1
-        ].astype(int) - 1
+        indices = (
+            (constraints[:, 0].astype(int) - 1) * dof
+            + constraints[:, 1].astype(int)
+            - 1
+        )
     G[np.arange(n_constraints), indices] = 1.0
 
     return solve_lag_general(K, p, G, Q, return_lagrange=return_lagrange)
 
 
 def rnorm(f, C, dof: int):
-    """Return the residual norm restricted to unconstrained degrees of freedom."""
+    """
+    Return the residual norm restricted to unconstrained degrees of freedom.
+
+    Parameters
+    ----------
+    f:
+        Residual or force vector.
+    C:
+        Legacy constraint table ``[node, local_dof, value]``.
+    dof:
+        Degrees of freedom per node.
+
+    Returns
+    -------
+    float
+        Euclidean norm of the unconstrained residual entries.
+    """
     force = as_float_array(f).reshape(-1)
     constraints = as_float_array(C)
     fixed = np.zeros(force.shape[0], dtype=bool)
-    indices = (constraints[:, 0].astype(int) - 1) * dof + constraints[:, 1].astype(
-        int
-    ) - 1
+    indices = (
+        (constraints[:, 0].astype(int) - 1) * dof + constraints[:, 1].astype(int) - 1
+    )
     fixed[indices] = True
     return float(np.linalg.norm(force[~fixed]))
+
 
 __all__ = ["rnorm", "setbc", "solve_lag", "solve_lag_general"]

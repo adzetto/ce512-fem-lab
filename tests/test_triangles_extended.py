@@ -5,7 +5,6 @@ import pytest
 
 from femlabpy import ket3e, ket3p, kt3e, kt3p, qet3e, qet3p, qt3e, qt3p
 
-
 TRI_ELASTIC_CASES = [
     pytest.param(
         np.array([[0.0, 0.0], [2.0, 0.0], [0.0, 1.0]], dtype=float),

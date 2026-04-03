@@ -3,8 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from femlabpy import keT4e, keh8e, kT4e, kh8e, qeT4e, qeh8e, qT4e, qh8e
-
+from femlabpy import keh8e, keT4e, kh8e, kT4e, qeh8e, qeT4e, qh8e, qT4e
 
 T4_CASES = [
     pytest.param(
