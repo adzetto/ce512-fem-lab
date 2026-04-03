@@ -19,98 +19,175 @@ pip install "femlabpy[mesh]"  # Gmsh 4.x support
 pip install "femlabpy[gui]"   # GUI tools
 ```
 
-## Usage
+## Complete Workflow Example
 
-**1. Import library.**
+### Step 1: Create mesh with Gmsh
+
+```python
+import gmsh
+
+gmsh.initialize()
+gmsh.model.add("plate_with_hole")
+
+# Create geometry
+gmsh.model.occ.addRectangle(0, 0, 0, 1, 1)
+gmsh.model.occ.addDisk(0.5, 0.5, 0, 0.1, 0.1)
+gmsh.model.occ.cut([(2, 1)], [(2, 2)])
+gmsh.model.occ.synchronize()
+
+# Generate mesh
+gmsh.model.mesh.generate(2)
+gmsh.write("plate_hole.msh")
+gmsh.finalize()
+```
+
+### Step 2: Load mesh into femlabpy
+
 ```python
 import femlabpy as fp
+
+mesh = fp.load_gmsh2("plate_hole.msh")
+T = mesh.triangles  # element connectivity
+X = mesh.positions  # node coordinates
 ```
 
-**2. Load problem data.**
+### Step 3: Define material properties
+
 ```python
-data = fp.canti()
+import numpy as np
+
+E = 210000.0   # Young's modulus (MPa)
+nu = 0.3       # Poisson's ratio
+t = 1.0        # thickness (mm)
+
+# G matrix: [E, nu, t, plane_stress_flag]
+G = np.array([[E, nu, t, 1]])
 ```
 
-**3. Run solver.**
+### Step 4: Define boundary conditions
+
 ```python
-result = fp.elastic(data["T"], data["X"], data["G"], data["C"], data["P"], dof=2)
+# C matrix: [node, dof, value]
+# Fix left edge (x=0): ux=0, uy=0
+left_nodes = np.where(X[:, 0] < 0.01)[0] + 1
+C = []
+for n in left_nodes:
+    C.append([n, 1, 0.0])  # ux = 0
+    C.append([n, 2, 0.0])  # uy = 0
+C = np.array(C)
 ```
 
-**4. Get results.**
+### Step 5: Define loads
+
 ```python
+# P matrix: [node, dof, value]
+# Apply tension on right edge (x=1)
+right_nodes = np.where(X[:, 0] > 0.99)[0] + 1
+P = []
+for n in right_nodes:
+    P.append([n, 1, 100.0])  # Fx = 100 N
+P = np.array(P)
+```
+
+### Step 6: Solve
+
+```python
+result = fp.elastic(T, X, G, C, P, dof=2)
 u = result["u"]  # displacements
 S = result["S"]  # stresses
 ```
 
-## Problem Types
+### Step 7: Visualize
 
-**Linear elastic analysis:**
 ```python
-result = fp.elastic(T, X, G, C, P, dof=2)
+fp.plotu(T, X, u, dof=2)
+fp.plotelem(T, X)
 ```
 
-**Potential flow (Q4):**
+## Quick Examples
+
+### Cantilever beam (packaged example)
+
 ```python
-result = fp.flowq4()
+import femlabpy as fp
+
+data = fp.canti()
+result = fp.elastic(data["T"], data["X"], data["G"], data["C"], data["P"], dof=2)
+print("Max displacement:", result["u"].max())
+print("Max stress:", result["S"].max())
 ```
 
-**Potential flow (T3):**
+### Potential flow
+
 ```python
-result = fp.flowt3()
+# Q4 mesh
+result_q4 = fp.flowq4(plot=True)
+print("Temperature range:", result_q4["u"].min(), "to", result_q4["u"].max())
+
+# T3 mesh
+result_t3 = fp.flowt3(plot=True)
 ```
 
-**Nonlinear truss:**
-```python
-result = fp.nlbar(T, X, G, C, P, no_loadsteps=20, i_max=50)
-```
+### Nonlinear truss (large deformation)
 
-**Plane stress plasticity:**
-```python
-result = fp.plastps(...)
-```
-
-**Plane strain plasticity:**
-```python
-result = fp.plastpe(...)
-```
-
-**Load Gmsh mesh:**
-```python
-mesh = fp.load_gmsh2("mesh.msh")
-```
-
-## Examples
-
-**Cantilever beam:**
-```python
-from femlabpy.examples import run_cantilever
-result = run_cantilever(plot=False)
-```
-
-**Potential flow:**
-```python
-q4 = fp.flowq4(plot=False)
-t3 = fp.flowt3(plot=False)
-```
-
-**Nonlinear truss:**
 ```python
 case = fp.bar01()
-result = fp.nlbar(case["T"], case["X"], case["G"], case["C"], case["P"],
-                  no_loadsteps=20, i_max=50)
+result = fp.nlbar(
+    case["T"], case["X"], case["G"], case["C"], case["P"],
+    no_loadsteps=20,
+    i_max=50,
+    tol=1e-6
+)
+print("Load path:", result["F_path"].ravel())
+print("Displacement path:", result["U_path"].ravel())
 ```
 
-**Plasticity:**
+### Plane stress plasticity (von Mises)
+
 ```python
-from femlabpy.examples import run_square_plastpe
-result = run_square_plastpe(plot=False)
+from femlabpy.examples import run_square_plastps
+
+result = run_square_plastps(plot=True)
+print("Plastic strain:", result["E"].max())
 ```
 
-**Gmsh mesh:**
+### Plane strain plasticity
+
 ```python
-mesh = fp.load_gmsh2("mesh.msh")
-print(mesh.positions.shape)
-print(mesh.triangles.shape)
+from femlabpy.examples import run_hole_plastpe
+
+result = run_hole_plastpe(plot=True)
+```
+
+### Custom FEM assembly (low-level)
+
+```python
+import femlabpy as fp
+import numpy as np
+
+# Initialize arrays
+nn = 4  # number of nodes
+dof = 2  # degrees of freedom per node
+K, p = fp.init(nn, dof)
+
+# Element connectivity and coordinates
+T = np.array([[1, 2, 3, 4, 1]])  # Q4 element
+X = np.array([[0, 0], [1, 0], [1, 1], [0, 1]])
+G = np.array([[210000, 0.3, 1, 1]])
+
+# Assemble element stiffness
+K = fp.kq4e(K, T, X, G)
+
+# Apply boundary conditions
+C = np.array([[1, 1, 0], [1, 2, 0], [4, 2, 0]])
+P = np.array([[2, 1, 1000], [3, 1, 1000]])
+
+p = fp.setload(p, P, dof)
+K, p, ks = fp.setbc(K, p, C, dof)
+
+# Solve
+u = np.linalg.solve(K, p)
+print("Displacements:", u.ravel())
 ```
 
 ## API Reference
@@ -120,70 +197,160 @@ print(mesh.triangles.shape)
 
 | Function | Description |
 | --- | --- |
-| `canti` | Cantilever benchmark data |
-| `flow` | Potential flow data |
-| `bar01`, `bar02`, `bar03` | Nonlinear truss data |
-| `square`, `hole` | Plasticity data |
+| `canti()` | Return cantilever beam benchmark data. Returns dict with T (connectivity), X (coordinates), G (material), C (constraints), P (loads). |
+| `flow()` | Return potential flow benchmark data for Q4 and T3 meshes. |
+| `bar01()` | Return 2-bar truss benchmark for nonlinear analysis. |
+| `bar02()` | Return 3-bar truss benchmark for snap-through analysis. |
+| `bar03()` | Return 12-bar dome truss benchmark. |
+| `square()` | Return square plate benchmark for plasticity analysis. |
+| `hole()` | Return plate with hole benchmark for plasticity analysis. |
 
 </details>
 
 <details>
-<summary><strong>Solvers</strong></summary>
+<summary><strong>High-Level Solvers</strong></summary>
 
 | Function | Description |
 | --- | --- |
-| `elastic` | Linear Q4 elasticity |
-| `flowq4`, `flowt3` | Potential flow |
-| `nlbar` | Nonlinear truss |
-| `plastps`, `plastpe` | Plane stress/strain plasticity |
+| `elastic(T, X, G, C, P, dof=2)` | Solve linear elastic problem with Q4 elements. Returns dict with u (displacements), S (stresses), E (strains), R (reactions). |
+| `flowq4(plot=False)` | Solve potential/thermal problem on Q4 mesh. Returns nodal temperatures and fluxes. |
+| `flowt3(plot=False)` | Solve potential/thermal problem on T3 mesh. Returns nodal temperatures and fluxes. |
+| `nlbar(T, X, G, C, P, no_loadsteps, i_max, tol)` | Solve geometrically nonlinear truss with orthogonal residual method. Returns load-displacement path. |
+| `plastps(T, X, G, C, P, ...)` | Solve plane stress elastoplastic problem with von Mises yield. |
+| `plastpe(T, X, G, C, P, ...)` | Solve plane strain elastoplastic problem with von Mises yield. |
 
 </details>
 
 <details>
-<summary><strong>Elements</strong></summary>
+<summary><strong>Element Stiffness (ke = element, k = assembly)</strong></summary>
 
 | Function | Description |
 | --- | --- |
-| `ket3e`, `kt3e` | T3 triangle stiffness |
-| `keq4e`, `kq4e` | Q4 quad stiffness |
-| `kebar`, `kbar` | Bar stiffness |
-| `keT4e`, `kT4e` | T4 tetrahedron stiffness |
-| `keh8e`, `kh8e` | H8 hexahedron stiffness |
+| `ket3e(Xe, Ge)` | Compute 6x6 stiffness matrix for CST triangle (T3). Xe: 3x2 coordinates, Ge: material [E, nu, t, flag]. |
+| `kt3e(K, T, X, G)` | Assemble all T3 element stiffness matrices into global K. |
+| `keq4e(Xe, Ge)` | Compute 8x8 stiffness matrix for bilinear quad (Q4) using 2x2 Gauss integration. |
+| `kq4e(K, T, X, G)` | Assemble all Q4 element stiffness matrices into global K. |
+| `kebar(Xe, A, E, u_e)` | Compute 4x4 tangent stiffness for geometrically nonlinear bar. Includes geometric stiffness. |
+| `kbar(K, T, X, G, u)` | Assemble all bar tangent stiffness matrices into global K. |
+| `keT4e(Xe, Ge)` | Compute 12x12 stiffness matrix for 4-node tetrahedron (T4). |
+| `kT4e(K, T, X, G)` | Assemble all T4 element stiffness matrices into global K. |
+| `keh8e(Xe, Ge)` | Compute 24x24 stiffness matrix for 8-node hexahedron (H8) using 2x2x2 Gauss integration. |
+| `kh8e(K, T, X, G)` | Assemble all H8 element stiffness matrices into global K. |
+| `ket3p(Xe, Ge)` | Compute 3x3 conductivity matrix for T3 potential element. |
+| `kt3p(K, T, X, G)` | Assemble all T3 potential element matrices into global K. |
+| `keq4p(Xe, Ge)` | Compute 4x4 conductivity matrix for Q4 potential element. |
+| `kq4p(K, T, X, G)` | Assemble all Q4 potential element matrices into global K. |
+| `keq4eps(Xe, Ge, u_e, H)` | Compute consistent tangent stiffness for plane stress plastic Q4. |
+| `kq4eps(K, T, X, G, u, H)` | Assemble plane stress plastic Q4 tangent matrices. |
+| `keq4epe(Xe, Ge, u_e, H)` | Compute consistent tangent stiffness for plane strain plastic Q4. |
+| `kq4epe(K, T, X, G, u, H)` | Assemble plane strain plastic Q4 tangent matrices. |
 
 </details>
 
 <details>
-<summary><strong>Assembly</strong></summary>
+<summary><strong>Element Response (qe = element, q = assembly)</strong></summary>
 
 | Function | Description |
 | --- | --- |
-| `init` | Initialize FEM arrays |
-| `assmk` | Assemble stiffness |
-| `assmq` | Assemble forces |
-| `setbc` | Apply boundary conditions |
-| `setload` | Set nodal loads |
+| `qet3e(Xe, Ge, u_e)` | Compute stress and strain for single T3 element. Returns (stress, strain). |
+| `qt3e(q, T, X, G, u)` | Compute T3 stresses for all elements. Returns internal forces and stress/strain arrays. |
+| `qeq4e(Xe, Ge, u_e)` | Compute stress and strain at 4 Gauss points for single Q4. Returns 4x3 arrays. |
+| `qq4e(q, T, X, G, u)` | Compute Q4 stresses for all elements and assemble internal forces. |
+| `qebar(Xe, A, E, u_e)` | Compute internal force for single nonlinear bar. Returns axial force and strain. |
+| `qbar(q, T, X, G, u)` | Compute bar internal forces and assemble into global vector. |
+| `qeT4e(Xe, Ge, u_e)` | Compute stress and strain for single T4 element. |
+| `qT4e(q, T, X, G, u)` | Compute T4 stresses for all elements and assemble internal forces. |
+| `qeh8e(Xe, Ge, u_e)` | Compute stress and strain at 8 Gauss points for single H8. |
+| `qh8e(q, T, X, G, u)` | Compute H8 stresses for all elements and assemble internal forces. |
+| `qeq4eps(Xe, Ge, u_e, H)` | Update plane stress plastic Q4 response. Returns stress, strain, updated history. |
+| `qq4eps(q, T, X, G, u, H)` | Compute plane stress Q4 internal forces with plasticity. |
+| `qeq4epe(Xe, Ge, u_e, H)` | Update plane strain plastic Q4 response. Returns stress, strain, updated history. |
+| `qq4epe(q, T, X, G, u, H)` | Compute plane strain Q4 internal forces with plasticity. |
 
 </details>
 
 <details>
-<summary><strong>Materials</strong></summary>
+<summary><strong>Assembly and Boundary Conditions</strong></summary>
 
 | Function | Description |
 | --- | --- |
-| `stressvm` | Von Mises return mapping |
-| `stressdp` | Drucker-Prager update |
-| `eqstress` | Equivalent stress |
-| `devstress` | Deviatoric stress |
+| `init(nn, dof)` | Initialize global stiffness K (nn*dof x nn*dof) and load vector p (nn*dof x 1). |
+| `assmk(K, ke, nodes, dof)` | Assemble single element stiffness ke into global K at specified nodes. |
+| `assmq(q, qe, nodes, dof)` | Assemble single element force qe into global internal force vector q. |
+| `setload(p, P, dof)` | Set nodal loads from P matrix [node, dof, value]. Replaces existing loads. |
+| `addload(p, P, dof)` | Add nodal loads from P matrix. Accumulates with existing loads. |
+| `setbc(K, p, C, dof)` | Apply Dirichlet BCs using direct elimination. Zeros rows/columns, sets diagonal. |
+| `solve_lag(K, p, C, dof)` | Solve with Lagrange multipliers for Dirichlet constraints. |
+| `solve_lag_general(K, p, G, Q)` | Solve with general linear constraints Gu = Q. |
+| `reaction(K_orig, u, p_orig, C, dof)` | Extract support reactions at constrained DOFs. |
+| `rnorm(r, C, dof)` | Compute residual norm excluding constrained DOFs. |
 
 </details>
 
 <details>
-<summary><strong>I/O</strong></summary>
+<summary><strong>Material Models</strong></summary>
 
 | Function | Description |
 | --- | --- |
-| `load_gmsh` | Load Gmsh mesh |
-| `load_gmsh2` | Load Gmsh mesh (flexible) |
+| `devstress(S)` | Compute deviatoric stress and mean stress. S: [sxx, syy, sxy] or [sxx, syy, szz, sxy, syz, sxz]. |
+| `eqstress(S)` | Compute von Mises equivalent stress from stress vector. |
+| `yieldvm(S, mat, ep, dL)` | Evaluate von Mises yield function f = seq - (sy + H*ep). mat: [E, nu, sy, H]. |
+| `dyieldvm(S, mat, ep, dL)` | Derivative of yield function with respect to plastic multiplier dL. |
+| `stressvm(S_trial, mat, ep)` | Perform von Mises radial return mapping. Returns (S_updated, delta_ep). |
+| `stressdp(S_trial, mat, ep)` | Perform Drucker-Prager return mapping with Newton iterations. |
+
+</details>
+
+<details>
+<summary><strong>Mesh I/O</strong></summary>
+
+| Function | Description |
+| --- | --- |
+| `load_gmsh(filename)` | Load Gmsh mesh file (.msh). Returns GmshMesh with positions, triangles, quads, etc. Legacy 2.x format. |
+| `load_gmsh2(filename)` | Load Gmsh mesh with flexible format detection. Supports both 2.x and 4.x (requires [mesh] extra). |
+
+GmshMesh attributes:
+- `positions`: Nx3 node coordinates
+- `triangles`: Mx4 triangle connectivity [elem_id, n1, n2, n3]
+- `quads`: Mx5 quad connectivity
+- `lines`: Mx3 line connectivity
+- `bounds_min`, `bounds_max`: Bounding box
+
+</details>
+
+<details>
+<summary><strong>Plotting</strong></summary>
+
+| Function | Description |
+| --- | --- |
+| `plotelem(T, X, numbers=False)` | Plot undeformed mesh. numbers=True shows node/element labels. |
+| `plotforces(T, X, P, dof, scale=1)` | Plot load arrows on mesh. |
+| `plotbc(T, X, C, dof)` | Plot boundary condition markers. |
+| `plotu(T, X, u, dof, component=0)` | Plot scalar nodal field as contour. component: 0=magnitude, 1=x, 2=y. |
+| `plotq4(T, X, S, component=0)` | Plot Q4 Gauss point field as contour. |
+| `plott3(T, X, S, component=0)` | Plot T3 element field as contour. |
+
+</details>
+
+<details>
+<summary><strong>Examples Module</strong></summary>
+
+| Function | Description |
+| --- | --- |
+| `run_cantilever(plot=False)` | Solve cantilever beam. Returns u, S, E, R. |
+| `run_flow_q4(plot=False)` | Solve Q4 potential flow. Returns u (temperatures). |
+| `run_flow_t3(plot=False)` | Solve T3 potential flow. Returns u (temperatures). |
+| `run_bar01_nlbar(plot=False)` | Solve 2-bar snap-through. Returns load-displacement path. |
+| `run_bar02_nlbar(plot=False)` | Solve 3-bar snap-through. Returns load-displacement path. |
+| `run_bar03_nlbar(plot=False)` | Solve 12-bar dome. Returns load-displacement path. |
+| `run_square_plastps(plot=False)` | Solve square plate plane stress plasticity. |
+| `run_square_plastpe(plot=False)` | Solve square plate plane strain plasticity. |
+| `run_hole_plastps(plot=False)` | Solve plate with hole plane stress plasticity. |
+| `run_hole_plastpe(plot=False)` | Solve plate with hole plane strain plasticity. |
+| `run_ex_lag_mult(plot=False)` | Solve 3-bar truss with displacement constraint. |
+| `run_gmsh_triangle(plot=False)` | Solve imported Gmsh triangle mesh. |
+
+Data loaders: `cantilever_data()`, `flow_data()`, `bar01_data()`, `bar02_data()`, `bar03_data()`, `square_data(plane_strain=False)`, `hole_data(plane_strain=False)`, `ex_lag_mult_data()`, `gmsh_triangle_data()`
 
 </details>
 
