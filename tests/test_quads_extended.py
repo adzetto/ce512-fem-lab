@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from femlab import keq4e, keq4p, kq4e, kq4p, qeq4e, qeq4p, qq4e, qq4p
+from femlabpy import keq4e, keq4p, kq4e, kq4p, qeq4e, qeq4p, qq4e, qq4p
 
 
 Q4_ELASTIC_CASES = [

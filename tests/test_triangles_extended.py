@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from femlab import ket3e, ket3p, kt3e, kt3p, qet3e, qet3p, qt3e, qt3p
+from femlabpy import ket3e, ket3p, kt3e, kt3p, qet3e, qet3p, qt3e, qt3p
 
 
 TRI_ELASTIC_CASES = [

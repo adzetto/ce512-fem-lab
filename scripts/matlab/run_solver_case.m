@@ -1,4 +1,4 @@
-function run_solver_case(case_name, repo_root)
+function run_solver_case(case_name, repo_root, output_root, matlab_root)
 %RUN_SOLVER_CASE Run one benchmark case headlessly and export TSV artifacts.
 
 if nargin < 1 || strlength(string(case_name)) == 0
@@ -9,13 +9,19 @@ script_dir = fileparts(mfilename("fullpath"));
 if nargin < 2 || strlength(string(repo_root)) == 0
     repo_root = fileparts(fileparts(script_dir));
 end
+if nargin < 3 || strlength(string(output_root)) == 0
+    output_root = fullfile(repo_root, 'benchmarks', 'matlab_regression');
+end
+if nargin < 4 || strlength(string(matlab_root)) == 0
+    matlab_root = resolve_matlab_root(repo_root);
+end
 
 repo_root = char(repo_root);
 case_name = char(case_name);
-comparison_root = fullfile(repo_root, '_solver_comparasion');
+comparison_root = char(output_root);
 inputs_dir = fullfile(comparison_root, 'inputs', case_name);
 results_dir = fullfile(comparison_root, 'raw', 'matlab', case_name);
-matlab_root = 'C:\Users\lenovo\Downloads\FemLab_matlab\FemLab_matlab\M_Files';
+matlab_root = char(matlab_root);
 examples_root = fullfile(matlab_root, 'examples');
 
 ensure_dir(inputs_dir);
@@ -38,7 +44,7 @@ switch case_name
         canti;
         data = struct("X", X, "T", T, "G", G, "C", C, "P", P, "dof", dof);
     case "gmsh_triangle_t3"
-        mesh = load_gmsh(fullfile(repo_root, "mesh", "deneme.msh"));
+        mesh = load_gmsh(resolve_mesh_path(repo_root));
         triangles = mesh.TRIANGLES(1:mesh.nbTriangles, :);
         refs = triangles(:, 4);
         [~, ~, props] = unique(refs, "stable");
@@ -412,4 +418,38 @@ pathname = char(pathname);
 if ~exist(pathname, "dir")
     mkdir(pathname);
 end
+end
+
+function matlab_root = resolve_matlab_root(repo_root)
+candidates = {
+    getenv('FEMLAB_MATLAB_ROOT')
+    fullfile(fileparts(repo_root), 'HWs', 'HW4', 'tmp_femlab_matlab', 'FemLab_matlab', 'M_Files')
+    'C:\Users\lenovo\Downloads\FemLab_matlab\FemLab_matlab\M_Files'
+};
+for k = 1:numel(candidates)
+    candidate = char(candidates{k});
+    if strlength(string(candidate)) == 0
+        continue
+    end
+    if exist(candidate, 'dir')
+        matlab_root = candidate;
+        return
+    end
+end
+error("run_solver_case:MissingMatlabRoot", "Could not locate the original FemLab MATLAB M_Files directory.");
+end
+
+function mesh_path = resolve_mesh_path(repo_root)
+candidates = {
+    fullfile(repo_root, 'src', 'femlabpy', 'data', 'meshes', 'deneme.msh')
+    fullfile(repo_root, 'mesh', 'deneme.msh')
+};
+for k = 1:numel(candidates)
+    candidate = char(candidates{k});
+    if exist(candidate, 'file')
+        mesh_path = candidate;
+        return
+    end
+end
+error("run_solver_case:MissingMesh", "Could not locate deneme.msh in the repository.");
 end

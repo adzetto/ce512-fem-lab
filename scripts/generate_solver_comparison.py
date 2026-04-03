@@ -8,27 +8,26 @@ import subprocess
 import sys
 import tempfile
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
-OUTDIR = REPO / "_solver_comparasion"
+OUTDIR = REPO / "benchmarks" / "matlab_regression"
 INPUTS = OUTDIR / "inputs"
 RAW = OUTDIR / "raw"
 PLOTS = OUTDIR / "plots"
 LOGS = OUTDIR / "logs"
 
-MATLAB_ROOT = Path(r"C:\Users\lenovo\Downloads\FemLab_matlab\FemLab_matlab")
-MATLAB_MFILES = MATLAB_ROOT / "M_Files"
 SCILAB_CLI = Path(r"C:\Program Files\scilab-2025.0.0\bin\WScilex-cli.exe")
 MATLAB_CLI = Path(r"C:\Program Files\MATLAB\R2025b\bin\matlab.exe")
 
 sys.path.insert(0, str(REPO / "src"))
 
-from femlab import (  # noqa: E402
+from femlabpy._helpers import solve_legacy_symmetric_system, solve_linear_system  # noqa: E402
+from femlabpy import (  # noqa: E402
     init,
     kbar,
     kq4e,
@@ -51,12 +50,24 @@ from femlab import (  # noqa: E402
     solve_lag,
 )
 
+try:
+    import scipy.sparse as sp
+except ImportError:  # pragma: no cover
+    sp = None
+
+
+def solve_plastic_system(matrix, rhs, *, plane_strain: bool) -> np.ndarray:
+    if plane_strain:
+        return solve_legacy_symmetric_system(matrix, rhs)
+    return solve_linear_system(matrix, rhs)
+
 
 @dataclass(frozen=True)
 class CaseSpec:
     name: str
     case_type: str
     description: str
+    expected_statuses: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
 
 CASES: tuple[CaseSpec, ...] = (
@@ -66,7 +77,12 @@ CASES: tuple[CaseSpec, ...] = (
     CaseSpec("flow_t3", "flow_t3", "T3 potential flow"),
     CaseSpec("bar01_nlbar", "nlbar", "2D nonlinear bar truss"),
     CaseSpec("bar02_nlbar", "nlbar", "3D nonlinear bar truss"),
-    # bar03_nlbar omitted: 12-bar truss diverges in all solvers (not a solver bug)
+    CaseSpec(
+        "bar03_nlbar",
+        "nlbar",
+        "12-bar space truss (expected unstable legacy benchmark)",
+        expected_statuses={"matlab": ("failed",), "python": ("failed",), "scilab": ("failed", "timeout")},
+    ),
     CaseSpec("square_plastps", "plastps", "Plane-stress square von Mises plasticity"),
     CaseSpec("square_plastpe", "plastpe", "Plane-strain square von Mises plasticity"),
     CaseSpec("hole_plastps", "plastps", "Plane-stress plate with hole"),
@@ -80,15 +96,15 @@ PAIRWISE = (("python", "matlab"), ("scilab", "matlab"), ("python", "scilab"))
 def _case_data_from_python(spec: CaseSpec) -> dict[str, Any] | None:
     """Return input data dict for a case using Python-side definitions."""
     if spec.case_type == "elastic_q4":
-        from femlab.examples.cantilever import cantilever_data
+        from femlabpy.examples.cantilever import cantilever_data
         return cantilever_data()
     if spec.case_type == "elastic_t3_lag":
-        from femlab.examples.gmsh_triangle import gmsh_triangle_data
+        from femlabpy.examples.gmsh_triangle import gmsh_triangle_data
         data = gmsh_triangle_data()
         data.pop("mesh", None)
         return data
     if spec.case_type in {"flow_q4", "flow_t3"}:
-        from femlab.examples.flow import flow_data
+        from femlabpy.examples.flow import flow_data
         data = flow_data()
         key = "T1" if spec.case_type == "flow_q4" else "T2"
         C = data["C"]
@@ -211,14 +227,14 @@ def available_outputs(base: Path) -> dict[str, np.ndarray]:
         data = read_tsv(base / f"{name}.tsv")
         if data is not None:
             out[name] = data
-    if "U_path" not in out and "U" in out:
-        out["U_path"] = out["U"]
     if "U_path" not in out and "path_u" in out:
         out["U_path"] = out["path_u"]
-    if "F_path" not in out and "F" in out:
-        out["F_path"] = out["F"]
+    if "U_path" not in out and "U" in out:
+        out["U_path"] = out["U"]
     if "F_path" not in out and "path_f" in out:
         out["F_path"] = out["path_f"]
+    if "F_path" not in out and "F" in out:
+        out["F_path"] = out["F"]
     return out
 
 
@@ -415,8 +431,9 @@ def solve_plastic(inputs: dict[str, np.ndarray], *, plane_strain: bool) -> dict[
                 K = kq4epe(K, T, X, G, S, E, mattype)
             else:
                 K = kq4eps(K, T, X, G, S, E, mattype)
-            Kt, df, _ = setbc(K.copy(), df, C, dof)
-            du0 = np.linalg.solve(Kt, df)
+            system_matrix = sp.csc_matrix(K) if sp is not None else K
+            Kt, df, _ = setbc(system_matrix.copy(), df, C, dof)
+            du0 = solve_plastic_system(Kt, df, plane_strain=plane_strain)
             if not np.all(np.isfinite(du0)):
                 raise RuntimeError("NaN/Inf in plastic solver.")
             if float((du.T @ du0).item()) < 0.0:
@@ -453,8 +470,8 @@ def solve_plastic(inputs: dict[str, np.ndarray], *, plane_strain: bool) -> dict[
             r = -dq + xi * df
             if rnorm(r, C, dof) < tol * rnorm(df, C, dof):
                 break
-            Kt, r_bc, _ = setbc(K.copy(), r, C, dof)
-            delta_u = np.linalg.solve(Kt, r_bc)
+            Kt, r_bc, _ = setbc(system_matrix.copy(), r, C, dof)
+            delta_u = solve_plastic_system(Kt, r_bc, plane_strain=plane_strain)
             du = du + delta_u
 
         if i >= i_max:
@@ -525,7 +542,7 @@ def run_matlab_case(case_name: str) -> tuple[str, float, str]:
     start = time.perf_counter()
     command = (
         f"addpath('{(REPO / 'scripts' / 'matlab').as_posix()}'); "
-        f"run_solver_case('{case_name}', '{REPO.as_posix()}');"
+        f"run_solver_case('{case_name}', '{REPO.as_posix()}', '{OUTDIR.as_posix()}');"
     )
     start = time.perf_counter()
     try:
@@ -551,12 +568,15 @@ def run_matlab_case(case_name: str) -> tuple[str, float, str]:
 def scilab_common_prelude(case_name: str) -> str:
     input_dir = case_input_dir(case_name).as_posix()
     output_dir = case_raw_dir("scilab", case_name).as_posix()
+    repo_dir = REPO.as_posix()
+    macro_dir = (REPO / "legacy" / "scilab" / "macros").as_posix()
     return f"""
 mode(0);
 ieee(1);
-repo = pwd();
+repo = "{repo_dir}";
 indir = "{input_dir}";
 outdir = "{output_dir}";
+macrodir = "{macro_dir}";
 if ~isdir(outdir) then
     mkdir(outdir);
 end
@@ -586,6 +606,10 @@ function write_tsv(path, data)
     end
     csvWrite(data, path, sep);
 endfunction
+
+if ~isdir(macrodir) then
+    error("Scilab macro directory not found: " + macrodir);
+end
 
 function R = reaction_table(q, C, dof)
     if size(C, "*") == 0 then
@@ -621,7 +645,7 @@ P = read_tsv(indir + "/P.tsv");
 dof = int(read_scalar(indir + "/dof.tsv", 2));
 T = int(T);
 C = int(C);
-getd(repo + "/macros");
+getd(macrodir);
 function [Sd, Sm] = devstress(S)
     [Sd, Sm] = devstres(S);
 endfunction
@@ -648,7 +672,7 @@ P = read_tsv(indir + "/P.tsv");
 dof = int(read_scalar(indir + "/dof.tsv", 2));
 T = int(T);
 C = int(C);
-getd(repo + "/macros");
+getd(macrodir);
 function [Sd, Sm] = devstress(S)
     [Sd, Sm] = devstres(S);
 endfunction
@@ -675,7 +699,7 @@ C = read_tsv(indir + "/C.tsv");
 P = read_tsv(indir + "/P.tsv");
 T = int(T);
 C = int(C);
-getd(repo + "/macros");
+getd(macrodir);
 function [Sd, Sm] = devstress(S)
     [Sd, Sm] = devstres(S);
 endfunction
@@ -708,7 +732,7 @@ TOL = read_scalar(indir + "/TOL.tsv", 1.0d-3);
 plotdof = int(read_scalar(indir + "/plotdof.tsv", 1));
 T = int(T);
 C = int(C);
-getd(repo + "/macros");
+getd(macrodir);
 function [Sd, Sm] = devstress(S)
     [Sd, Sm] = devstres(S);
 endfunction
@@ -808,7 +832,7 @@ plotdof = int(read_scalar(indir + "/plotdof.tsv", 1));
 mattype = 1;
 T = int(T);
 C = int(C);
-getd(repo + "/macros");
+getd(macrodir);
 function [Sd, Sm] = devstress(S)
     [Sd, Sm] = devstres(S);
 endfunction
@@ -988,11 +1012,38 @@ def summarize_run(spec: CaseSpec, solver: str, status: str, runtime_sec: float, 
     return row
 
 
-def compare_outputs(spec: CaseSpec, solver_a: str, solver_b: str) -> dict[str, Any]:
+def compare_outputs(
+    spec: CaseSpec,
+    solver_a: str,
+    solver_b: str,
+    run_statuses: dict[tuple[str, str], str] | None = None,
+) -> dict[str, Any]:
     base_a = case_raw_dir(solver_a, spec.name)
     base_b = case_raw_dir(solver_b, spec.name)
     out_a = available_outputs(base_a)
     out_b = available_outputs(base_b)
+    status_a = None if run_statuses is None else run_statuses.get((spec.name, solver_a))
+    status_b = None if run_statuses is None else run_statuses.get((spec.name, solver_b))
+    if status_a not in (None, "ok") or status_b not in (None, "ok"):
+        pair_note = f"{solver_a}:{status_a or 'unknown'}; {solver_b}:{status_b or 'unknown'}"
+        row: dict[str, Any] = {
+            "case_name": spec.name,
+            "description": spec.description,
+            "case_type": spec.case_type,
+            "solver_a": solver_a,
+            "solver_b": solver_b,
+            "status": "expected_failure" if "expected_failure" in {status_a, status_b} else "solver_failure",
+            "note": pair_note,
+            "u_max_abs_diff": "",
+            "u_l2_diff": "",
+            "S_max_abs_diff": "",
+            "E_max_abs_diff": "",
+            "R_max_abs_diff": "",
+            "f_max_abs_diff": "",
+            "U_path_final_diff": "",
+            "F_path_final_diff": "",
+        }
+        return row
     missing = [name for name in ("u",) if name not in out_a or name not in out_b]
     status = "ok"
     note = ""
@@ -1231,6 +1282,15 @@ def generate_readme_stub(summary_rows: list[dict[str, Any]], comparison_rows: li
         "",
         "Generated by `scripts/generate_solver_comparison.py`.",
         "",
+        "This live regression covers all 11 classroom benchmark cases.",
+        "",
+        "The original `bar03.m` truss is included as an explicit expected-failure case "
+        "because the legacy load-stepping method is known to diverge across implementations.",
+        "",
+        "For the small plane-strain plasticity benchmarks, the Python solver uses "
+        "a symmetry-aware dense fallback to better match MATLAB's historical sparse "
+        "backslash path.",
+        "",
         "## Run Summary",
         "",
         "| Case | Solver | Status | Runtime (s) | `|u|_max` | `|S|_max` | Note |",
@@ -1274,6 +1334,16 @@ def run_python_case(spec: CaseSpec) -> tuple[str, float, str]:
     return status, time.perf_counter() - start, note
 
 
+def classify_run_status(spec: CaseSpec, solver: str, status: str, note: str) -> tuple[str, str]:
+    """Translate raw runner status into a report status with expected-failure handling."""
+
+    expected = spec.expected_statuses.get(solver, ())
+    if status in expected:
+        detail = note.strip() if note else status
+        return "expected_failure", f"Expected legacy divergence: {detail}"
+    return status, note
+
+
 def run_all(case_names: list[str] | None = None, solvers: list[str] | None = None) -> None:
     ensure_dirs()
     prepare_inputs()
@@ -1286,10 +1356,12 @@ def run_all(case_names: list[str] | None = None, solvers: list[str] | None = Non
         if unknown:
             print(f"Unknown cases ignored: {unknown}")
     run_solvers = solvers or list(SOLVERS)
+    active_pairs = [pair for pair in PAIRWISE if pair[0] in run_solvers and pair[1] in run_solvers]
 
     summary_rows: list[dict[str, Any]] = []
     comparison_rows: list[dict[str, Any]] = []
     manifest: dict[str, Any] = {"repo": str(REPO), "generated_at_epoch": time.time(), "cases": []}
+    run_statuses: dict[tuple[str, str], str] = {}
 
     for idx, spec in enumerate(specs, 1):
         print(f"[{idx}/{len(specs)}] {spec.name}")
@@ -1298,22 +1370,28 @@ def run_all(case_names: list[str] | None = None, solvers: list[str] | None = Non
             print(f"  MATLAB ...", end=" ", flush=True)
             matlab_status, matlab_runtime, matlab_note = run_matlab_case(spec.name)
             print(f"{matlab_status} ({matlab_runtime:.1f}s)")
+            matlab_status, matlab_note = classify_run_status(spec, "matlab", matlab_status, matlab_note)
+            run_statuses[(spec.name, "matlab")] = matlab_status
             summary_rows.append(summarize_run(spec, "matlab", matlab_status, matlab_runtime, matlab_note))
 
         if "python" in run_solvers:
             print(f"  Python ...", end=" ", flush=True)
             python_status, python_runtime, python_note = run_python_case(spec)
             print(f"{python_status} ({python_runtime:.1f}s)")
+            python_status, python_note = classify_run_status(spec, "python", python_status, python_note)
+            run_statuses[(spec.name, "python")] = python_status
             summary_rows.append(summarize_run(spec, "python", python_status, python_runtime, python_note))
 
         if "scilab" in run_solvers:
             print(f"  Scilab ...", end=" ", flush=True)
             scilab_status, scilab_runtime, scilab_note = run_scilab_case(spec.name)
             print(f"{scilab_status} ({scilab_runtime:.1f}s)")
+            scilab_status, scilab_note = classify_run_status(spec, "scilab", scilab_status, scilab_note)
+            run_statuses[(spec.name, "scilab")] = scilab_status
             summary_rows.append(summarize_run(spec, "scilab", scilab_status, scilab_runtime, scilab_note))
 
-        for solver_a, solver_b in PAIRWISE:
-            comparison_rows.append(compare_outputs(spec, solver_a, solver_b))
+        for solver_a, solver_b in active_pairs:
+            comparison_rows.append(compare_outputs(spec, solver_a, solver_b, run_statuses))
 
         manifest["cases"].append(
             {
@@ -1327,9 +1405,7 @@ def run_all(case_names: list[str] | None = None, solvers: list[str] | None = Non
     write_rows_tsv(OUTDIR / "summary_runs.tsv", summary_rows)
     write_rows_tsv(OUTDIR / "pairwise_comparison.tsv", comparison_rows)
     generate_plot_inputs(summary_rows, comparison_rows)
-    tex_files = write_plot_tex()
-    for tex_path in tex_files:
-        compile_plot(tex_path)
+    write_plot_tex()
     generate_readme_stub(summary_rows, comparison_rows)
     (OUTDIR / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from femlab import addload, rnorm, setbc, setload, solve_lag, solve_lag_general
+from femlabpy import addload, rnorm, setbc, setload, solve_lag, solve_lag_general
 
 
 @pytest.mark.parametrize("dof", [1, 2, 3, 4])
@@ -59,10 +59,16 @@ def test_addload_accumulates_components(dof):
 def test_setbc_constrains_specified_dofs(dof, constraints, expected_indices, expected_values):
     K = np.eye(6, dtype=float)
     p = np.zeros((6, 1), dtype=float)
-    updated_K, updated_p, scale = setbc(K.copy(), p.copy(), constraints, dof=dof)
-    assert scale > 0.0
-    assert np.allclose(updated_K[expected_indices, expected_indices], 1.0 + scale)
-    assert np.allclose(updated_p[expected_indices, 0], scale * expected_values)
+    updated_K, updated_p, ks = setbc(K.copy(), p.copy(), constraints, dof=dof)
+    assert ks > 0.0
+    # Direct elimination: diagonal is ks (row/column zeroed)
+    assert np.allclose(updated_K[expected_indices, expected_indices], ks)
+    # Off-diagonal entries in constrained rows/columns must be zero
+    for idx in expected_indices:
+        row_copy = np.array(updated_K[idx, :]).ravel().copy()
+        row_copy[idx] = 0.0
+        assert np.allclose(row_copy, 0.0)
+    assert np.allclose(updated_p[expected_indices, 0], ks * expected_values)
 
 
 @pytest.mark.parametrize(

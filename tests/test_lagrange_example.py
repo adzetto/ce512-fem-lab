@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from femlab.examples import run_ex_lag_mult
+from femlabpy.examples import run_ex_lag_mult
 
 
 def test_ex_lag_mult_runs_and_satisfies_constraints():

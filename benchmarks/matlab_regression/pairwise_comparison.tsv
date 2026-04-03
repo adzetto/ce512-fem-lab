@@ -1,0 +1,12 @@
+case_name	description	case_type	solver_a	solver_b	status	note	u_max_abs_diff	u_l2_diff	S_max_abs_diff	E_max_abs_diff	R_max_abs_diff	f_max_abs_diff	U_path_final_diff	F_path_final_diff
+cantilever_q4	Q4 cantilever beam	elastic_q4	python	scilab	ok		7.6216810640517e-14	2.1778003713326243e-13	6.203926261605375e-13	5.981326545168031e-15	1.5354384430565915e-13		7.605027718682322e-14	
+gmsh_triangle_t3	Triangle mesh cantilever loaded from deneme.msh	elastic_t3_lag	python	scilab	ok		3.943997160652836e-21	2.5440730945881033e-20	2.248201624865942e-14	3.1267427154504446e-22	3.141931159689193e-14		6.435465165662555e-22	
+flow_q4	Q4 potential flow	flow_q4	python	scilab	ok		38.68351749183713	142.66507934240417	0.004726798931807221	47.2679893180722	0.005423293378718414		0.0	
+flow_t3	T3 potential flow	flow_t3	python	scilab	ok		38.62640741147079	142.06222868476578	0.005595873300791817	55.95873300791817	0.005786455964702196		7.105427357601002e-15	
+bar01_nlbar	2D nonlinear bar truss	nlbar	python	scilab	ok		2.7755575615628914e-17	2.7755575615628914e-17	2.710505431213761e-20	2.710505431213761e-20	2.710505431213761e-20	6.776263578034403e-21	2.7755575615628914e-17	6.776263578034403e-21
+bar02_nlbar	3D nonlinear bar truss	nlbar	python	scilab	ok		8.326672684688674e-17	8.326694301647288e-17	0.0	0.0	6.776263578034403e-21	5.082197683525802e-21	8.326672684688674e-17	5.082197683525802e-21
+bar03_nlbar	12-bar space truss (expected unstable legacy benchmark)	nlbar	python	scilab	expected_failure	python:expected_failure; scilab:expected_failure								
+square_plastps	Plane-stress square von Mises plasticity	plastps	python	scilab	solver_failure	python:ok; scilab:failed								
+square_plastpe	Plane-strain square von Mises plasticity	plastpe	python	scilab	solver_failure	python:ok; scilab:timeout								
+hole_plastps	Plane-stress plate with hole	plastps	python	scilab	solver_failure	python:ok; scilab:failed								
+hole_plastpe	Plane-strain plate with hole	plastpe	python	scilab	ok		0.00015549581138782353	0.0010356517634176594	0.00210588921271615	0.00014730307264367026	0.00033481965834003535	0.0002595556172282354	0.0001551744898530827	0.0002595556172282354

@@ -1,0 +1,27 @@
+\documentclass[tikz,border=4pt]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+  width=16cm,
+  height=8cm,
+  ybar,
+  bar width=8pt,
+  ymode=log,
+  ymin=1e-18,
+  ylabel={Max $\lvert \Delta u \rvert$},
+  symbolic x coords={cantilever_q4,gmsh_triangle_t3,flow_q4,flow_t3,bar01_nlbar,bar02_nlbar,bar03_nlbar,square_plastps,square_plastpe,hole_plastps,hole_plastpe},
+  xtick=data,
+  xticklabel style={rotate=40,anchor=east,font=\scriptsize},
+  legend style={at={(0.5,1.1)},anchor=south,legend columns=3},
+  enlargelimits=0.03,
+  unbounded coords=discard,
+]
+\addplot table[x=case_name,y=u_max_abs_diff,col sep=tab,row predicate/.code={\ifnum\pdfstrcmp{\thisrow{pair}}{python-matlab}=0\else\pgfplotstableuserowfalse\fi}] {u_diff_plot.tsv};
+\addplot table[x=case_name,y=u_max_abs_diff,col sep=tab,row predicate/.code={\ifnum\pdfstrcmp{\thisrow{pair}}{scilab-matlab}=0\else\pgfplotstableuserowfalse\fi}] {u_diff_plot.tsv};
+\addplot table[x=case_name,y=u_max_abs_diff,col sep=tab,row predicate/.code={\ifnum\pdfstrcmp{\thisrow{pair}}{python-scilab}=0\else\pgfplotstableuserowfalse\fi}] {u_diff_plot.tsv};
+\legend{Python-MATLAB,Scilab-MATLAB,Python-Scilab}
+\end{axis}
+\end{tikzpicture}
+\end{document}

@@ -3,13 +3,33 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "femlab-python"
-version = "0.1.0"
-description = "Python port of the Scilab FemLab wrapper and the original MATLAB teaching toolbox."
-readme = "README.md"
+name = "femlabpy"
+version = "0.5.0"
+description = "Finite element teaching library with legacy FemLab compatibility for bars, triangles, quads, solids, flow, and plasticity."
+readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
   { name = "Muhammet Yagcioglu" },
+]
+maintainers = [
+  { name = "Muhammet Yagcioglu" },
+]
+keywords = ["fem", "finite-element", "femlab", "structural-analysis", "engineering", "education"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Education",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Mathematics",
 ]
 dependencies = [
   "numpy>=1.26",
@@ -20,13 +40,30 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
+  "build",
+  "twine",
 ]
+
+[project.scripts]
+femlabpy = "femlabpy.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/adzetto/femlabpy"
+Repository = "https://github.com/adzetto/femlabpy"
+Documentation = "https://github.com/adzetto/femlabpy#readme"
+Issues = "https://github.com/adzetto/femlabpy/issues"
+"Code of Conduct" = "https://github.com/adzetto/femlabpy/blob/main/CODE_OF_CONDUCT.md"
+Changelog = "https://github.com/adzetto/femlabpy/releases"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+femlabpy = ["data/cases/*/*.tsv", "data/meshes/*.msh"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

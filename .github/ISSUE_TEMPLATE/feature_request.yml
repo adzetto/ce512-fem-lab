@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest an improvement to the public API, examples, or solver coverage
+title: "[feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What workflow or limitation are you trying to improve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the behavior or API you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Legacy compatibility impact
+      description: Note whether this touches MATLAB / Scilab naming, return shapes, or benchmark behavior.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links, references, screenshots, or benchmark cases.

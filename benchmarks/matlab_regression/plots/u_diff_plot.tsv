@@ -1,0 +1,12 @@
+case_name	pair	u_max_abs_diff
+cantilever_q4	python-scilab	7.6216810640517e-14
+gmsh_triangle_t3	python-scilab	3.943997160652836e-21
+flow_q4	python-scilab	38.68351749183713
+flow_t3	python-scilab	38.62640741147079
+bar01_nlbar	python-scilab	2.7755575615628914e-17
+bar02_nlbar	python-scilab	8.326672684688674e-17
+bar03_nlbar	python-scilab	nan
+square_plastps	python-scilab	nan
+square_plastpe	python-scilab	nan
+hole_plastps	python-scilab	nan
+hole_plastpe	python-scilab	0.00015549581138782353

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from femlab import kbar, kebar, qbar, qebar
+from femlabpy import kbar, kebar, qbar, qebar
 
 
 def _dofs(nodes: np.ndarray, dim: int) -> np.ndarray:

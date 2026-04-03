@@ -1,883 +1,356 @@
-# FemLab Python
+# femlabpy
 
-Python port of the legacy Scilab FemLab wrapper prepared by G. Turan at IYTE, itself derived from the original MATLAB FemLab teaching toolbox by O. Hededal and S. Krenk at Aalborg University.
+[![PyPI version](https://badge.fury.io/py/femlabpy.svg)](https://pypi.org/project/femlabpy/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/github/actions/workflow/status/adzetto/femlabpy/tests.yml?branch=main&label=tests)](https://github.com/adzetto/femlabpy/actions/workflows/tests.yml)
+[![License](https://img.shields.io/github/license/adzetto/femlabpy)](LICENSE)
 
-![Lagrange multiplier truss example](docs/assets/lagrange/ex_lag_mult_problem.png)
+`femlabpy` is a Python finite element teaching library built from the legacy MATLAB FemLab toolbox and the Scilab FemLab wrapper used in CE 512. It keeps the original classroom workflow recognizable while exposing a clean `pip` package with tests, packaged benchmark data, and documented Python entry points.
 
-| Solver | $$t\,(\mathrm{s})$$ | $$\max \lvert \Delta U \rvert$$ | $$\max \lvert \Delta \mathrm{Lag} \rvert$$ | $$\max \lvert \Delta R \rvert$$ | $$\max \lvert \Delta f_{\mathrm{member}} \rvert$$ | $$\max \lvert \Delta u_{\mathrm{loc}} \rvert$$ |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00044 | 0 | 0 | 0 | 0 | 0 |
-| Scilab | 4.05417 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
-| MATLAB | 7.04841 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
-| Julia | 2.12306 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
+The package currently covers:
 
-<table>
-<tr>
-<td valign="top" width="50%">
-<strong>Python</strong><br>
-<a href="src/femlab/examples/ex_lag_mult.py"><code>src/femlab/examples/ex_lag_mult.py</code></a>
-<pre><code>c = np.cos(alpha); s = np.sin(alpha)
-selectors = np.eye(6)[dof_map]
-T = np.zeros((3, 4, 4))
-T[:, 0, 0] = c;  T[:, 0, 1] = s
-T[:, 1, 0] = -s; T[:, 1, 1] = c
-T[:, 2, 2] = c;  T[:, 2, 3] = s
-T[:, 3, 2] = -s; T[:, 3, 3] = c
-k_local = (A * E / L)[:, None, None] * kref
-k_global = np.einsum("eji,ejk,ekl-&gt;eil", T, k_local, T)
-K = np.einsum("eai,eab,ebj-&gt;ij", selectors, k_global, selectors)</code></pre>
-</td>
-<td valign="top" width="50%">
-<strong>Scilab</strong><br>
-<a href="scripts/scilab/ex_lag_mult.sce"><code>scripts/scilab/ex_lag_mult.sce</code></a>
-<pre><code>I = eye(N, N);
-S1 = I(Dvec(1, :), :); S2 = I(Dvec(2, :), :); S3 = I(Dvec(3, :), :);
-kg1 = T1' * k1 * T1;
-kg2 = T2' * k2 * T2;
-kg3 = T3' * k3 * T3;
-K = S1' * kg1 * S1 + S2' * kg2 * S2 + S3' * kg3 * S3;
-AL = [K Gbar'
-      Gbar zeros(nc, nc)];
-solution = AL \ [P; Qbar];
-U = solution(1:N);
-Lag = solution(N + 1:$) * a_G;</code></pre>
-</td>
-</tr>
-<tr>
-<td valign="top" width="50%">
-<strong>MATLAB</strong><br>
-<a href="scripts/matlab/ex_lag_mult.m"><code>scripts/matlab/ex_lag_mult.m</code></a>
-<pre><code>I = eye(N);
-S1 = I(Dvec(1, :), :); S2 = I(Dvec(2, :), :); S3 = I(Dvec(3, :), :);
-kg1 = T1' * k1 * T1;
-kg2 = T2' * k2 * T2;
-kg3 = T3' * k3 * T3;
-K = S1' * kg1 * S1 + S2' * kg2 * S2 + S3' * kg3 * S3;
-AL = [K, Gbar'; Gbar, zeros(size(G, 1), size(G, 1))];
-solution = AL \ [P; Qbar];
-U = solution(1:N);
-Lag = solution((N + 1):end) * a_G;</code></pre>
-</td>
-<td valign="top" width="50%">
-<strong>Julia</strong><br>
-<a href="scripts/julia/ex_lag_mult.jl"><code>scripts/julia/ex_lag_mult.jl</code></a>
-<pre><code>I6 = Matrix{Float64}(I, N, N)
-S1 = I6[Dvec[1, :], :]; S2 = I6[Dvec[2, :], :]; S3 = I6[Dvec[3, :], :]
-kg1 = transpose(T1) * k1 * T1
-kg2 = transpose(T2) * k2 * T2
-kg3 = transpose(T3) * k3 * T3
-K = transpose(S1) * kg1 * S1 + transpose(S2) * kg2 * S2 + transpose(S3) * kg3 * S3
-AL = [K transpose(Gbar); Gbar zeros(Float64, size(G, 1), size(G, 1))]
-solution = AL \ vcat(P, Qbar)
-U = solution[1:N]
-Lag = solution[(N + 1):end] * a_G</code></pre>
-</td>
-</tr>
-</table>
+- Linear bars, CST triangles, bilinear quads, tetrahedra, and hexahedra
+- Potential / diffusion problems on T3 and Q4 meshes
+- Nonlinear truss load stepping (`nlbar`)
+- Plane-stress and plane-strain elastoplastic Q4 benchmarks
+- Legacy-compatible wrappers such as `canti`, `flowq4`, `plastps`, and `plastpe`
+- Gmsh mesh import and plotting helpers
+- Packaged classroom examples under `femlabpy.examples`
 
----
+## Repository
 
-## Project Overview
+- Source: <https://github.com/adzetto/femlabpy>
+- PyPI: <https://pypi.org/project/femlabpy/>
+- Issues: <https://github.com/adzetto/femlabpy/issues>
+- Code of Conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+- License: [LICENSE](LICENSE)
 
-```mermaid
-graph LR
-    subgraph Origins
-        M[MATLAB Toolbox<br/>Hededal & Krenk]
-        S[Scilab Wrapper<br/>G. Turan / IYTE]
-    end
-    subgraph This Repo
-        P[Python Package<br/>src/femlab/]
-        L[Legacy Scilab<br/>legacy/scilab/]
-        T[Cross-Solver<br/>Test Pipeline]
-    end
-    M -- "ported to" --> S
-    S -- "ported to" --> P
-    M -. "parity baseline" .-> T
-    S -. "parity check" .-> T
-    P -. "parity check" .-> T
+## Installation
+
+```bash
+pip install femlabpy
 ```
 
-This repository preserves three layers of the project:
+Development install:
 
-| Layer | Location | Status |
-| --- | --- | --- |
-| Original MATLAB toolbox | External reference | Baseline for parity checks |
-| Scilab wrapper | `legacy/scilab/macros/`, `legacy/scilab/examples/` | Preserved for reference |
-| **Python implementation** | `src/femlab/` | Tested |
-
----
-
-## Architecture
-
-### Python Package File Dependency Graph
-
-Every module depends on `_helpers.py`.
-
-```mermaid
-graph BT
-    H["_helpers.py<br/>utility functions"]
-    C["core.py<br/>init · cols · rows"]
-    TY["types.py<br/>GmshMesh dataclass"]
-
-    A["assembly.py<br/>assmk · assmq"]
-    B["boundary.py<br/>setbc · solve_lag"]
-    L["loads.py<br/>setload · addload"]
-    PP["postprocess.py<br/>reaction"]
-    PL["plotting.py<br/>plotelem · plotu · plotq4 · plott3"]
-
-    INV["invariants.py<br/>eqstress · devstres"]
-    PLAST["plasticity.py<br/>stressvm · stressdp · yieldvm"]
-
-    BARS["bars.py<br/>kbar · qbar · kebar · qebar"]
-    TRI["triangles.py<br/>kt3e · qt3e · kt3p · qt3p<br/>ket3e · qet3e · ket3p · qet3p"]
-    QUA["quads.py<br/>kq4e · qq4e · kq4p · qq4p<br/>keq4e · qeq4e · keq4p · qeq4p<br/>kq4eps · qq4eps · kq4epe · qq4epe<br/>keq4eps · qeq4eps · keq4epe · qeq4epe"]
-    SOL["solids.py<br/>kT4e · qT4e · kh8e · qh8e<br/>keT4e · qeT4e · keh8e · qeh8e"]
-
-    GMSH["gmsh.py<br/>load_gmsh · load_gmsh2"]
-
-    H --> A
-    H --> B
-    H --> L
-    H --> PP
-    H --> PL
-    H --> BARS
-    H --> TRI
-    H --> QUA
-    H --> SOL
-    H --> INV
-
-    INV --> PLAST
-    PLAST --> QUA
-
-    A --> BARS
-    A --> TRI
-    A --> QUA
-    A --> SOL
-
-    TY --> GMSH
-
-    style H fill:#e8f5e9,stroke:#2e7d32
-    style PLAST fill:#fff3e0,stroke:#e65100
-    style QUA fill:#e3f2fd,stroke:#1565c0
+```bash
+python -m venv .venv
+. .venv/Scripts/activate
+python -m pip install -e .[dev]
+pytest -q
 ```
 
----
+Version check:
 
-## FEM Solver Pipeline
-
-### Linear Elastic Analysis
-
-```mermaid
-flowchart LR
-    A["init(nn, dof)<br/>Allocate K, p, q"] --> B["Element Loop<br/>Ke = kq4e(T,X,G)"]
-    B --> C["Assembly<br/>K = assmk(K, Ke, T)"]
-    C --> D["Apply Loads<br/>p = setload(p, …)"]
-    D --> E["Apply BCs<br/>K,p = setbc(K, p, C)<br/>— or —<br/>u = solve_lag(K, p, C)"]
-    E --> F["Solve<br/>u = K⁻¹ · p"]
-    F --> G["Post-Process<br/>q,S = qq4e(…, u)<br/>R = reaction(K,u,p)"]
-
-    style A fill:#f3e5f5,stroke:#6a1b9a
-    style F fill:#e8f5e9,stroke:#2e7d32
-    style G fill:#fff9c4,stroke:#f57f17
+```bash
+python -m femlabpy --version
+python -c "import femlabpy; print(femlabpy.__version__)"
 ```
-
-### Nonlinear Elastoplastic Analysis
-
-```mermaid
-flowchart TD
-    INIT["Initialize<br/>S₀ = 0, E₀ = 0, load_factor = 0"] --> LOAD
-    LOAD["Increment Load<br/>load_factor += Δλ"] --> STIFF
-    STIFF["Tangent Stiffness<br/>K = keq4eps(T, X, G, S, E)"] --> SOLVE
-    SOLVE["Solve<br/>Δu = K⁻¹ · ΔF"] --> UPDATE
-    UPDATE["Update State<br/>q, S_new, E_new = qeq4eps(…, u, S, E)"] --> CHECK
-
-    CHECK{"Converged?<br/>‖q − F‖ < tol"}
-    CHECK -- "No" --> STIFF
-    CHECK -- "Yes" --> NEXT
-
-    NEXT{"More load<br/>increments?"}
-    NEXT -- "Yes" --> LOAD
-    NEXT -- "No" --> DONE["Done<br/>Final u, S, E"]
-
-    style INIT fill:#f3e5f5,stroke:#6a1b9a
-    style CHECK fill:#fff3e0,stroke:#e65100
-    style DONE fill:#e8f5e9,stroke:#2e7d32
-```
-
-### Plasticity Return-Mapping Algorithm
-
-At each Gauss point, the stress update follows an **implicit return-mapping** scheme:
-
-```mermaid
-flowchart TD
-    TRIAL["Trial Stress<br/>σ_trial = D · (ε − εᵖ)"] --> YIELD
-
-    YIELD{"Yield Check<br/>f(σ_trial) ≤ 0 ?"}
-    YIELD -- "Yes (elastic)" --> ACCEPT["Accept Trial<br/>σ = σ_trial"]
-    YIELD -- "No (plastic)" --> RETURN
-
-    RETURN["Return Mapping<br/>Newton iteration:<br/>find Δγ such that f(σ*) = 0"] --> TANGENT
-
-    TANGENT["Consistent Tangent<br/>D_ep = D − correction term<br/>Update εᵖ += Δγ · ∂f/∂σ"]
-
-    ACCEPT --> OUT["Output: σ, εᵖ, D_ep"]
-    TANGENT --> OUT
-
-    style TRIAL fill:#e3f2fd,stroke:#1565c0
-    style YIELD fill:#fff3e0,stroke:#e65100
-    style RETURN fill:#ffebee,stroke:#c62828
-    style OUT fill:#e8f5e9,stroke:#2e7d32
-```
-
----
-
-## Element Library
-
-```mermaid
-graph TD
-    subgraph "1D Elements"
-        BAR["Bar / Truss<br/>2 nodes, 1–3 DOF<br/>Linear + geometric nonlinear"]
-    end
-
-    subgraph "2D Elements"
-        T3["T3 Triangle<br/>3 nodes, 2 DOF<br/>1-point quadrature"]
-        Q4["Q4 Quadrilateral<br/>4 nodes, 2 DOF<br/>2×2 Gauss quadrature"]
-        T3P["T3 Potential<br/>3 nodes, 1 DOF<br/>Heat / flow"]
-        Q4P["Q4 Potential<br/>4 nodes, 1 DOF<br/>Heat / flow"]
-    end
-
-    subgraph "2D Elastoplastic"
-        Q4EPS["Q4 Plane-Stress Plastic<br/>Von Mises + hardening"]
-        Q4EPE["Q4 Plane-Strain Plastic<br/>Von Mises + hardening"]
-    end
-
-    subgraph "3D Elements"
-        T4["T4 Tetrahedron<br/>4 nodes, 3 DOF<br/>1-point quadrature"]
-        H8["H8 Hexahedron<br/>8 nodes, 3 DOF<br/>2×2×2 Gauss quadrature"]
-    end
-
-    style BAR fill:#e3f2fd,stroke:#1565c0
-    style T3 fill:#e8f5e9,stroke:#2e7d32
-    style Q4 fill:#e8f5e9,stroke:#2e7d32
-    style T3P fill:#fff9c4,stroke:#f57f17
-    style Q4P fill:#fff9c4,stroke:#f57f17
-    style Q4EPS fill:#ffebee,stroke:#c62828
-    style Q4EPE fill:#ffebee,stroke:#c62828
-    style T4 fill:#f3e5f5,stroke:#6a1b9a
-    style H8 fill:#f3e5f5,stroke:#6a1b9a
-```
-
-| Element | Nodes | DOF/node | Analysis | Stiffness | Stress/Force |
-| --- | ---: | ---: | --- | --- | --- |
-| Bar | 2 | 1–3 | Linear truss | `kbar` | `qbar` |
-| Enhanced Bar | 2 | 1–3 | Geometric nonlinear truss | `kebar` | `qebar` |
-| T3 Elastic | 3 | 2 | Plane stress/strain | `kt3e`, `ket3e` | `qt3e`, `qet3e` |
-| T3 Potential | 3 | 1 | Heat / flow | `kt3p`, `ket3p` | `qt3p`, `qet3p` |
-| Q4 Elastic | 4 | 2 | Plane stress/strain | `kq4e`, `keq4e` | `qq4e`, `qeq4e` |
-| Q4 Potential | 4 | 1 | Heat / flow | `kq4p`, `keq4p` | `qq4p`, `qeq4p` |
-| Q4 Plasticity (PS) | 4 | 2 | Von Mises, plane stress | `kq4eps`, `keq4eps` | `qq4eps`, `qeq4eps` |
-| Q4 Plasticity (PE) | 4 | 2 | Von Mises, plane strain | `kq4epe`, `keq4epe` | `qq4epe`, `qeq4epe` |
-| T4 Elastic | 4 | 3 | 3D solid | `kT4e`, `keT4e` | `qT4e`, `qeT4e` |
-| H8 Elastic | 8 | 3 | 3D solid | `kh8e`, `keh8e` | `qh8e`, `qeh8e` |
-
-### Naming Convention
-
-```
-k  q  4  e
-│  │  │  └── analysis type: e=elastic, p=potential, eps=plane-stress plastic, epe=plane-strain plastic
-│  │  └───── element shape:  bar, t3=triangle, q4=quad, T4=tet, h8=hex
-│  └──────── matrix type:    k=stiffness, q=internal force / stress recovery
-└─────────── scope:          (none)=global assembly, e=single element, ke=element kernel
-```
-
----
-
-## Material Models
-
-### Elastic
-
-```
-G = [E, ν]          — Young's modulus and Poisson's ratio
-G = [E, ν, ptype]   — ptype: 1 = plane stress, 2 = plane strain
-```
-
-### Potential (Heat / Flow)
-
-```
-G = [κ]              — conductivity / permeability
-G = [κ, source]      — with volumetric source term
-```
-
-### Elastoplastic
-
-```
-G = [E, ν, σ₀, H]        — Von Mises with isotropic hardening
-G = [E, ν, σ₀, H, φ]     — Drucker-Prager with friction angle φ
-```
-
-```mermaid
-graph LR
-    subgraph "Yield Surfaces"
-        VM["Von Mises<br/>f = σ_eq − σ_y(εᵖ) ≤ 0<br/>σ_y = σ₀ + H · εᵖ"]
-        DP["Drucker-Prager<br/>f = σ_eq + φ·σ_m − σ_y ≤ 0<br/>Pressure-dependent"]
-    end
-
-    subgraph "State Variables (per Gauss point)"
-        SE["S[0:3] = σ_xx, σ_yy, τ_xy"]
-        SV["S[3] = σ_eq (von Mises)"]
-        EE["E[0:3] = ε_xx, ε_yy, γ_xy"]
-        EP["E[3] = Δγ (plastic multiplier)"]
-    end
-
-    VM --> SE
-    DP --> SE
-    SE --> SV
-    EE --> EP
-```
-
----
 
 ## Quick Start
 
-```powershell
-py -3 -m venv .venv
-.\.venv\Scripts\python -m pip install -e .[dev]
-.\.venv\Scripts\python -m pytest -q
-```
+### Packaged cantilever benchmark
 
 ```python
-from femlab.examples import run_cantilever, run_flow_q4, run_gmsh_triangle
+from femlabpy.examples import run_cantilever
 
-cantilever = run_cantilever(plot=False)
-flow       = run_flow_q4(plot=False)
-triangle   = run_gmsh_triangle(plot=False)
+result = run_cantilever(plot=False)
+print(result["u"].shape)
+print(result["S"].shape)
+print(result["R"])
 ```
 
-### Minimal Cantilever Example
-
-A 2D cantilever beam:
+### Legacy-compatible workflow
 
 ```python
-import numpy as np
-from femlab import init, kq4e, assmk, setbc, qq4e, reaction
+import femlabpy as fp
 
-# Mesh: 4×2 grid of Q4 elements, 27 nodes
-X = ...   # (27, 2) nodal coordinates
-T = ...   # (8, 4)  element connectivity
-G = np.array([1.0, 0.3, 1])  # E=1, ν=0.3, plane stress
-
-# 1) Allocate global arrays
-K, p, q = init(27, 2)
-
-# 2) Assemble stiffness
-for e in range(T.shape[0]):
-    Ke = kq4e(T[e], X, G)
-    K  = assmk(K, Ke, T[e])
-
-# 3) Apply load at tip, fix left edge
-p[tip_dof] = -1.0
-C = np.array([[node, dof_component, 0.0] for node, dof_component in fixed_pairs])
-K, p = setbc(K, p, C)
-
-# 4) Solve
-u = np.linalg.solve(K, p)
-
-# 5) Post-process
-for e in range(T.shape[0]):
-    q, Se = qq4e(q, T[e], X, G, u)
-R = reaction(K, u, p)
+data = fp.canti()
+result = fp.elastic(
+    data["T"],
+    data["X"],
+    data["G"],
+    data["C"],
+    data["P"],
+    dof=int(data["dof"]),
+    plot=False,
+)
+print(result["u"][:6])
 ```
 
----
-
-## Lagrange Multiplier Truss Example
-
-The legacy `ex_lag_mult.sce` problem is now included as a documented four-solver benchmark. It models a three-bar truss with a fixed support at Node 1, an inclined constraint at Node 2,
-
-`-sin(60 deg) * u_x + cos(60 deg) * u_y = 0`,
-
-and a downward point load `P = -10` at Node 3.
-
-### Code and Figure
-
-| Artifact | Location |
-| --- | --- |
-| Legacy Scilab classroom example | [`legacy/scilab/examples/ex_lag_mult.sce`](legacy/scilab/examples/ex_lag_mult.sce) |
-| TikZ problem figure source | [`docs/assets/lagrange/ex_lag_mult_problem.tex`](docs/assets/lagrange/ex_lag_mult_problem.tex) |
-| Python adaptation | [`src/femlab/examples/ex_lag_mult.py`](src/femlab/examples/ex_lag_mult.py) |
-| Scilab comparison script | [`scripts/scilab/ex_lag_mult.sce`](scripts/scilab/ex_lag_mult.sce) |
-| MATLAB comparison script | [`scripts/matlab/ex_lag_mult.m`](scripts/matlab/ex_lag_mult.m) |
-| Julia comparison script | [`scripts/julia/ex_lag_mult.jl`](scripts/julia/ex_lag_mult.jl) |
-| Cross-language comparison runner | [`scripts/compare_ex_lag_mult.py`](scripts/compare_ex_lag_mult.py) |
-
-### Python Usage
+### Potential flow on Q4 and T3 meshes
 
 ```python
-from femlab.examples import run_ex_lag_mult
+import femlabpy as fp
 
-result = run_ex_lag_mult()
-print(result["U"].ravel())
-print(result["Lag"].ravel())
-print(result["R"].ravel())
+q4 = fp.flowq4(plot=False)
+t3 = fp.flowt3(plot=False)
+
+print(q4["u"].min(), q4["u"].max())
+print(t3["u"].min(), t3["u"].max())
 ```
 
-### Shared Solution
+### Nonlinear truss benchmark
 
-All four implementations converge to the same answer up to floating-point roundoff:
+```python
+import femlabpy as fp
 
-- `U ~= [0, 0, -0.2803862765, -0.4856432765, 0.0739554173, -0.7981432765]^T`
-- `Lag ~= [-8.66025404, -5, -10]^T`
-- `R ~= [8.66025404, 5, -8.66025404, 5]^T`
+case = fp.bar01()
+result = fp.nlbar(
+    case["T"],
+    case["X"],
+    case["G"],
+    case["C"],
+    case["P"],
+    no_loadsteps=int(case["no_loadsteps"][0, 0]),
+    i_max=int(case["i_max"][0, 0]),
+    i_d=int(case["i_d"][0, 0]),
+    plotdof=int(case["plotdof"][0, 0]),
+    tol=float(case["TOL"][0, 0]),
+)
 
-### Solver Outputs
-
-Values below come from the current cross-language run. Near-zero values are shown as `0` for readability.
-
-#### Nodal Displacements
-
-| Solver | `u_1` | `u_2` | `u_3` | `u_4` | `u_5` | `u_6` |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
-| Scilab | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
-| MATLAB | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
-| Julia | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
-
-#### Local Axial Element Displacements
-
-Each pair lists the local axial displacement at the first and second node of the element.
-
-| Solver | Element 1 `(u_i', u_j')` | Element 2 `(u_i', u_j')` | Element 3 `(u_i', u_j')` |
-| --- | --- | --- | --- |
-| Python | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
-| Scilab | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
-| MATLAB | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
-| Julia | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
-
-#### Local Member Forces
-
-| Solver | Element 1 | Element 2 | Element 3 |
-| --- | ---: | ---: | ---: |
-| Python | 7.559289460185 | 7.559289460185 | 2.990786942706 |
-| Scilab | 7.559289460185 | 7.559289460185 | 2.990786942706 |
-| MATLAB | 7.559289460185 | 7.559289460185 | 2.990786942706 |
-| Julia | 7.559289460185 | 7.559289460185 | 2.990786942706 |
-
-### Comparison
-
-Results below come from `python scripts/compare_ex_lag_mult.py`, which executed Python, Scilab, MATLAB, and Julia versions of the same problem and compared their outputs componentwise.
-
-| Solver | $$t\,(\mathrm{s})$$ | $$\max \lvert \Delta U \rvert$$ | $$\max \lvert \Delta \mathrm{Lag} \rvert$$ | $$\max \lvert \Delta R \rvert$$ | $$\max \lvert \Delta f_{\mathrm{member}} \rvert$$ | $$\max \lvert \Delta u_{\mathrm{loc}} \rvert$$ |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00044 | 0 | 0 | 0 | 0 | 0 |
-| Scilab | 4.05417 | 7.22e-16 | 5.33e-15 | 7.11e-15 | 4.88e-15 | 7.77e-16 |
-| MATLAB | 7.04841 | 4.44e-16 | 3.55e-15 | 3.55e-15 | 4.44e-15 | 5.00e-16 |
-| Julia | 2.12306 | 0 | 0 | 1.78e-15 | 4.44e-16 | 5.55e-17 |
-
-The full machine-readable output is written to `tmp/ex_lag_mult_compare/summary.json`.
-
----
-
-## Cross-Solver Comparison Pipeline
-
-All 10 benchmark cases were executed identically across **Python**, **MATLAB**, and **Scilab**, with numeric outputs collected into TSV files for reproducible comparison.
-
-```mermaid
-flowchart LR
-    subgraph Inputs
-        CSV["Shared input files<br/>X.tsv · T.tsv · G.tsv · C.tsv · P.tsv"]
-    end
-
-    subgraph Solvers
-        PY["Python<br/>src/femlab/"]
-        ML["MATLAB R2025b<br/>Original toolbox"]
-        SC["Scilab 2025.0.0<br/>macros/"]
-    end
-
-    subgraph Outputs
-        TSV["Per-case TSVs<br/>u.tsv · S.tsv · E.tsv · R.tsv"]
-        SUM["summary_runs.tsv"]
-        PAIR["pairwise_comparison.tsv"]
-        PLOT["PGFPlots PDF/PNG"]
-    end
-
-    CSV --> PY --> TSV
-    CSV --> ML --> TSV
-    CSV --> SC --> TSV
-    TSV --> SUM
-    TSV --> PAIR
-    PAIR --> PLOT
+print(result["U_path"].ravel())
+print(result["F_path"].ravel())
 ```
 
-### Reproduce
+### Elastoplastic benchmark
 
-```powershell
-# Run all 10 cases across all 3 solvers
-.\.venv\Scripts\python scripts\generate_solver_comparison.py
+```python
+from femlabpy.examples import run_square_plastpe
 
-# Run a specific case
-.\.venv\Scripts\python scripts\generate_solver_comparison.py cantilever_q4
-
-# List available cases
-.\.venv\Scripts\python scripts\generate_solver_comparison.py --list
+result = run_square_plastpe(plot=False)
+print(result["u"].shape)
+print(result["E"].shape)
 ```
 
----
+### Gmsh import
 
-## Benchmark Results
+```python
+from femlabpy import load_gmsh2
 
-### 10 Test Cases
-
-```mermaid
-graph TD
-    subgraph "Linear Elastic"
-        C1["cantilever_q4<br/>Q4 beam, 27 nodes"]
-        C2["gmsh_triangle_t3<br/>T3 mesh, 100 nodes"]
-    end
-
-    subgraph "Potential Flow"
-        C3["flow_q4<br/>Q4 flow, 31 nodes"]
-        C4["flow_t3<br/>T3 flow, 31 nodes"]
-    end
-
-    subgraph "Nonlinear Bar"
-        C5["bar01_nlbar<br/>2D truss, 3 nodes"]
-        C6["bar02_nlbar<br/>3D truss, 4 nodes"]
-    end
-
-    subgraph "Elastoplastic"
-        C7["square_plastps<br/>Plane-stress, 9 nodes"]
-        C8["square_plastpe<br/>Plane-strain, 9 nodes"]
-        C9["hole_plastps<br/>Plate w/ hole PS, 65 nodes"]
-        C10["hole_plastpe<br/>Plate w/ hole PE, 65 nodes"]
-    end
-
-    style C1 fill:#e8f5e9
-    style C2 fill:#e8f5e9
-    style C3 fill:#e3f2fd
-    style C4 fill:#e3f2fd
-    style C5 fill:#fff9c4
-    style C6 fill:#fff9c4
-    style C7 fill:#ffebee
-    style C8 fill:#ffebee
-    style C9 fill:#ffebee
-    style C10 fill:#ffebee
+mesh = load_gmsh2("src/femlabpy/data/meshes/deneme.msh")
+print(mesh["positions"].shape)
+print(mesh["triangles"].shape)
 ```
 
-### Run Status & Runtime
+## Legacy FemLab Compatibility
 
-| Case | MATLAB | Python | Scilab |
-| --- | --- | --- | --- |
-| cantilever_q4 | ok  (6.1 s) | ok  (0.007 s) | ok  (3.3 s) |
-| gmsh_triangle_t3 | ok  (5.9 s) | ok  (0.05 s) | ok  (3.5 s) |
-| flow_q4 | ok  (4.8 s) | ok  (0.009 s) | ok  (3.6 s) |
-| flow_t3 | ok  (7.6 s) | ok  (0.01 s) | ok  (3.8 s) |
-| bar01_nlbar | ok  (6.1 s) | ok  (0.03 s) | timeout  (120 s) |
-| bar02_nlbar | ok  (7.4 s) | ok  (0.01 s) | ok  (3.8 s) |
-| square_plastps | ok  (5.0 s) | ok  (0.06 s) | timeout  (120 s) |
-| square_plastpe | ok  (6.4 s) | ok  (0.18 s) | ok  (5.4 s) |
-| hole_plastps | ok  (6.0 s) | ok  (0.77 s) | timeout  (120 s) |
-| hole_plastpe | ok  (10.7 s) | ok  (5.3 s) | ok  (16.5 s) |
+`femlabpy` is intentionally organized around the original classroom naming:
 
-> Python completes **10/10 cases**. Scilab times out on 3 plane-stress nonlinear cases.
+- Data loaders such as `canti()`, `flow()`, `bar01()`, `square()`, and `hole()`
+- Legacy solver wrappers such as `elastic()`, `flowq4()`, `flowt3()`, `nlbar()`, `plastps()`, and `plastpe()`
+- Lower-level kernels such as `ket3e`, `kq4e`, `qq4e`, `qbar`, `stressvm`, and `solve_lag`
 
-### Accuracy: Python vs MATLAB (Baseline)
+Packaged example data and reproducible drivers live in `femlabpy.examples`, while the preserved Scilab material remains under `legacy/scilab/`.
 
-| Case | Max $\vert \Delta u \vert$ | Max $\vert \Delta \sigma \vert$ | Verdict |
-| :--- | :--- | :--- | :--- |
-| cantilever_q4 | $5.70 \times 10^{-14}$ | $4.63 \times 10^{-13}$ | machine precision |
-| gmsh_triangle_t3 | $1.72 \times 10^{-21}$ | $1.06 \times 10^{-14}$ | machine precision |
-| flow_q4 | $2.13 \times 10^{-14}$ | $2.39 \times 10^{-18}$ | machine precision |
-| flow_t3 | $4.26 \times 10^{-14}$ | $3.04 \times 10^{-18}$ | machine precision |
-| bar01_nlbar | $8.74 \times 10^{-26}$ | 0 | machine precision |
-| bar02_nlbar | $3.86 \times 10^{-16}$ | 0 | machine precision |
-| square_plastps | $7.98 \times 10^{-17}$ | $1.33 \times 10^{-15}$ | machine precision |
-| square_plastpe | $3.99 \times 10^{-3}$ | $4.81 \times 10^{-2}$ | < 0.5% (iterative) |
-| hole_plastps | $2.50 \times 10^{-16}$ | $1.54 \times 10^{-14}$ | machine precision |
-| hole_plastpe | $4.04 \times 10^{-4}$ | $5.56 \times 10^{-3}$ | < 0.1% (iterative) |
+## Using `help()`
 
+The README reference below is aligned with the actual docstrings exposed by the package. You can inspect the same information locally:
 
-**8 of 10 cases** match MATLAB at machine precision (Δu < 10⁻¹⁴). The remaining 2 cases (plane-strain plasticity) show sub-percent differences expected from path-dependent iterative solvers. All three solvers (Python, MATLAB, Scilab) diverge from each other by similar margins on these cases.
-
-### Runtime Comparison
-
-```mermaid
-xychart-beta
-    title "Runtime by Solver (seconds, log scale concept)"
-    x-axis ["cantilever", "gmsh_tri", "flow_q4", "flow_t3", "bar01", "bar02", "sq_ps", "sq_pe", "hole_ps", "hole_pe"]
-    y-axis "Runtime (s)" 0 --> 20
-    bar [6.1, 5.9, 4.8, 7.6, 6.1, 7.4, 5.0, 6.4, 6.0, 10.7]
-    bar [0.007, 0.05, 0.009, 0.01, 0.03, 0.01, 0.06, 0.18, 0.77, 5.3]
-    bar [3.3, 3.5, 3.6, 3.8, 0, 3.8, 0, 5.4, 0, 16.5]
+```bash
+python -c "import femlabpy; help(femlabpy.ket3e)"
+python -c "import femlabpy; help(femlabpy.plastpe)"
+python -c "from femlabpy import examples; help(examples.run_cantilever)"
+python -m pydoc femlabpy
 ```
 
-> **Python is 100–800× faster** than MATLAB/Scilab for small linear cases. The MATLAB/Scilab overhead is dominated by interpreter startup, not computation. For larger plasticity cases, Python is still **2–3× faster**.
-
-### Comparison Plots (PGFPlots)
-
-| Displacement diff vs MATLAB | Stress diff vs MATLAB | Runtime comparison |
-| --- | --- | --- |
-| ![u diff](benchmarks/plots/u_diff_vs_baseline.png) | ![S diff](benchmarks/plots/stress_diff_vs_baseline.png) | ![Runtime](benchmarks/plots/runtime_by_solver.png) |
-
----
-
-## Scilab Parity (Legacy Comparison)
-
-Before the full three-solver comparison, the Python port was validated directly against the Scilab wrapper:
-
-| Example | Max $\vert u_{\text{scilab}} - u_{\text{python}} \vert$ | L2 u diff | Max stress diff | Max reaction diff |
-| --- | ---: | ---: | ---: | ---: |
-| Cantilever | 3.34e-08 | 1.06e-07 | 5.20e-13 | 1.28e-13 |
-| Triangle mesh | 2.89e-21 | 1.87e-20 | 1.70e-14 | 2.38e-14 |
-
-| Cantilever parity | Triangle parity |
-| --- | --- |
-| ![Cantilever parity](docs/assets/comparison/cantilever_parity.png) | ![Triangle parity](docs/assets/comparison/triangle_parity.png) |
-
-Reproduce:
-
-```powershell
-.\.venv\Scripts\python scripts\generate_parity_artifacts.py
-```
-
----
-
-## Known Issues
-
-```mermaid
-flowchart TD
-    subgraph "Scilab-Specific"
-        I1["bar01_nlbar timeout<br/>Nonlinear loop diverges<br/>in Scilab 2025.0.0"]
-        I2["square/hole plastps timeout<br/>Plane-stress plasticity<br/>hangs past 120 s"]
-        I3["Flow BC mismatch<br/>setbc handles dof=1 differently<br/>→ different solution"]
-    end
-
-    subgraph "Cross-Solver"
-        I4["Plane-strain plasticity<br/>Sub-percent path-dependent<br/>differences expected"]
-        I5["F_path shape mismatch<br/>Python stores more load<br/>increments than MATLAB"]
-    end
-
-    subgraph "Legacy"
-        I6["elastic.sce uses inv(K)<br/>instead of direct solve"]
-        I7["canti_gmsh.sce<br/>hardcodes Linux path"]
-        I8["devstres naming<br/>regression in Scilab"]
-    end
-
-    style I1 fill:#ffebee,stroke:#c62828
-    style I2 fill:#ffebee,stroke:#c62828
-    style I3 fill:#fff3e0,stroke:#e65100
-    style I4 fill:#fff9c4,stroke:#f57f17
-    style I5 fill:#fff9c4,stroke:#f57f17
-    style I6 fill:#e0e0e0,stroke:#616161
-    style I7 fill:#e0e0e0,stroke:#616161
-    style I8 fill:#e0e0e0,stroke:#616161
-```
-
----
-
-## Complete Function Reference
+## API Reference
 
 <details>
-<summary><strong>Core (5 functions)</strong></summary>
+<summary><strong>Compatibility</strong></summary>
 
-| Function | Signature | Purpose |
-| --- | --- | --- |
-| `init` | `init(nn, dof)` | Allocate K, p, q |
-| `cols` | `cols(matrix)` | Column count |
-| `rows` | `rows(matrix)` | Row count |
-| `setbc` | `setbc(K, p, C)` | Apply penalty BCs |
-| `solve_lag` | `solve_lag(K, p, C)` | Solve with Lagrange multipliers |
+| Function | `help()` summary |
+| --- | --- |
+| `canti` | Return the original `canti.m` cantilever benchmark input deck. |
+| `flow` | Return the original `flow.m` potential-flow benchmark data. |
+| `bar01` | Return the packaged input deck corresponding to `bar01.m`. |
+| `bar02` | Return the packaged input deck corresponding to `bar02.m`. |
+| `bar03` | Return the packaged input deck corresponding to `bar03.m`. |
+| `square` | Return the packaged input deck corresponding to `square.m`. |
+| `hole` | Return the packaged input deck corresponding to `hole.m`. |
+| `elastic` | Solve a linear Q4 elasticity problem following the original `elastic.m` workflow. |
+| `flowq4` | Solve a Q4 potential problem following the original `flowq4.m` driver. |
+| `flowt3` | Solve a T3 potential problem following the original `flowt3.m` driver. |
+| `nlbar` | Solve a nonlinear truss problem through the legacy `nlbar.m` driver logic. |
+| `plastps` | Solve a plane-stress elastoplastic Q4 problem following `plastps.m`. |
+| `plastpe` | Solve a plane-strain elastoplastic Q4 problem following `plastpe.m`. |
+| `setpath` | Return canonical package paths for compatibility with legacy FemLab scripts. |
 
 </details>
 
 <details>
-<summary><strong>Assembly (2 functions)</strong></summary>
+<summary><strong>Core And Assembly</strong></summary>
 
-| Function | Signature | Purpose |
-| --- | --- | --- |
-| `assmk` | `assmk(K, Ke, Te)` | Assemble element stiffness into global K |
-| `assmq` | `assmq(q, qe, Te)` | Assemble element internal force into global q |
+| Function | `help()` summary |
+| --- | --- |
+| `init` | Initialize FEM arrays for a problem with nn nodes and dof DOFs per node. |
+| `rows` | Return the number of rows in an array-like object. |
+| `cols` | Return the number of columns in an array-like object. |
+| `assmk` | Assemble one element stiffness matrix into the global stiffness matrix. |
+| `assmq` | Assemble one element force vector into the global internal-force vector. |
+| `setload` | Set nodal loads from a load matrix P. |
+| `addload` | Add nodal loads from a load matrix P (accumulates, doesn't replace). |
+| `setbc` | Apply boundary conditions using direct elimination. |
+| `solve_lag` | Solve a linear system with Dirichlet constraints via Lagrange multipliers. |
+| `solve_lag_general` | Solve a linear system with general linear constraints `G u = Q`. |
+| `reaction` | Extract support reactions at constrained degrees of freedom. |
+| `rnorm` | Return the residual norm restricted to unconstrained degrees of freedom. |
 
 </details>
 
 <details>
-<summary><strong>Elements (40+ functions)</strong></summary>
+<summary><strong>Bars And Solids</strong></summary>
 
-**Bars:** `kbar`, `qbar`, `kebar`, `qebar`
-
-**Triangles:** `kt3e`, `qt3e`, `ket3e`, `qet3e`, `kt3p`, `qt3p`, `ket3p`, `qet3p`
-
-**Quads:** `kq4e`, `qq4e`, `keq4e`, `qeq4e`, `kq4p`, `qq4p`, `keq4p`, `qeq4p`, `kq4eps`, `qq4eps`, `keq4eps`, `qeq4eps`, `kq4epe`, `qq4epe`, `keq4epe`, `qeq4epe`
-
-**Solids:** `kT4e`, `qT4e`, `keT4e`, `qeT4e`, `kh8e`, `qh8e`, `keh8e`, `qeh8e`
+| Function | `help()` summary |
+| --- | --- |
+| `kebar` | Compute the tangent stiffness matrix of a geometrically nonlinear bar element. |
+| `kbar` | Assemble bar or truss tangent stiffness contributions into the global matrix. |
+| `qebar` | Compute the internal-force response of a single geometrically nonlinear bar. |
+| `qbar` | Assemble bar or truss internal forces and element output quantities. |
+| `keT4e` | Compute the element stiffness matrix for a 4-node tetrahedral solid. |
+| `kT4e` | Assemble T4 solid element stiffness contributions into the global matrix. |
+| `qeT4e` | Compute stress and strain results for one tetrahedral solid element. |
+| `qT4e` | Compute T4 solid stresses and assemble internal forces. |
+| `keh8e` | Compute the element stiffness matrix for an 8-node hexahedral solid. |
+| `kh8e` | Assemble H8 solid element stiffness contributions into the global matrix. |
+| `qeh8e` | Compute stress and strain results for one H8 solid element. |
+| `qh8e` | Compute H8 solid stresses and assemble internal forces. |
 
 </details>
 
 <details>
-<summary><strong>Materials (6 functions)</strong></summary>
+<summary><strong>Triangles</strong></summary>
 
-| Function | Purpose |
+| Function | `help()` summary |
 | --- | --- |
-| `stressvm` | Von Mises stress update + consistent tangent |
-| `stressdp` | Drucker-Prager stress update |
-| `yieldvm` | Von Mises yield function evaluation |
-| `dyieldvm` | Yield function derivative |
-| `eqstress` | Equivalent stress from components |
-| `devstres` | Deviatoric stress |
+| `ket3e` | Compute the element stiffness matrix for a 3-node triangular element (CST). |
+| `kt3e` | Assemble T3 (CST) element stiffness matrices into global stiffness matrix. |
+| `qet3e` | Compute stresses and strains for a single T3 element. |
+| `qt3e` | Compute element stresses/strains for all T3 elements and assemble internal forces. |
+| `ket3p` | Compute the element conductivity matrix for a 3-node potential triangle. |
+| `kt3p` | Assemble T3 potential-element conductivities into the global matrix. |
+| `qet3p` | Compute gradient and flux results for one 3-node potential triangle. |
+| `qt3p` | Compute T3 potential-element fluxes and assemble nodal fluxes. |
 
 </details>
 
 <details>
-<summary><strong>I/O & Plotting (8 functions)</strong></summary>
+<summary><strong>Quadrilaterals</strong></summary>
 
-| Function | Purpose |
+| Function | `help()` summary |
 | --- | --- |
-| `load_gmsh` | Read Gmsh `.msh` format |
-| `load_gmsh2` | Read Gmsh v2 format |
-| `plotelem` | Plot mesh elements |
-| `plotu` | Plot deformed shape |
-| `plotq4` | Plot Q4 stress contours |
-| `plott3` | Plot T3 stress contours |
-| `plotbc` | Visualize boundary conditions |
-| `plotforces` | Visualize applied forces |
+| `keq4e` | Compute element stiffness matrix for a 4-node quadrilateral (Q4) element. |
+| `kq4e` | Assemble Q4 element stiffness matrices into global stiffness matrix. |
+| `qeq4e` | Compute stresses and strains at Gauss points for a single Q4 element. |
+| `qq4e` | Compute stresses/strains for all Q4 elements and assemble internal forces. |
+| `keq4p` | Compute the element conductivity matrix for a 4-node potential quadrilateral. |
+| `kq4p` | Assemble Q4 potential-element conductivities into the global matrix. |
+| `qeq4p` | Compute gradient and flux results for one Q4 potential element. |
+| `qq4p` | Compute Q4 potential-element fluxes and assemble nodal fluxes. |
+| `keq4eps` | Compute the consistent tangent stiffness of a plane-stress plastic Q4 element. |
+| `kq4eps` | Assemble plane-stress plastic Q4 tangent matrices into the global matrix. |
+| `qeq4eps` | Update plane-stress plastic Q4 response at Gauss points. |
+| `qq4eps` | Compute plane-stress plastic Q4 internal forces and updated history fields. |
+| `keq4epe` | Compute the consistent tangent stiffness of a plane-strain plastic Q4 element. |
+| `kq4epe` | Assemble plane-strain plastic Q4 tangent matrices into the global matrix. |
+| `qeq4epe` | Update plane-strain plastic Q4 response at Gauss points. |
+| `qq4epe` | Compute plane-strain plastic Q4 internal forces and updated history fields. |
 
 </details>
 
----
+<details>
+<summary><strong>Materials, I/O, And Plotting</strong></summary>
 
-## Code Quality & Standards
-
-### Style Guide
-
-The Python codebase follows [**PEP 8**](https://peps.python.org/pep-0008/) — the official Python style guide — with formatting enforced automatically by [**black**](https://black.readthedocs.io/) and import ordering by [**isort**](https://pycqa.github.io/isort/).
-
-Related PEPs observed in this codebase:
-
-| PEP | Title | How it applies |
-| --- | --- | --- |
-| [PEP 8](https://peps.python.org/pep-0008/) | Style Guide for Python Code | Base formatting, naming, whitespace |
-| [PEP 257](https://peps.python.org/pep-0257/) | Docstring Conventions | Module and function docstrings |
-| [PEP 484](https://peps.python.org/pep-0484/) | Type Hints | Function signature annotations |
-| [PEP 517](https://peps.python.org/pep-0517/) | Build System Interface | `pyproject.toml`-based packaging |
-| [PEP 621](https://peps.python.org/pep-0621/) | Project Metadata | `[project]` table in `pyproject.toml` |
-
-### Linting Toolchain
-
-Seven industry-standard tools are run against `src/femlab/` (2 040 lines of code):
-
-```mermaid
-flowchart LR
-    SRC["src/femlab/<br/>23 files, 2040 LOC"]
-
-    subgraph "Formatting"
-        BLACK["black<br/>Code formatter"]
-        ISORT["isort<br/>Import sorter"]
-    end
-
-    subgraph "Static Analysis"
-        RUFF["ruff<br/>Fast linter"]
-        FLAKE8["flake8<br/>Style checker"]
-        PYLINT["pylint<br/>Deep analysis"]
-    end
-
-    subgraph "Type & Security"
-        MYPY["mypy<br/>Type checker"]
-        BANDIT["bandit<br/>Security scanner"]
-    end
-
-    SRC --> BLACK
-    SRC --> ISORT
-    SRC --> RUFF
-    SRC --> FLAKE8
-    SRC --> PYLINT
-    SRC --> MYPY
-    SRC --> BANDIT
-
-    style BLACK fill:#e8f5e9,stroke:#2e7d32
-    style ISORT fill:#e8f5e9,stroke:#2e7d32
-    style RUFF fill:#e8f5e9,stroke:#2e7d32
-    style FLAKE8 fill:#e8f5e9,stroke:#2e7d32
-    style PYLINT fill:#e8f5e9,stroke:#2e7d32
-    style MYPY fill:#fff3e0,stroke:#e65100
-    style BANDIT fill:#e8f5e9,stroke:#2e7d32
-```
-
-### Latest Results
-
-| Tool | Version | Result | Notes |
-| --- | --- | --- | --- |
-| **black** | 26.1.0 | **All files formatted** | 11 files reformatted, 12 already clean |
-| **isort** | 8.0.1 | **All imports sorted** | `--profile black` for compatibility |
-| **ruff** | 0.15.5 | **All checks passed** | Fixed F401 (unused imports), F841 (unused vars), E741 (ambiguous names) |
-| **flake8** | 7.3.0 | **0 errors** | `--extend-ignore=E203` (known black conflict on slice spacing) |
-| **pylint** | 4.0.5 | **10.00 / 10** | Zero warnings, zero errors |
-| **bandit** | 1.9.4 | **No issues identified** | 0 High, 0 Medium, 0 Low severity findings |
-| **mypy** | 1.19.1 | 14 type notes | All in `gmsh.py` I/O parser and `_helpers.py` (dynamic numpy/scipy types) |
-
-### Running the Linters
-
-```powershell
-# Install via conda/mamba (base environment)
-mamba install -c conda-forge black flake8 pylint isort mypy ruff bandit
-
-# Run all checks
-black --check src/femlab/
-isort --check --profile black src/femlab/
-ruff check src/femlab/
-flake8 --max-line-length 100 --extend-ignore=E203 src/femlab/
-pylint src/femlab/
-mypy src/femlab/ --ignore-missing-imports
-bandit -r src/femlab/
-```
-
-### Fixes Applied
-
-| Issue | Tool | Fix |
-| --- | --- | --- |
-| Unused imports (`cols`, `node_dof_indices`) | ruff F401 | Removed from `boundary.py` |
-| Unused variable `VonMises` | ruff F841, pylint W0612 | Prefixed with `_` in `quads.py` |
-| Unused variable `Sd` | pylint W0612 | Prefixed with `_` in `qeq4eps()` |
-| Ambiguous variable name `I` | ruff E741 | Renamed to `I4` in `keq4epe()` / `qeq4epe()` |
-| Import ordering | isort | Auto-sorted with `--profile black` |
-| Formatting (11 files) | black | Auto-formatted (line length, trailing commas, etc.) |
-
-### mypy Notes
-
-The 14 remaining mypy findings are all in the Gmsh file parser (`io/gmsh.py`) and helper utilities (`_helpers.py`). These arise from dynamic numpy/scipy types that mypy cannot infer statically — the code is correct at runtime and fully tested. Adding type stubs or `# type: ignore` annotations is tracked as a future improvement.
-
----
-
-## Tests
-
-```powershell
-.\.venv\Scripts\python -m pytest tests/ -q
-```
-
-| Test | What it checks |
+| Function | `help()` summary |
 | --- | --- |
-| `test_cantilever` | Tip deflects downward, finite stress |
-| `test_gmsh_triangle` | Mesh loads, displacements finite |
-| `test_flow` | Potential stays within Dirichlet bounds |
-| `test_T4_stiffness` | 12×12 symmetric positive semi-definite |
-| `test_H8_stiffness` | 24×24 symmetric positive semi-definite |
+| `devstress` | Return the deviatoric stress vector together with the mean stress. |
+| `devstres` | Return the deviatoric stress vector together with the mean stress. |
+| `eqstress` | Return the von Mises equivalent stress for 2D or 3D stress input. |
+| `yieldvm` | Evaluate the legacy von Mises yield function with isotropic hardening. |
+| `dyieldvm` | Differentiate the legacy von Mises yield function with respect to dL. |
+| `stressvm` | Perform a legacy von Mises return-mapping update. |
+| `stressdp` | Perform a Drucker-Prager stress update with Newton iterations. |
+| `load_gmsh` | Read a Gmsh mesh using the legacy `load_gmsh.m` semantics. |
+| `load_gmsh2` | Read a Gmsh mesh using the more flexible `load_gmsh2.m` semantics. |
+| `plotelem` | Plot the undeformed mesh and optionally annotate node or element numbers. |
+| `plotforces` | Plot nodal loads as arrows on a 2D mesh view. |
+| `plotbc` | Plot prescribed boundary conditions on a 2D mesh view. |
+| `plotq4` | Plot a contour field reconstructed from Q4 Gauss-point results. |
+| `plott3` | Plot a contour field from T3 element results. |
+| `plotu` | Plot a scalar nodal field over a 2D or 3D mesh. |
+| `solve_nlbar` | Solve the legacy nonlinear bar examples with the orthogonal residual method. |
+| `solve_plastic` | Solve the legacy Q4 elastoplastic examples with orthogonal residual iterations. |
 
----
+</details>
 
-## Legacy Scilab Structure
+<details>
+<summary><strong>Examples</strong></summary>
 
-All legacy files have been moved under `legacy/` — see [`legacy/README.md`](legacy/README.md) for details.
-
-| Path | Role |
+| Function | `help()` summary |
 | --- | --- |
-| `legacy/scilab/macros/` | ~60 `.sci` files: assembly, elements, loads, BCs, stress, plotting |
-| `legacy/scilab/examples/` | Hand-authored teaching examples |
-| `legacy/scilab/help/` | HTML reference pages for legacy API |
-| `legacy/mesh/` | Gmsh `.geo`/`.msh` assets |
-| `legacy/doc/` | Inherited manual (PostScript) and original README |
+| `femlabpy.examples.bar01_data` | Return the original `bar01.m` nonlinear truss benchmark data. |
+| `femlabpy.examples.bar02_data` | Return the original `bar02.m` nonlinear truss benchmark data. |
+| `femlabpy.examples.bar03_data` | Return the original `bar03.m` 12-bar truss benchmark data. |
+| `femlabpy.examples.cantilever_data` | Return the packaged classroom cantilever benchmark input deck. |
+| `femlabpy.examples.ex_lag_mult_data` | Return the packaged three-bar Lagrange-multiplier benchmark data. |
+| `femlabpy.examples.flow_data` | Return the packaged potential-flow benchmark for both Q4 and T3 meshes. |
+| `femlabpy.examples.gmsh_triangle_data` | Return the packaged Gmsh triangle benchmark in FemLab array form. |
+| `femlabpy.examples.hole_data` | Return the packaged `hole.m` data for plane stress or plane strain. |
+| `femlabpy.examples.run_bar01_nlbar` | Solve the original `bar01.m` example through the legacy `nlbar` driver. |
+| `femlabpy.examples.run_bar02_nlbar` | Solve the original `bar02.m` example through the legacy `nlbar` driver. |
+| `femlabpy.examples.run_bar03_nlbar` | Solve the original `bar03.m` example through the legacy `nlbar` driver. |
+| `femlabpy.examples.run_cantilever` | Solve the packaged cantilever benchmark and optionally produce figures. |
+| `femlabpy.examples.run_ex_lag_mult` | Solve the packaged three-bar truss with linear displacement constraints. |
+| `femlabpy.examples.run_flow_q4` | Solve the packaged Q4 potential-flow benchmark and optionally plot it. |
+| `femlabpy.examples.run_flow_t3` | Solve the packaged T3 potential-flow benchmark and optionally plot it. |
+| `femlabpy.examples.run_gmsh_triangle` | Solve the bundled triangular Gmsh example with CST elements. |
+| `femlabpy.examples.run_hole_plastpe` | Solve the plane-strain `hole.m` elastoplastic benchmark. |
+| `femlabpy.examples.run_hole_plastps` | Solve the plane-stress `hole.m` elastoplastic benchmark. |
+| `femlabpy.examples.run_square_plastpe` | Solve the plane-strain `square.m` elastoplastic benchmark. |
+| `femlabpy.examples.run_square_plastps` | Solve the plane-stress `square.m` elastoplastic benchmark. |
+| `femlabpy.examples.square_data` | Return the packaged `square.m` data for plane stress or plane strain. |
 
-Editable targets documented in [docs/EDITABLE_TARGETS.md](docs/EDITABLE_TARGETS.md).
+</details>
 
----
+## Project Layout
 
-## License Note
+```text
+src/femlabpy/           Python package
+tests/                  Regression and parity tests
+legacy/scilab/          Preserved Scilab macros and examples
+benchmarks/             Stored reference outputs and comparison tables
+scripts/                Comparison, validation, and helper runners
+docs/                   Notes, figures, and mapping documents
+```
 
-The legacy source files contain copyright notices but no obvious standalone license file in the imported material. Until upstream licensing is clarified, treat the legacy MATLAB/Scilab content as historical reference material.
+## Development And Validation
+
+Run the local test suite:
+
+```bash
+pytest -q
+```
+
+Build the package:
+
+```bash
+python -m build
+python -m twine check dist/*
+```
+
+Selected maintenance scripts:
+
+- `python scripts/generate_solver_comparison.py --solver python --solver scilab`
+- `python scripts/compare_ex_lag_mult.py`
+- `python scripts/generate_parity_artifacts.py`
+
+## Community Standards
+
+This repository is meant to stay usable as both a teaching codebase and a publishable Python package.
+
+- Contributor expectations: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- Change process and local setup: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Packaging and redistribution terms: [LICENSE](LICENSE)
+
+Legacy MATLAB / Scilab source material is preserved for historical and compatibility purposes inside `legacy/`.
