@@ -1,0 +1,21 @@
+﻿femlabpy.elements.triangles
+===========================
+
+.. automodule:: femlabpy.elements.triangles
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ket3e
+      ket3p
+      kt3e
+      kt3p
+      met3e
+      mt3e
+      qet3e
+      qet3p
+      qt3e
+      qt3p
+   

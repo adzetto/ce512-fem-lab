@@ -1,0 +1,985 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>2D Triangular Elements (CST) &#8212; femlabpy 0.6.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+
+    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'theory/04_2d_triangles';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chapter 5: 2D Isoparametric Quadrilateral Elements" href="05_2d_quads.html" />
+    <link rel="prev" title="Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)" href="03_1d_bars.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">femlabpy 0.6.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="#">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_core_assembly.html">Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_boundary_loads.html">Chapter 2: Boundary Conditions and Loads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_1d_bars.html">Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">2D Triangular Elements (CST)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05_2d_quads.html">Chapter 5: 2D Isoparametric Quadrilateral Elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_3d_solids.html">3D Solid Elements: Tetrahedrons and Hexahedrons</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="07_plasticity.html">Chapter 7: Constitutive Models &amp; Plasticity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_dynamics.html">Structural Dynamics and Time Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_modal_periodic.html">Chapter 9: Eigenvalue Problems and Periodic Boundaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_io_mesh.html">Mesh I/O, Data Types, and Helpers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_nonlinear_solvers.html">Chapter 11: Nonlinear Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="12_plotting_postprocessing.html">Plotting and Post-Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_legacy_wrappers.html">13. Legacy Wrappers for MATLAB Compatibility</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Theory &amp; Reference Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">2D Triangular Elements (CST)</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="d-triangular-elements-cst">
+<h1>2D Triangular Elements (CST)<a class="headerlink" href="#d-triangular-elements-cst" title="Link to this heading">#</a></h1>
+<p>This chapter covers the mathematical foundations, finite element formulation, and Python implementation of the 3-node triangular element. Often referred to as the Constant Strain Triangle (CST) in structural mechanics, it is one of the earliest and simplest finite elements developed. Despite its simplicity, it is robust and forms the foundational stepping stone for more complex isoparametric element derivations.</p>
+<p>In this text, we will focus on both the theoretical derivation using area coordinates and the practical, highly optimized vectorized implementation available in <code class="docutils literal notranslate"><span class="pre">femlabpy</span></code>.</p>
+<section id="area-coordinates-and-shape-functions">
+<h2>Area Coordinates and Shape Functions<a class="headerlink" href="#area-coordinates-and-shape-functions" title="Link to this heading">#</a></h2>
+<p>In a 1D line element, we use length-based natural coordinates. In a 2D triangular element, it is most natural to use <strong>area coordinates</strong> (also known as barycentric coordinates).</p>
+<p>Consider a triangle with vertices <span class="math notranslate nohighlight">\(1(x_1, y_1)\)</span>, <span class="math notranslate nohighlight">\(2(x_2, y_2)\)</span>, and <span class="math notranslate nohighlight">\(3(x_3, y_3)\)</span>. Its total area <span class="math notranslate nohighlight">\(A\)</span> can be computed using the determinant of the Jacobian:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+2A = \det \begin{bmatrix} 1 &amp; x_1 &amp; y_1 \\ 1 &amp; x_2 &amp; y_2 \\ 1 &amp; x_3 &amp; y_3 \end{bmatrix} = (x_2 y_3 - x_3 y_2) + (x_3 y_1 - x_1 y_3) + (x_1 y_2 - x_2 y_1)
+\end{split}\]</div>
+<p>For any interior point <span class="math notranslate nohighlight">\(P(x, y)\)</span>, we can form three sub-triangles by connecting <span class="math notranslate nohighlight">\(P\)</span> to the vertices. Let the areas of these sub-triangles be <span class="math notranslate nohighlight">\(A_1\)</span>, <span class="math notranslate nohighlight">\(A_2\)</span>, and <span class="math notranslate nohighlight">\(A_3\)</span> (where <span class="math notranslate nohighlight">\(A_i\)</span> is the area of the sub-triangle opposite to vertex <span class="math notranslate nohighlight">\(i\)</span>). The area coordinates <span class="math notranslate nohighlight">\(L_i\)</span> are defined as the ratio of these sub-areas to the total area:</p>
+<div class="math notranslate nohighlight">
+\[
+L_1 = \frac{A_1}{A}, \quad L_2 = \frac{A_2}{A}, \quad L_3 = \frac{A_3}{A}
+\]</div>
+<p>By definition, these coordinates must satisfy the partition of unity:</p>
+<div class="math notranslate nohighlight">
+\[
+L_1 + L_2 + L_3 = 1
+\]</div>
+<p>In a 3-node triangular element, the shape functions <span class="math notranslate nohighlight">\(N_i(x,y)\)</span> are exactly the area coordinates. Thus:</p>
+<div class="math notranslate nohighlight">
+\[
+N_1 = L_1, \quad N_2 = L_2, \quad N_3 = L_3
+\]</div>
+<section id="mapping-area-coordinates-to-x-y">
+<h3>Mapping Area Coordinates to <span class="math notranslate nohighlight">\((x,y)\)</span><a class="headerlink" href="#mapping-area-coordinates-to-x-y" title="Link to this heading">#</a></h3>
+<p>The relationship between Cartesian coordinates <span class="math notranslate nohighlight">\((x,y)\)</span> and area coordinates <span class="math notranslate nohighlight">\((L_1, L_2, L_3)\)</span> is an exact linear mapping:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{bmatrix} 1 \\ x \\ y \end{bmatrix} = \begin{bmatrix} 1 &amp; 1 &amp; 1 \\ x_1 &amp; x_2 &amp; x_3 \\ y_1 &amp; y_2 &amp; y_3 \end{bmatrix} \begin{bmatrix} L_1 \\ L_2 \\ L_3 \end{bmatrix}
+\end{split}\]</div>
+<p>Inverting this 3x3 matrix relationship gives the explicit polynomial form for the shape functions:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{bmatrix} L_1 \\ L_2 \\ L_3 \end{bmatrix} = \frac{1}{2A} \begin{bmatrix} (x_2 y_3 - x_3 y_2) &amp; (y_2 - y_3) &amp; (x_3 - x_2) \\ (x_3 y_1 - x_1 y_3) &amp; (y_3 - y_1) &amp; (x_1 - x_3) \\ (x_1 y_2 - x_2 y_1) &amp; (y_1 - y_2) &amp; (x_2 - x_1) \end{bmatrix} \begin{bmatrix} 1 \\ x \\ y \end{bmatrix}
+\end{split}\]</div>
+<p>Or, written explicitly for <span class="math notranslate nohighlight">\(N_i\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[
+N_i(x, y) = L_i(x, y) = \frac{1}{2A} (a_i + b_i x + c_i y)
+\]</div>
+<p>where the geometric constants are derived from the cyclic permutations of the node indices (e.g., for <span class="math notranslate nohighlight">\(i=1\)</span>, <span class="math notranslate nohighlight">\(j=2\)</span>, <span class="math notranslate nohighlight">\(k=3\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[
+a_i = x_j y_k - x_k y_j, \quad b_i = y_j - y_k, \quad c_i = x_k - x_j
+\]</div>
+<p>The spatial derivatives (gradients) of the shape functions with respect to <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> are thus simple constants evaluated over the element domain:</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial N_i}{\partial x} = \frac{b_i}{2A}, \quad \frac{\partial N_i}{\partial y} = \frac{c_i}{2A}
+\]</div>
+<p>This mathematical property is what gives the Constant Strain Triangle its name: because the displacement gradients are derived from the constant shape function derivatives, the entire strain and stress field within each element is uniform.</p>
+</section>
+</section>
+<section id="solid-mechanics-deriving-the-3-times-6-b-matrix-step-by-step">
+<h2>Solid Mechanics: Deriving the <span class="math notranslate nohighlight">\(3 \times 6\)</span> <span class="math notranslate nohighlight">\(B\)</span> Matrix Step-by-Step<a class="headerlink" href="#solid-mechanics-deriving-the-3-times-6-b-matrix-step-by-step" title="Link to this heading">#</a></h2>
+<p>In 2D plane elasticity (either plane stress or plane strain), each node has two degrees of freedom (DOFs): translation in <span class="math notranslate nohighlight">\(x\)</span> (denoted <span class="math notranslate nohighlight">\(u\)</span>) and <span class="math notranslate nohighlight">\(y\)</span> (denoted <span class="math notranslate nohighlight">\(v\)</span>). For a 3-node element, the <span class="math notranslate nohighlight">\(6 \times 1\)</span> element displacement vector is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{u}^e = \begin{bmatrix} u_1 \\ v_1 \\ u_2 \\ v_2 \\ u_3 \\ v_3 \end{bmatrix}
+\end{split}\]</div>
+<p>The continuous displacement field within the element is interpolated using our area coordinate shape functions:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+u(x,y) = N_1 u_1 + N_2 u_2 + N_3 u_3 \\
+v(x,y) = N_1 v_1 + N_2 v_2 + N_3 v_3
+\end{split}\]</div>
+<p>In a 2D elasticity problem, the strain vector <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}\)</span> has three components: normal strain in x, normal strain in y, and shear strain:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\boldsymbol{\varepsilon} = \begin{bmatrix} \varepsilon_{xx} \\ \varepsilon_{yy} \\ \gamma_{xy} \end{bmatrix} = \begin{bmatrix} \frac{\partial u}{\partial x} \\ \frac{\partial v}{\partial y} \\ \frac{\partial u}{\partial y} + \frac{\partial v}{\partial x} \end{bmatrix}
+\end{split}\]</div>
+<p>By substituting the interpolated displacements into the strain definitions, we get:</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial u}{\partial x} = \frac{\partial N_1}{\partial x} u_1 + \frac{\partial N_2}{\partial x} u_2 + \frac{\partial N_3}{\partial x} u_3
+\]</div>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial v}{\partial y} = \frac{\partial N_1}{\partial y} v_1 + \frac{\partial N_2}{\partial y} v_2 + \frac{\partial N_3}{\partial y} v_3
+\]</div>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial u}{\partial y} + \frac{\partial v}{\partial x} = \frac{\partial N_1}{\partial y} u_1 + \frac{\partial N_1}{\partial x} v_1 + \frac{\partial N_2}{\partial y} u_2 + \frac{\partial N_2}{\partial x} v_2 + \frac{\partial N_3}{\partial y} u_3 + \frac{\partial N_3}{\partial x} v_3
+\]</div>
+<p>We can express this linear relationship compactly using the Strain-Displacement matrix <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[
+\boldsymbol{\varepsilon} = \mathbf{B} \mathbf{u}^e
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> is a <span class="math notranslate nohighlight">\(3 \times 6\)</span> matrix composed of the shape function derivatives. Constructing it column-by-column for each DOF:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{B} = \begin{bmatrix} 
+\frac{\partial N_1}{\partial x} &amp; 0 &amp; \frac{\partial N_2}{\partial x} &amp; 0 &amp; \frac{\partial N_3}{\partial x} &amp; 0 \\
+0 &amp; \frac{\partial N_1}{\partial y} &amp; 0 &amp; \frac{\partial N_2}{\partial y} &amp; 0 &amp; \frac{\partial N_3}{\partial y} \\
+\frac{\partial N_1}{\partial y} &amp; \frac{\partial N_1}{\partial x} &amp; \frac{\partial N_2}{\partial y} &amp; \frac{\partial N_2}{\partial x} &amp; \frac{\partial N_3}{\partial y} &amp; \frac{\partial N_3}{\partial x}
+\end{bmatrix}
+\end{split}\]</div>
+<p>Finally, substituting the known constant derivatives <span class="math notranslate nohighlight">\(\frac{\partial N_i}{\partial x} = \frac{b_i}{2A}\)</span> and <span class="math notranslate nohighlight">\(\frac{\partial N_i}{\partial y} = \frac{c_i}{2A}\)</span>, we arrive at the exact analytical <span class="math notranslate nohighlight">\(3 \times 6\)</span> <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> matrix for the CST element:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{B} = \frac{1}{2A} \begin{bmatrix} 
+b_1 &amp; 0 &amp; b_2 &amp; 0 &amp; b_3 &amp; 0 \\
+0 &amp; c_1 &amp; 0 &amp; c_2 &amp; 0 &amp; c_3 \\
+c_1 &amp; b_1 &amp; c_2 &amp; b_2 &amp; c_3 &amp; b_3
+\end{bmatrix}
+\end{split}\]</div>
+</section>
+<section id="element-stiffness-matrix-computation-in-ket3e">
+<h2>Element Stiffness Matrix Computation in <code class="docutils literal notranslate"><span class="pre">ket3e</span></code><a class="headerlink" href="#element-stiffness-matrix-computation-in-ket3e" title="Link to this heading">#</a></h2>
+<p>The element stiffness matrix is derived from the principle of virtual work, integrating the strain energy density over the element volume:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathbf{k}^e = \int_{\Omega_e} \mathbf{B}^T \mathbf{D} \mathbf{B} t \, dA
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> is the <span class="math notranslate nohighlight">\(3 \times 3\)</span> constitutive (elasticity) matrix, and <span class="math notranslate nohighlight">\(t\)</span> is the element thickness. Because <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> and <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> are entirely constant over the triangle, the integrand is invariant, and the integral simply reduces to multiplication by the triangle’s area <span class="math notranslate nohighlight">\(A\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathbf{k}^e = \mathbf{B}^T \mathbf{D} \mathbf{B} A t
+\]</div>
+<section id="exact-python-code-in-ket3e">
+<h3>Exact Python Code in <code class="docutils literal notranslate"><span class="pre">ket3e</span></code><a class="headerlink" href="#exact-python-code-in-ket3e" title="Link to this heading">#</a></h3>
+<p>In <code class="docutils literal notranslate"><span class="pre">femlabpy</span></code>, this routine is handled inside the <code class="docutils literal notranslate"><span class="pre">ket3e</span></code> function. Here is the exact Python code slice showing the calculation of the shape function derivatives (<code class="docutils literal notranslate"><span class="pre">b</span></code> and <code class="docutils literal notranslate"><span class="pre">c</span></code>), the construction of <code class="docutils literal notranslate"><span class="pre">B</span></code>, and the final matrix multiplication evaluating <span class="math notranslate nohighlight">\(\mathbf{B}^T \mathbf{D} \mathbf{B} A t\)</span>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute edge coordinate differences</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">Xe</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">Xe</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+<span class="c1"># Compute element area</span>
+<span class="n">A</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># Construct the 3x6 B matrix</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
+<span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+<span class="n">B</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+<span class="n">B</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">B</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">A</span><span class="p">)</span>
+
+<span class="c1"># D is the 3x3 elasticity matrix</span>
+<span class="c1"># t is the thickness</span>
+
+<span class="c1"># Compute the element stiffness matrix</span>
+<span class="n">Ke</span> <span class="o">=</span> <span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span> <span class="o">@</span> <span class="n">B</span><span class="p">)</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">t</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="vectorized-assembly-kt3e-and-np-einsum">
+<h2>Vectorized Assembly (<code class="docutils literal notranslate"><span class="pre">kt3e</span></code> and <code class="docutils literal notranslate"><span class="pre">np.einsum</span></code>)<a class="headerlink" href="#vectorized-assembly-kt3e-and-np-einsum" title="Link to this heading">#</a></h2>
+<p>While <code class="docutils literal notranslate"><span class="pre">ket3e</span></code> computes the stiffness for a single element, engineering models frequently contain 10,000 to 1,000,000+ elements. Using a Python <code class="docutils literal notranslate"><span class="pre">for</span></code> loop over 10,000 elements to run <code class="docutils literal notranslate"><span class="pre">B.T</span> <span class="pre">&#64;</span> <span class="pre">D</span> <span class="pre">&#64;</span> <span class="pre">B</span> <span class="pre">*</span> <span class="pre">A</span> <span class="pre">*</span> <span class="pre">t</span></code> would cause severe performance bottlenecks due to standard interpreter overhead.</p>
+<p><code class="docutils literal notranslate"><span class="pre">femlabpy</span></code> achieves near C-level performance by fully vectorizing the assembly across the entire element domain. Instead of a single <span class="math notranslate nohighlight">\(3 \times 6\)</span> matrix, <code class="docutils literal notranslate"><span class="pre">femlabpy</span></code> computes an <span class="math notranslate nohighlight">\((N, 3, 6)\)</span> tensor for the <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> matrices of <span class="math notranslate nohighlight">\(N\)</span> elements, and an <span class="math notranslate nohighlight">\((N, 3, 3)\)</span> tensor for <span class="math notranslate nohighlight">\(\mathbf{D}\)</span>.</p>
+<section id="explaining-np-einsum">
+<h3>Explaining <code class="docutils literal notranslate"><span class="pre">np.einsum</span></code><a class="headerlink" href="#explaining-np-einsum" title="Link to this heading">#</a></h3>
+<p>For <span class="math notranslate nohighlight">\(10,000\)</span> elements, how does one perform 10,000 independent matrix multiplications of the form <span class="math notranslate nohighlight">\(K_e = B_e^T D_e B_e A_e t_e\)</span> simultaneously?</p>
+<p><code class="docutils literal notranslate"><span class="pre">femlabpy</span></code> leverages <strong>Einstein Summation Convention</strong> via <code class="docutils literal notranslate"><span class="pre">numpy.einsum</span></code>. The explicit matrix product <span class="math notranslate nohighlight">\(\mathbf{K} = \mathbf{B}^T \mathbf{D} \mathbf{B}\)</span> for a single element can be written in index notation as:</p>
+<div class="math notranslate nohighlight">
+\[
+K_{ij} = \sum_k \sum_l (B^T)_{ik} D_{kl} B_{lj} = \sum_k \sum_l B_{ki} D_{kl} B_{lj}
+\]</div>
+<p>When vectorized across <span class="math notranslate nohighlight">\(e\)</span> elements (where <span class="math notranslate nohighlight">\(e \in [0, N-1]\)</span>), we introduce the element index <code class="docutils literal notranslate"><span class="pre">e</span></code>:</p>
+<div class="math notranslate nohighlight">
+\[
+K_{eij} = \sum_k \sum_l B_{eki} D_{ekl} B_{elj}
+\]</div>
+<p>In <code class="docutils literal notranslate"><span class="pre">femlabpy</span></code>, this translates directly to the <code class="docutils literal notranslate"><span class="pre">np.einsum</span></code> string <code class="docutils literal notranslate"><span class="pre">&quot;eki,ekl,elj-&gt;eij&quot;</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Batched variables:</span>
+<span class="c1"># B is shape (N, 3, 6)</span>
+<span class="c1"># D is shape (N, 3, 3)</span>
+<span class="c1"># area is shape (N,)</span>
+<span class="c1"># t is thickness, shape (N,) or scalar</span>
+
+<span class="c1"># Evaluate B^T * D * B for all N elements simultaneously</span>
+<span class="n">K_batched</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;eki,ekl,elj-&gt;eij&quot;</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+
+<span class="c1"># Multiply by A and t, broadcasting over the N dimension</span>
+<span class="n">element_matrices</span> <span class="o">=</span> <span class="n">K_batched</span> <span class="o">*</span> <span class="n">area</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">B</span></code> is passed as the first argument, mapped to <code class="docutils literal notranslate"><span class="pre">eki</span></code> (element <span class="math notranslate nohighlight">\(e\)</span>, row <span class="math notranslate nohighlight">\(k\)</span>, column <span class="math notranslate nohighlight">\(i\)</span>). Note: This effectively handles the transposition <span class="math notranslate nohighlight">\(\mathbf{B}^T\)</span> intrinsically because the output maps <span class="math notranslate nohighlight">\(i\)</span> (the columns of <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>) to the rows of <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">D</span></code> is the second argument, mapped to <code class="docutils literal notranslate"><span class="pre">ekl</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">B</span></code> is the third argument, mapped to <code class="docutils literal notranslate"><span class="pre">elj</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-&gt;eij</span></code> tells NumPy to sum over the dummy indices <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(l\)</span>, outputting a tensor of shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">6,</span> <span class="pre">6)</span></code>.</p></li>
+</ul>
+<p>This single statement forces the computation down to highly-optimized BLAS/C routines under the hood, instantly evaluating all 10,000 elements without a single Python <code class="docutils literal notranslate"><span class="pre">for</span></code> loop.</p>
+</section>
+</section>
+<section id="runnable-example-script">
+<h2>Runnable Example Script<a class="headerlink" href="#runnable-example-script" title="Link to this heading">#</a></h2>
+<p>The following script demonstrates the theoretical concept by constructing 10,000 CST elements and vectorizing their stiffness matrix calculations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">vectorized_cst_stiffness</span><span class="p">(</span><span class="n">N_elements</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
+    <span class="c1"># 1. Generate dummy nodal coordinates for N elements</span>
+    <span class="c1"># Xe shape: (N, 3 nodes, 2 coords)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+    <span class="n">Xe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N_elements</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    
+    <span class="c1"># 2. Material properties</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="mf">200e9</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="mf">0.3</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mf">0.01</span>  <span class="c1"># thickness</span>
+    
+    <span class="c1"># Plane stress D matrix (same for all elements here, shape 3x3)</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="n">E</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">nu</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="n">nu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">nu</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span>
+    <span class="p">])</span>
+    <span class="c1"># Broadcast D to shape (N, 3, 3)</span>
+    <span class="n">D_batched</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="p">(</span><span class="n">N_elements</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    
+    <span class="c1"># 3. Compute geometric differences b and c for all N elements</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">Xe</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">Xe</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">b1</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">b2</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">b3</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">c1</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">c2</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">c3</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    
+    <span class="c1"># Areas (shape: N,)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">b1</span><span class="o">*</span><span class="n">c2</span> <span class="o">-</span> <span class="n">b2</span><span class="o">*</span><span class="n">c1</span><span class="p">)</span>
+    
+    <span class="c1"># 4. Construct batched B matrix (shape: N, 3, 6)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N_elements</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">B</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span><span class="p">;</span> <span class="n">B</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">b2</span><span class="p">;</span> <span class="n">B</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">b3</span>
+    <span class="n">B</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">c1</span><span class="p">;</span> <span class="n">B</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">c2</span><span class="p">;</span> <span class="n">B</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">c3</span>
+    <span class="n">B</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">c1</span><span class="p">;</span> <span class="n">B</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span>
+    <span class="n">B</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">c2</span><span class="p">;</span> <span class="n">B</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">b2</span>
+    <span class="n">B</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">c3</span><span class="p">;</span> <span class="n">B</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">b3</span>
+    
+    <span class="c1"># Divide B by 2A (broadcasting A)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">B</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">A</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+    
+    <span class="c1"># 5. np.einsum Vectorization: compute Ke = B^T D B A t</span>
+    <span class="c1"># B is (N, 3, 6) -&gt; e k i</span>
+    <span class="c1"># D is (N, 3, 3) -&gt; e k l</span>
+    <span class="c1"># B is (N, 3, 6) -&gt; e l j</span>
+    <span class="c1"># Result -&gt; e i j (shape N, 6, 6)</span>
+    <span class="n">K_batched</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;eki,ekl,elj-&gt;eij&quot;</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">D_batched</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+    <span class="n">Ke_all</span> <span class="o">=</span> <span class="n">K_batched</span> <span class="o">*</span> <span class="n">A</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span>
+    
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computed </span><span class="si">{</span><span class="n">N_elements</span><span class="si">}</span><span class="s2"> CST element stiffness matrices in </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of resulting Ke tensor: </span><span class="si">{</span><span class="n">Ke_all</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">Ke_all</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">Ke_all</span> <span class="o">=</span> <span class="n">vectorized_cst_stiffness</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+    <span class="c1"># Check first element matrix trace as a sanity check</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trace of Ke for Element 0: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Ke_all</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This effectively bypasses interpreter limits, allowing Python to rival compiled languages in FEA matrix assembly loops.</p>
+</section>
+<section id="potential-flow-and-heat-transfer">
+<h2>Potential Flow and Heat Transfer<a class="headerlink" href="#potential-flow-and-heat-transfer" title="Link to this heading">#</a></h2>
+<p>Beyond solid mechanics, the T3 element is widely used for scalar field problems governed by the Poisson or Laplace equation, such as steady-state heat conduction, groundwater flow, or ideal fluid potential flow.</p>
+<p>In these problems, each node has a single scalar degree of freedom (e.g., temperature <span class="math notranslate nohighlight">\(T\)</span> or hydraulic head <span class="math notranslate nohighlight">\(\phi\)</span>). The primary unknown is a scalar field, and the flux <span class="math notranslate nohighlight">\(\mathbf{q}\)</span> is proportional to the gradient of this field:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathbf{q} = -k \nabla T
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> is the conductivity (or permeability).</p>
+<p>The element conductivity matrix <span class="math notranslate nohighlight">\(\mathbf{k}_p^e\)</span> is derived from the weak form:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathbf{k}_p^e = \int_{\Omega_e} (\nabla \mathbf{N})^T k (\nabla \mathbf{N}) \, dA
+\]</div>
+<p>For the 3-node triangle, the gradient operator matrix <span class="math notranslate nohighlight">\(\mathbf{B}_p\)</span> is a <span class="math notranslate nohighlight">\(2 \times 3\)</span> matrix:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{B}_p = \nabla \mathbf{N} = \frac{1}{2A} \begin{bmatrix} b_1 &amp; b_2 &amp; b_3 \\ c_1 &amp; c_2 &amp; c_3 \end{bmatrix}
+\end{split}\]</div>
+<p>Evaluating the integral (assuming constant <span class="math notranslate nohighlight">\(k\)</span> and isotropic material <span class="math notranslate nohighlight">\(\mathbf{D} = k\mathbf{I}\)</span>), we get:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathbf{k}_p^e = \mathbf{B}_p^T (k \mathbf{I}) \mathbf{B}_p A
+\]</div>
+<p>Vectorization of this process follows the exact same architectural philosophy via <code class="docutils literal notranslate"><span class="pre">np.einsum</span></code> applied to the thermal tensors.</p>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>The Constant Strain Triangle is structurally elementary but provides the foundation for 2D finite element analysis. By exploiting exact integration with area coordinates, constant field gradients, and extreme vectorization of tensor operations via <code class="docutils literal notranslate"><span class="pre">einsum</span></code>, we achieve high-performance simulation standards suitable for both academic study and rigorous computational modeling.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="03_1d_bars.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="05_2d_quads.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Chapter 5: 2D Isoparametric Quadrilateral Elements</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#area-coordinates-and-shape-functions">Area Coordinates and Shape Functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping-area-coordinates-to-x-y">Mapping Area Coordinates to <span class="math notranslate nohighlight">\((x,y)\)</span></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solid-mechanics-deriving-the-3-times-6-b-matrix-step-by-step">Solid Mechanics: Deriving the <span class="math notranslate nohighlight">\(3 \times 6\)</span> <span class="math notranslate nohighlight">\(B\)</span> Matrix Step-by-Step</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#element-stiffness-matrix-computation-in-ket3e">Element Stiffness Matrix Computation in <code class="docutils literal notranslate"><span class="pre">ket3e</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exact-python-code-in-ket3e">Exact Python Code in <code class="docutils literal notranslate"><span class="pre">ket3e</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorized-assembly-kt3e-and-np-einsum">Vectorized Assembly (<code class="docutils literal notranslate"><span class="pre">kt3e</span></code> and <code class="docutils literal notranslate"><span class="pre">np.einsum</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explaining-np-einsum">Explaining <code class="docutils literal notranslate"><span class="pre">np.einsum</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runnable-example-script">Runnable Example Script</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#potential-flow-and-heat-transfer">Potential Flow and Heat Transfer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/theory/04_2d_triangles.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, femlabpy contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

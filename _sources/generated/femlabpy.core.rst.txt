@@ -1,0 +1,12 @@
+﻿femlabpy.core
+=============
+
+.. automodule:: femlabpy.core
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      init
+   

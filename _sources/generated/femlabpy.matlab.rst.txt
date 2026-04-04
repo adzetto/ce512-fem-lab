@@ -1,0 +1,24 @@
+﻿femlabpy.matlab
+===============
+
+.. automodule:: femlabpy.matlab
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      bar01
+      bar02
+      bar03
+      canti
+      elastic
+      flow
+      flowq4
+      flowt3
+      hole
+      nlbar
+      plastpe
+      plastps
+      square
+   

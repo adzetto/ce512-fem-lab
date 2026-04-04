@@ -1,0 +1,23 @@
+﻿femlabpy.elements.solids
+========================
+
+.. automodule:: femlabpy.elements.solids
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      kT4e
+      keT4e
+      keh8e
+      kh8e
+      mT4e
+      meT4e
+      meh8e
+      mh8e
+      qT4e
+      qeT4e
+      qeh8e
+      qh8e
+   

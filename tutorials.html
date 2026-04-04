@@ -1,0 +1,852 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Tutorials &amp; Usage Manual &#8212; femlabpy 0.6.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+
+    <script src="_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Guide" href="manual/index.html" />
+    <link rel="prev" title="femlabpy" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">femlabpy 0.6.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="theory/10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="theory/10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Tutorials &amp; Usage Manual</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="tutorials-usage-manual">
+<h1>Tutorials &amp; Usage Manual<a class="headerlink" href="#tutorials-usage-manual" title="Link to this heading">#</a></h1>
+<p>This manual explains how to build and solve finite element models using femlabpy. The workflow follows standard finite element procedures. We focus on how to define the model, assemble the matrices, and solve the equations.</p>
+<section id="core-variables">
+<h2>Core Variables<a class="headerlink" href="#core-variables" title="Link to this heading">#</a></h2>
+<p>All model data in femlabpy is stored in standard arrays. To use the library effectively, you should understand these five core matrices:</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">X</span></code> (Node Coordinates):</strong> Each row represents a node. For 2D problems, a row is <code class="docutils literal notranslate"><span class="pre">[x,</span> <span class="pre">y]</span></code>. The row index (1-based) is the global node number.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">T</span></code> (Topology):</strong> Each row represents an element. It contains the node numbers that make up the element, followed by a material property ID. For a 4-node quad, a row is <code class="docutils literal notranslate"><span class="pre">[node1,</span> <span class="pre">node2,</span> <span class="pre">node3,</span> <span class="pre">node4,</span> <span class="pre">prop_id]</span></code>.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">G</span></code> (Material Properties):</strong> Each row defines a set of material properties. The <code class="docutils literal notranslate"><span class="pre">prop_id</span></code> in the topology matrix points to a row in <code class="docutils literal notranslate"><span class="pre">G</span></code>.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">C</span></code> (Constraints):</strong> Defines prescribed displacements. A row is <code class="docutils literal notranslate"><span class="pre">[node_id,</span> <span class="pre">dof_index,</span> <span class="pre">prescribed_value]</span></code>.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">P</span></code> (Loads):</strong> Defines point loads. A row is <code class="docutils literal notranslate"><span class="pre">[node_id,</span> <span class="pre">dof_index,</span> <span class="pre">force_value]</span></code>.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="linear-static-analysis">
+<h2>1. Linear Static Analysis<a class="headerlink" href="#linear-static-analysis" title="Link to this heading">#</a></h2>
+<p>We will model a 2D cantilever beam. The beam is fixed on the left and subjected to a downward point load on the right.</p>
+<section id="model-generation">
+<h3>Model Generation<a class="headerlink" href="#model-generation" title="Link to this heading">#</a></h3>
+<p>First, we generate the nodes <code class="docutils literal notranslate"><span class="pre">X</span></code> and elements <code class="docutils literal notranslate"><span class="pre">T</span></code>. We use the <code class="docutils literal notranslate"><span class="pre">gmsh</span></code> Python API to create a 4.0 by 0.5 meter rectangular mesh.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gmsh</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">femlabpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fp</span>
+
+<span class="c1"># 1. Create a structured mesh using Gmsh</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">)</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">occ</span><span class="o">.</span><span class="n">addRectangle</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">occ</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">setRecombine</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Force quadrilateral elements</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;beam.msh&quot;</span><span class="p">)</span>
+<span class="n">gmsh</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+
+<span class="c1"># 2. Load the mesh into femlabpy</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">load_gmsh2</span><span class="p">(</span><span class="s2">&quot;beam.msh&quot;</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">quads</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+
+<span class="n">nn</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Total number of nodes</span>
+<span class="n">dof</span> <span class="o">=</span> <span class="mi">2</span>          <span class="c1"># Degrees of freedom per node (x and y)</span>
+</pre></div>
+</div>
+</section>
+<section id="material-properties-and-assembly">
+<h3>Material Properties and Assembly<a class="headerlink" href="#material-properties-and-assembly" title="Link to this heading">#</a></h3>
+<p>Next, we define the material and build the global stiffness matrix <code class="docutils literal notranslate"><span class="pre">K</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Material matrix G for 2D elements: [E, nu, type, thickness, density]</span>
+<span class="c1"># type = 1 means plane stress.</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">210e9</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">7850.0</span><span class="p">]])</span>
+
+<span class="c1"># Initialize the global stiffness matrix K and load vector p.</span>
+<span class="c1"># They are sized based on the number of nodes and degrees of freedom.</span>
+<span class="n">K</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">dof</span><span class="p">)</span>
+
+<span class="c1"># Assemble the stiffness matrix using the 4-node quad driver (kq4e).</span>
+<span class="n">K</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">kq4e</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="boundary-conditions-and-solving">
+<h3>Boundary Conditions and Solving<a class="headerlink" href="#boundary-conditions-and-solving" title="Link to this heading">#</a></h3>
+<p>We fix the left boundary and apply a load to the right boundary. The functions <code class="docutils literal notranslate"><span class="pre">setload</span></code> and <code class="docutils literal notranslate"><span class="pre">setbc</span></code> modify the global matrices in place.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-6</span>
+
+<span class="c1"># Find nodes on the left edge (x = 0)</span>
+<span class="n">left_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># +1 for 1-based indexing</span>
+
+<span class="c1"># Build the constraint matrix C</span>
+<span class="n">C</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">left_nodes</span><span class="p">:</span>
+    <span class="n">C</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span> <span class="c1"># Fix displacement in X (dof 1)</span>
+    <span class="n">C</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span> <span class="c1"># Fix displacement in Y (dof 2)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+
+<span class="c1"># Find the top-right node and apply a 1000 N downward load</span>
+<span class="n">right_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">4.0</span> <span class="o">-</span> <span class="n">tol</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">tol</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">right_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">]])</span>
+
+<span class="c1"># Apply loads to vector p</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">setload</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">dof</span><span class="p">)</span>
+
+<span class="c1"># Apply boundary conditions to K and p</span>
+<span class="n">K_bc</span><span class="p">,</span> <span class="n">p_bc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">setbc</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">dof</span><span class="p">)</span>
+
+<span class="c1"># Solve the linear equation system (K * u = p)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K_bc</span><span class="p">,</span> <span class="n">p_bc</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max vertical displacement: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2"> meters&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="post-processing">
+<h3>Post-processing<a class="headerlink" href="#post-processing" title="Link to this heading">#</a></h3>
+<p>To evaluate internal forces, stresses, and strains, we pass the displacement vector <code class="docutils literal notranslate"><span class="pre">u</span></code> back to the element driver <code class="docutils literal notranslate"><span class="pre">qq4e</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate internal forces (q), element stresses (S), and strains (E)</span>
+<span class="n">q</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">E</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">qq4e</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+
+<span class="c1"># Plot the deformed shape</span>
+<span class="n">fp</span><span class="o">.</span><span class="n">plotelem</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="dynamic-analysis">
+<h2>2. Dynamic Analysis<a class="headerlink" href="#dynamic-analysis" title="Link to this heading">#</a></h2>
+<p>femlabpy supports free vibration (modal) and forced vibration (time-history) analysis.</p>
+<section id="modal-analysis">
+<h3>Modal Analysis<a class="headerlink" href="#modal-analysis" title="Link to this heading">#</a></h3>
+<p>Modal analysis extracts the natural frequencies and mode shapes of the structure. It solves the generalized eigenvalue problem <span class="math notranslate nohighlight">\(K \phi = \omega^2 M \phi\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assemble the global mass matrix M using the quad driver (mq4e)</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">mq4e</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+
+<span class="c1"># Solve for the first 3 natural modes</span>
+<span class="c1"># C_bc is required so the solver knows which DOFs are fixed</span>
+<span class="n">modal_result</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">solve_modal</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n_modes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">C_bc</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">dof</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Natural frequencies (Hz):&quot;</span><span class="p">,</span> <span class="n">modal_result</span><span class="o">.</span><span class="n">freq_hz</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="time-history-analysis-earthquake">
+<h3>Time-History Analysis (Earthquake)<a class="headerlink" href="#time-history-analysis-earthquake" title="Link to this heading">#</a></h3>
+<p>We can simulate an earthquake by applying a base acceleration to the structure. This is done using the implicit Newmark-beta time integrator.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">femlabpy.dynamics</span><span class="w"> </span><span class="kn">import</span> <span class="n">seismic_load</span><span class="p">,</span> <span class="n">solve_newmark</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">femlabpy.damping</span><span class="w"> </span><span class="kn">import</span> <span class="n">rayleigh_coefficients</span><span class="p">,</span> <span class="n">rayleigh_damping</span>
+
+<span class="c1"># 1. Define the effective seismic load</span>
+<span class="c1"># The influence vector tells the solver which direction the ground shakes.</span>
+<span class="c1"># Here, we set 1.0 for all X degrees of freedom, and 0.0 for Y.</span>
+<span class="n">inf_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span> <span class="o">*</span> <span class="n">dof</span><span class="p">)</span>
+<span class="n">inf_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="c1"># accel_data is a 1D numpy array of ground acceleration (m/s^2)</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="mf">0.01</span> 
+<span class="n">p_eff</span> <span class="o">=</span> <span class="n">seismic_load</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">inf_vec</span><span class="p">,</span> <span class="n">accel_data</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+
+<span class="c1"># 2. Define Rayleigh Damping</span>
+<span class="c1"># We anchor 5% critical damping to the first two natural frequencies.</span>
+<span class="n">f1</span><span class="p">,</span> <span class="n">f2</span> <span class="o">=</span> <span class="n">modal_result</span><span class="o">.</span><span class="n">freq_hz</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">modal_result</span><span class="o">.</span><span class="n">freq_hz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">rayleigh_coefficients</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">zeta1</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">zeta2</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">C_damp</span> <span class="o">=</span> <span class="n">rayleigh_damping</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+
+<span class="c1"># 3. Set initial conditions (start from rest)</span>
+<span class="n">u0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nn</span> <span class="o">*</span> <span class="n">dof</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">v0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nn</span> <span class="o">*</span> <span class="n">dof</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="c1"># 4. Solve the transient equations</span>
+<span class="n">nsteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">accel_data</span><span class="p">)</span>
+<span class="n">history</span> <span class="o">=</span> <span class="n">solve_newmark</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">C_damp</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">p_eff</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">v0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">C_bc</span><span class="o">=</span><span class="n">C</span><span class="p">)</span>
+
+<span class="c1"># history.u is a 2D array of shape (nsteps+1, total_dofs)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Maximum dynamic roof displacement:&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">u</span><span class="p">)))</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="periodic-boundaries-homogenization">
+<h2>3. Periodic Boundaries (Homogenization)<a class="headerlink" href="#periodic-boundaries-homogenization" title="Link to this heading">#</a></h2>
+<p>If you are modeling a repeating unit cell (RVE) of a material, you must enforce periodic boundary conditions. This ensures that the opposite edges of the cell deform in exactly the same way.</p>
+<p>femlabpy provides tools to automatically find matching nodes on opposite boundaries and apply the necessary constraint equations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">femlabpy.periodic</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_periodic_pairs</span><span class="p">,</span> <span class="n">homogenize</span>
+
+<span class="c1"># 1. Identify the nodes on the boundary faces</span>
+<span class="n">left_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">right_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">bottom_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">top_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c1"># 2. Link the opposite boundaries</span>
+<span class="c1"># This matches nodes by their Y-coordinate (for left/right) </span>
+<span class="c1"># and X-coordinate (for bottom/top)</span>
+<span class="n">lr_pairs</span> <span class="o">=</span> <span class="n">find_periodic_pairs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">left_nodes</span><span class="p">,</span> <span class="n">right_nodes</span><span class="p">)</span>
+<span class="n">bt_pairs</span> <span class="o">=</span> <span class="n">find_periodic_pairs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">bottom_nodes</span><span class="p">,</span> <span class="n">top_nodes</span><span class="p">)</span>
+<span class="n">all_pairs</span> <span class="o">=</span> <span class="n">lr_pairs</span> <span class="o">+</span> <span class="n">bt_pairs</span>
+
+<span class="c1"># 3. Compute the effective homogenized stiffness matrix</span>
+<span class="c1"># This function applies macro-strains to the unit cell and averages the resulting stress.</span>
+<span class="n">C_eff</span> <span class="o">=</span> <span class="n">homogenize</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">all_pairs</span><span class="p">,</span> <span class="n">dof</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Effective 3x3 Modulus Matrix:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">C_eff</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">femlabpy</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="manual/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">User Guide</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-variables">Core Variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#linear-static-analysis">1. Linear Static Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model-generation">Model Generation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#material-properties-and-assembly">Material Properties and Assembly</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#boundary-conditions-and-solving">Boundary Conditions and Solving</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#post-processing">Post-processing</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-analysis">2. Dynamic Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#modal-analysis">Modal Analysis</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-history-analysis-earthquake">Time-History Analysis (Earthquake)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#periodic-boundaries-homogenization">3. Periodic Boundaries (Homogenization)</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/tutorials.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, femlabpy contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+﻿femlabpy.elements.bars
+======================
+
+.. automodule:: femlabpy.elements.bars
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      kbar
+      kebar
+      mbar
+      mebar
+      qbar
+      qebar
+   

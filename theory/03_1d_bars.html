@@ -1,0 +1,952 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear) &#8212; femlabpy 0.6.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+
+    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'theory/03_1d_bars';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2D Triangular Elements (CST)" href="04_2d_triangles.html" />
+    <link rel="prev" title="Chapter 2: Boundary Conditions and Loads" href="02_boundary_loads.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">femlabpy 0.6.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="#">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_core_assembly.html">Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_boundary_loads.html">Chapter 2: Boundary Conditions and Loads</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_2d_triangles.html">2D Triangular Elements (CST)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05_2d_quads.html">Chapter 5: 2D Isoparametric Quadrilateral Elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_3d_solids.html">3D Solid Elements: Tetrahedrons and Hexahedrons</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="07_plasticity.html">Chapter 7: Constitutive Models &amp; Plasticity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_dynamics.html">Structural Dynamics and Time Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_modal_periodic.html">Chapter 9: Eigenvalue Problems and Periodic Boundaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_io_mesh.html">Mesh I/O, Data Types, and Helpers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_nonlinear_solvers.html">Chapter 11: Nonlinear Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="12_plotting_postprocessing.html">Plotting and Post-Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_legacy_wrappers.html">13. Legacy Wrappers for MATLAB Compatibility</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Theory &amp; Reference Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="chapter-3-1d-bar-elements-linear-nonlinear">
+<h1>Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)<a class="headerlink" href="#chapter-3-1d-bar-elements-linear-nonlinear" title="Link to this heading">#</a></h1>
+<p>This chapter introduces the formulation of 1D bar elements (trusses), which are fundamental building blocks in computational mechanics. We will start with the basic linear assumption and extend the theory to encompass large deformations using the Green-Lagrange strain.</p>
+<p>By the end of this chapter, you will understand the underlying physics and mathematics, and see exactly how the tangent stiffness matrices and internal force vectors are implemented in Python.</p>
+<section id="linear-1d-bar-formulation">
+<h2>3.1 Linear 1D Bar Formulation<a class="headerlink" href="#linear-1d-bar-formulation" title="Link to this heading">#</a></h2>
+<p>The simplest finite element is the 2-node linear bar element. A bar can only transmit axial loads—meaning it has no bending or shear stiffness.</p>
+<section id="kinematics-and-strain">
+<h3>3.1.1 Kinematics and Strain<a class="headerlink" href="#kinematics-and-strain" title="Link to this heading">#</a></h3>
+<p>Consider a 1D bar of initial length <span class="math notranslate nohighlight">\(L\)</span>, cross-sectional area <span class="math notranslate nohighlight">\(A\)</span>, and Young’s modulus <span class="math notranslate nohighlight">\(E\)</span>. Let the bar be aligned along the local <span class="math notranslate nohighlight">\(x\)</span>-axis. The bar is defined by two nodes, <span class="math notranslate nohighlight">\(1\)</span> and <span class="math notranslate nohighlight">\(2\)</span>, with displacements <span class="math notranslate nohighlight">\(u_1\)</span> and <span class="math notranslate nohighlight">\(u_2\)</span>.</p>
+<p>The axial strain <span class="math notranslate nohighlight">\(\varepsilon\)</span> under the assumption of small deformations is simply the change in length divided by the original length:</p>
+<div class="math notranslate nohighlight">
+\[ \varepsilon = \frac{\Delta L}{L} = \frac{u_2 - u_1}{L} \]</div>
+<p>Using the standard finite element approach, we define the element displacement vector <span class="math notranslate nohighlight">\(\mathbf{d}^e = [u_1, u_2]^T\)</span>. The strain-displacement relation can be written in matrix form:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \varepsilon = \mathbf{B} \mathbf{d}^e = \begin{bmatrix} -\frac{1}{L} &amp; \frac{1}{L} \end{bmatrix} \begin{bmatrix} u_1 \\ u_2 \end{bmatrix} \end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> is the strain-displacement matrix.</p>
+</section>
+<section id="the-linear-stiffness-matrix">
+<h3>3.1.2 The Linear Stiffness Matrix<a class="headerlink" href="#the-linear-stiffness-matrix" title="Link to this heading">#</a></h3>
+<p>The principle of virtual work or minimizing the total potential energy yields the element stiffness matrix <span class="math notranslate nohighlight">\(\mathbf{K}^e\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{K}^e = \int_V \mathbf{B}^T E \mathbf{B} \, dV \]</div>
+<p>Since the area <span class="math notranslate nohighlight">\(A\)</span> and modulus <span class="math notranslate nohighlight">\(E\)</span> are constant, the volume integral becomes <span class="math notranslate nohighlight">\(A \cdot \int_0^L dx\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{K}^e = E A L \left( \begin{bmatrix} -\frac{1}{L} \\ \frac{1}{L} \end{bmatrix} \begin{bmatrix} -\frac{1}{L} &amp; \frac{1}{L} \end{bmatrix} \right) = \frac{EA}{L} \begin{bmatrix} 1 &amp; -1 \\ -1 &amp; 1 \end{bmatrix} \end{split}\]</div>
+<p>This is the canonical local linear stiffness matrix for a 2-node bar element.</p>
+</section>
+</section>
+<section id="geometric-nonlinear-formulation">
+<h2>3.2 Geometric Nonlinear Formulation<a class="headerlink" href="#geometric-nonlinear-formulation" title="Link to this heading">#</a></h2>
+<p>When displacements and rotations become large, the linear assumption (<span class="math notranslate nohighlight">\(\varepsilon = \Delta L / L\)</span>) is no longer valid. Even if the material remains linear-elastic, large rigid body rotations introduce significant geometric nonlinearity.</p>
+<p>To capture large deformations, we must use an objective measure of strain, such as the Green-Lagrange strain.</p>
+<section id="green-lagrange-strain-epsilon">
+<h3>3.2.1 Green-Lagrange Strain (<span class="math notranslate nohighlight">\(\epsilon\)</span>)<a class="headerlink" href="#green-lagrange-strain-epsilon" title="Link to this heading">#</a></h3>
+<p>For 1D problems where displacement is given by <span class="math notranslate nohighlight">\(u(x)\)</span>, the true Green-Lagrange strain measures the stretch and includes higher-order deformation terms:</p>
+<div class="math notranslate nohighlight">
+\[ \epsilon = \frac{du}{dx} + \frac{1}{2}\left(\frac{du}{dx}\right)^2 \]</div>
+<p>For a bar with initial node coordinates <span class="math notranslate nohighlight">\(\mathbf{X}_1\)</span> and <span class="math notranslate nohighlight">\(\mathbf{X}_2\)</span> and a constant strain along its length, this translates to the squared change in lengths. Let the initial length vector be <span class="math notranslate nohighlight">\(\mathbf{a}_0 = \mathbf{X}_2 - \mathbf{X}_1\)</span> with length <span class="math notranslate nohighlight">\(l_0\)</span>, and the current length vector be <span class="math notranslate nohighlight">\(\mathbf{a}_1 = \mathbf{x}_2 - \mathbf{x}_1\)</span> with length <span class="math notranslate nohighlight">\(l_1\)</span>. The discrete Green-Lagrange strain evaluates equivalently to:</p>
+<div class="math notranslate nohighlight">
+\[ \epsilon = \frac{l_1^2 - l_0^2}{2 l_0^2} \]</div>
+<p>This strain measure is invariant under rigid body translations and rotations because it strictly depends on the squared lengths.</p>
+</section>
+<section id="internal-force-response-mathbf-q-e">
+<h3>3.2.2 Internal Force Response (<span class="math notranslate nohighlight">\(\mathbf{q}^e\)</span>)<a class="headerlink" href="#internal-force-response-mathbf-q-e" title="Link to this heading">#</a></h3>
+<p>The internal force vector is derived from the variation of the internal strain energy <span class="math notranslate nohighlight">\(U = \int_V \frac{1}{2} E \epsilon^2 dV\)</span>. The variation of the Green-Lagrange strain <span class="math notranslate nohighlight">\(\delta \epsilon\)</span> is related to virtual displacements <span class="math notranslate nohighlight">\(\delta \mathbf{u}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \delta \epsilon = \frac{1}{l_0^2} \mathbf{a}_1 \cdot \delta \mathbf{a}_1 = \frac{1}{l_0^2} \mathbf{a}_1^T (\delta \mathbf{u}_2 - \delta \mathbf{u}_1) \]</div>
+<p>Defining the normal stress as <span class="math notranslate nohighlight">\(S = E \epsilon\)</span> and the normal force as <span class="math notranslate nohighlight">\(N = A S = A E \epsilon\)</span>, the virtual work <span class="math notranslate nohighlight">\(\int_V S \delta \epsilon \, dV\)</span> yields the internal force vector corresponding to the nodal displacements:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{q}^e = \frac{N}{l_0} \begin{bmatrix} -\mathbf{a}_1 \\ \mathbf{a}_1 \end{bmatrix} \end{split}\]</div>
+<section id="implementation-qebar">
+<h4>Implementation: <code class="docutils literal notranslate"><span class="pre">qebar</span></code><a class="headerlink" href="#implementation-qebar" title="Link to this heading">#</a></h4>
+<p>Here is the exact NumPy implementation for evaluating the internal force of a nonlinear bar.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">qebar</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">Xe1</span><span class="p">,</span> <span class="n">Ge</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the internal-force response of a single geometrically nonlinear bar.&quot;&quot;&quot;</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xe1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">props</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Ge</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">a0</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">initial</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a0</span><span class="p">))</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="p">(</span><span class="n">current</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">current</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a1</span><span class="p">))</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">props</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">1.0</span>
+    
+    <span class="c1"># Green-Lagrange Strain</span>
+    <span class="n">strain</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l1</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">stress</span> <span class="o">=</span> <span class="n">E</span> <span class="o">*</span> <span class="n">strain</span>
+    
+    <span class="c1"># Internal Force Vector</span>
+    <span class="n">qe</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">stress</span> <span class="o">/</span> <span class="n">l0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="o">-</span><span class="n">a1</span><span class="p">,</span> <span class="n">a1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">qe</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">stress</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="tangent-stiffness-matrix-mathbf-k-e-tan">
+<h3>3.2.3 Tangent Stiffness Matrix (<span class="math notranslate nohighlight">\(\mathbf{K}^e_{tan}\)</span>)<a class="headerlink" href="#tangent-stiffness-matrix-mathbf-k-e-tan" title="Link to this heading">#</a></h3>
+<p>For nonlinear solvers like the Newton-Raphson method, we require the tangent stiffness matrix, which is the derivative of the internal force vector with respect to the nodal displacements:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{K}_{tan}^e = \frac{\partial \mathbf{q}^e}{\partial \mathbf{d}^e} \]</div>
+<p>Taking the derivative of the internal force vector with respect to displacement gives two distinct terms via the product rule, corresponding to <span class="math notranslate nohighlight">\(K_m\)</span> and <span class="math notranslate nohighlight">\(K_g\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{K}_{tan}^e = \mathbf{K}_m + \mathbf{K}_g \]</div>
+<section id="material-stiffness-matrix-mathbf-k-m">
+<h4>1. Material Stiffness Matrix (<span class="math notranslate nohighlight">\(\mathbf{K}_m\)</span>)<a class="headerlink" href="#material-stiffness-matrix-mathbf-k-m" title="Link to this heading">#</a></h4>
+<p>The material stiffness arises from taking the variation of the normal force <span class="math notranslate nohighlight">\(N\)</span> itself (which depends on the strain variation). It projects the axial stiffness into the current spatial configuration:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} \mathbf{K}_m = \frac{E A}{l_0^3} \begin{bmatrix} \mathbf{a}_1 \mathbf{a}_1^T &amp; -\mathbf{a}_1 \mathbf{a}_1^T \\ -\mathbf{a}_1 \mathbf{a}_1^T &amp; \mathbf{a}_1 \mathbf{a}_1^T \end{bmatrix} \end{split}\]</div>
+</section>
+<section id="geometric-stiffness-matrix-mathbf-k-g">
+<h4>2. Geometric Stiffness Matrix (<span class="math notranslate nohighlight">\(\mathbf{K}_g\)</span>)<a class="headerlink" href="#geometric-stiffness-matrix-mathbf-k-g" title="Link to this heading">#</a></h4>
+<p>The geometric stiffness part comes from the derivative of the spatial vector <span class="math notranslate nohighlight">\(\mathbf{a}_1\)</span> while treating the axial force <span class="math notranslate nohighlight">\(N\)</span> as constant. It represents how the current tension/compression modifies the structural stiffness, regardless of material changes.</p>
+<p>In a purely 1D local context, this evaluates strictly as:
+$<span class="math notranslate nohighlight">\( K_g = \frac{N}{L} \begin{bmatrix} 1 &amp; -1 \\ -1 &amp; 1 \end{bmatrix} \)</span>$</p>
+<p>For 2D or 3D trusses, it generalizes to:
+$<span class="math notranslate nohighlight">\( \mathbf{K}_g = \frac{N}{l_0} \begin{bmatrix} \mathbf{I} &amp; -\mathbf{I} \\ -\mathbf{I} &amp; \mathbf{I} \end{bmatrix} \)</span>$</p>
+</section>
+<section id="implementation-kebar">
+<h4>Implementation: <code class="docutils literal notranslate"><span class="pre">kebar</span></code><a class="headerlink" href="#implementation-kebar" title="Link to this heading">#</a></h4>
+<p>Here is the exact NumPy implementation for generating the local nonlinear tangent stiffness matrix. Note how <span class="math notranslate nohighlight">\(K_g\)</span> uses the Identity matrix to expand the local 1D <span class="math notranslate nohighlight">\(K_g\)</span> equation across dimensions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">kebar</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">Xe1</span><span class="p">,</span> <span class="n">Ge</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the tangent stiffness matrix of a geometrically nonlinear bar element.&quot;&quot;&quot;</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xe1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">props</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Ge</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">a0</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">initial</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a0</span><span class="p">))</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="p">(</span><span class="n">current</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">current</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a1</span><span class="p">))</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">props</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">1.0</span>
+    
+    <span class="c1"># Strain and Normal Force</span>
+    <span class="n">strain</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l1</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">normal_force</span> <span class="o">=</span> <span class="n">A</span> <span class="o">*</span> <span class="n">E</span> <span class="o">*</span> <span class="n">strain</span>
+    
+    <span class="c1"># Matrix Components</span>
+    <span class="n">identity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">a0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    
+    <span class="c1"># K_m (Material Stiffness)</span>
+    <span class="n">K_m</span> <span class="o">=</span> <span class="p">(</span><span class="n">E</span> <span class="o">*</span> <span class="n">A</span> <span class="o">/</span> <span class="n">l0</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([</span>
+        <span class="p">[</span> <span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="o">-</span><span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>  <span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">]</span>
+    <span class="p">])</span>
+    
+    <span class="c1"># K_g (Geometric Stiffness)</span>
+    <span class="n">K_g</span> <span class="o">=</span> <span class="p">(</span><span class="n">normal_force</span> <span class="o">/</span> <span class="n">l0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([</span>
+        <span class="p">[</span> <span class="n">identity</span><span class="p">,</span> <span class="o">-</span><span class="n">identity</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="n">identity</span><span class="p">,</span>  <span class="n">identity</span><span class="p">]</span>
+    <span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">K_m</span> <span class="o">+</span> <span class="n">K_g</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="the-newton-raphson-iteration-scheme-example">
+<h2>3.4 The Newton-Raphson Iteration Scheme &amp; Example<a class="headerlink" href="#the-newton-raphson-iteration-scheme-example" title="Link to this heading">#</a></h2>
+<p>To solve a nonlinear equilibrium path <span class="math notranslate nohighlight">\(\mathbf{q}(\mathbf{d}) = \mathbf{f}_{ext}\)</span>, the Newton-Raphson scheme iteratively finds the displacement increment <span class="math notranslate nohighlight">\(\Delta \mathbf{d}\)</span>.</p>
+<p>Below is a complete, runnable Python script solving a 2-bar snap-through truss model using a manual Newton-Raphson loop.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="c1"># ---------------------------------------------------------</span>
+<span class="c1"># Element Functions</span>
+<span class="c1"># ---------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">qebar</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">Xe1</span><span class="p">,</span> <span class="n">Ge</span><span class="p">):</span>
+    <span class="n">a0</span> <span class="o">=</span> <span class="p">(</span><span class="n">Xe0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Xe0</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a0</span><span class="p">)</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="p">(</span><span class="n">Xe1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Xe1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">E</span> <span class="o">=</span> <span class="n">Ge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Ge</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">strain</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l1</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">stress</span> <span class="o">=</span> <span class="n">E</span> <span class="o">*</span> <span class="n">strain</span>
+    <span class="n">qe</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">stress</span> <span class="o">/</span> <span class="n">l0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="o">-</span><span class="n">a1</span><span class="p">,</span> <span class="n">a1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">qe</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">kebar</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">Xe1</span><span class="p">,</span> <span class="n">Ge</span><span class="p">):</span>
+    <span class="n">a0</span> <span class="o">=</span> <span class="p">(</span><span class="n">Xe0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Xe0</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a0</span><span class="p">)</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="p">(</span><span class="n">Xe1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Xe1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">l1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">E</span> <span class="o">=</span> <span class="n">Ge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Ge</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">strain</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l1</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">l0</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">normal_force</span> <span class="o">=</span> <span class="n">A</span> <span class="o">*</span> <span class="n">E</span> <span class="o">*</span> <span class="n">strain</span>
+    
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">K_m</span> <span class="o">=</span> <span class="p">(</span><span class="n">E</span> <span class="o">*</span> <span class="n">A</span> <span class="o">/</span> <span class="n">l0</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([</span>
+        <span class="p">[</span> <span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="o">-</span><span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>  <span class="n">a1</span> <span class="o">@</span> <span class="n">a1</span><span class="o">.</span><span class="n">T</span><span class="p">]</span>
+    <span class="p">])</span>
+    <span class="n">K_g</span> <span class="o">=</span> <span class="p">(</span><span class="n">normal_force</span> <span class="o">/</span> <span class="n">l0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([</span>
+        <span class="p">[</span> <span class="n">I</span><span class="p">,</span> <span class="o">-</span><span class="n">I</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="n">I</span><span class="p">,</span>  <span class="n">I</span><span class="p">]</span>
+    <span class="p">])</span>
+    <span class="k">return</span> <span class="n">K_m</span> <span class="o">+</span> <span class="n">K_g</span>
+
+<span class="c1"># ---------------------------------------------------------</span>
+<span class="c1"># Model Definition: 2-Bar Snap-Through Truss</span>
+<span class="c1"># ---------------------------------------------------------</span>
+<span class="c1"># Nodes: 0 (Left pin), 1 (Right pin), 2 (Center, loaded)</span>
+<span class="n">nodes0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">]</span>
+<span class="p">])</span>
+
+<span class="c1"># Two elements connecting nodes (0-&gt;2) and (1-&gt;2)</span>
+<span class="n">elems</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="n">props</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span> <span class="c1"># Area = 1.0, E = 1000.0</span>
+
+<span class="c1"># Free DOFs: Node 2 x and y (Indices 4 and 5)</span>
+<span class="n">free_dofs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+
+<span class="c1"># External Load at Node 2 (y-direction)</span>
+<span class="n">f_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">f_ext</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">250.0</span>  <span class="c1"># Push down</span>
+
+<span class="c1"># Initial displacement</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------</span>
+<span class="c1"># Newton-Raphson Loop</span>
+<span class="c1"># ---------------------------------------------------------</span>
+<span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-6</span>
+<span class="n">max_iter</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iter | Residual Norm&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--------------------&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
+    <span class="c1"># Current positions</span>
+    <span class="n">nodes1</span> <span class="o">=</span> <span class="n">nodes0</span> <span class="o">+</span> <span class="n">u</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    
+    <span class="c1"># Global Assembly</span>
+    <span class="n">K_global</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">q_global</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">elems</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">el</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">el</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">Xe0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">nodes0</span><span class="p">[</span><span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">nodes0</span><span class="p">[</span><span class="n">el</span><span class="p">[</span><span class="mi">1</span><span class="p">]]])</span>
+        <span class="n">Xe1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">nodes1</span><span class="p">[</span><span class="n">el</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">nodes1</span><span class="p">[</span><span class="n">el</span><span class="p">[</span><span class="mi">1</span><span class="p">]]])</span>
+        
+        <span class="n">ke</span> <span class="o">=</span> <span class="n">kebar</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">Xe1</span><span class="p">,</span> <span class="n">props</span><span class="p">)</span>
+        <span class="n">qe</span> <span class="o">=</span> <span class="n">qebar</span><span class="p">(</span><span class="n">Xe0</span><span class="p">,</span> <span class="n">Xe1</span><span class="p">,</span> <span class="n">props</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">q_global</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">r</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">qe</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">K_global</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">idx</span><span class="p">[</span><span class="n">c</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">ke</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+                
+    <span class="c1"># Check Residual</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">f_ext</span><span class="p">[</span><span class="n">free_dofs</span><span class="p">]</span> <span class="o">-</span> <span class="n">q_global</span><span class="p">[</span><span class="n">free_dofs</span><span class="p">]</span>
+    <span class="n">norm_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">norm_R</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">norm_R</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converged!&quot;</span><span class="p">)</span>
+        <span class="k">break</span>
+        
+    <span class="c1"># Tangent stiffness at free DOFs</span>
+    <span class="n">K_free</span> <span class="o">=</span> <span class="n">K_global</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">free_dofs</span><span class="p">,</span> <span class="n">free_dofs</span><span class="p">)]</span>
+    
+    <span class="c1"># Solve for displacement increment</span>
+    <span class="n">du_free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K_free</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">[</span><span class="n">free_dofs</span><span class="p">]</span> <span class="o">+=</span> <span class="n">du_free</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Final Displacements:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node 2 u_x = </span><span class="si">{</span><span class="n">u</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node 2 u_y = </span><span class="si">{</span><span class="n">u</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="02_boundary_loads.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Chapter 2: Boundary Conditions and Loads</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="04_2d_triangles.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">2D Triangular Elements (CST)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#linear-1d-bar-formulation">3.1 Linear 1D Bar Formulation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kinematics-and-strain">3.1.1 Kinematics and Strain</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-linear-stiffness-matrix">3.1.2 The Linear Stiffness Matrix</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#geometric-nonlinear-formulation">3.2 Geometric Nonlinear Formulation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#green-lagrange-strain-epsilon">3.2.1 Green-Lagrange Strain (<span class="math notranslate nohighlight">\(\epsilon\)</span>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#internal-force-response-mathbf-q-e">3.2.2 Internal Force Response (<span class="math notranslate nohighlight">\(\mathbf{q}^e\)</span>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-qebar">Implementation: <code class="docutils literal notranslate"><span class="pre">qebar</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tangent-stiffness-matrix-mathbf-k-e-tan">3.2.3 Tangent Stiffness Matrix (<span class="math notranslate nohighlight">\(\mathbf{K}^e_{tan}\)</span>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#material-stiffness-matrix-mathbf-k-m">1. Material Stiffness Matrix (<span class="math notranslate nohighlight">\(\mathbf{K}_m\)</span>)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#geometric-stiffness-matrix-mathbf-k-g">2. Geometric Stiffness Matrix (<span class="math notranslate nohighlight">\(\mathbf{K}_g\)</span>)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-kebar">Implementation: <code class="docutils literal notranslate"><span class="pre">kebar</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-newton-raphson-iteration-scheme-example">3.4 The Newton-Raphson Iteration Scheme &amp; Example</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/theory/03_1d_bars.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, femlabpy contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

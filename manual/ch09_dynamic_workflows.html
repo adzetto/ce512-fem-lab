@@ -1,0 +1,891 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Chapter 9: Advanced Dynamic Workflows &#8212; femlabpy 0.6.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+
+    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'manual/ch09_dynamic_workflows';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Theory &amp; Reference Manual" href="../theory/index.html" />
+    <link rel="prev" title="Chapter 8: Custom Element Development" href="ch08_custom_elements.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">femlabpy 0.6.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../theory/10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../theory/10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="ch01_fundamentals.html">Chapter 1: Fundamentals &amp; Data Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch02_elements.html">Chapter 2: Element Library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch03_assembly_statics.html">Chapter 3: Assembly &amp; Constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch04_materials.html">Chapter 4: Material Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch05_dynamics.html">Chapter 5: Structural Dynamics Theory &amp; Time Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch06_periodic_io.html">Chapter 6: Periodic Boundaries &amp; I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch07_advanced_examples.html">Chapter 7: Advanced Workflows &amp; Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch08_custom_elements.html">Chapter 8: Custom Element Development</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Chapter 9: Advanced Dynamic Workflows</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Chapter 9: Advanced Dynamic Workflows</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="chapter-9-advanced-dynamic-workflows">
+<h1>Chapter 9: Advanced Dynamic Workflows<a class="headerlink" href="#chapter-9-advanced-dynamic-workflows" title="Link to this heading">#</a></h1>
+<p>This chapter explores deeper, specialized workflows for structural dynamics, providing highly detailed line-by-line Python code breakdowns for extracting building periods, plotting mode shapes, generating Frequency Response Functions (FRF), and performing comprehensive Time History Analyses (THA) under seismic loading.</p>
+<section id="modal-analysis-finding-periods-and-plotting-mode-shapes">
+<h2>9.1 Modal Analysis: Finding Periods and Plotting Mode Shapes<a class="headerlink" href="#modal-analysis-finding-periods-and-plotting-mode-shapes" title="Link to this heading">#</a></h2>
+<p>The structural period <span class="math notranslate nohighlight">\(T\)</span> (in seconds) is the time it takes for a building to complete one full cycle of free vibration in a particular mode shape. The period is simply the inverse of the natural frequency: <span class="math notranslate nohighlight">\(T = 1 / f_n\)</span>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">femlabpy</span></code> abstracts the eigenvalue extraction process in the <code class="docutils literal notranslate"><span class="pre">solve_modal</span></code> function. Behind the scenes, it condenses out the fixed Boundary Conditions (using the exact <code class="docutils literal notranslate"><span class="pre">C</span></code> array) and calls <code class="docutils literal notranslate"><span class="pre">scipy.linalg.eigh</span></code> (for dense matrices) or <code class="docutils literal notranslate"><span class="pre">scipy.sparse.linalg.eigsh</span></code> (for sparse matrices using Shift-and-Invert Lanczos iterations).</p>
+<section id="deep-dive-how-solve-modal-condenses-matrices-using-np-ix">
+<h3>Deep Dive: How <code class="docutils literal notranslate"><span class="pre">solve_modal</span></code> Condenses Matrices using <code class="docutils literal notranslate"><span class="pre">np.ix_</span></code><a class="headerlink" href="#deep-dive-how-solve-modal-condenses-matrices-using-np-ix" title="Link to this heading">#</a></h3>
+<p>In structural dynamics, degrees of freedom (DOFs) that are fully restrained (fixed supports) have exactly zero displacement. Therefore, their corresponding rows and columns in the Stiffness (<span class="math notranslate nohighlight">\(K\)</span>) and Mass (<span class="math notranslate nohighlight">\(M\)</span>) matrices do not participate in the generalized eigenvalue problem <span class="math notranslate nohighlight">\((K - \omega^2 M) \Phi = 0\)</span>.</p>
+<p>To prevent singular matrices and compute the true dynamic modes of the <em>unrestrained</em> structure, <code class="docutils literal notranslate"><span class="pre">solve_modal</span></code> drops these constrained rows and columns. It does this by:</p>
+<ol class="arabic simple">
+<li><p>Identifying all global DOFs.</p></li>
+<li><p>Extracting the constrained DOFs from the <code class="docutils literal notranslate"><span class="pre">C_bc</span></code> array.</p></li>
+<li><p>Finding the “free” DOFs using <code class="docutils literal notranslate"><span class="pre">np.setdiff1d(all_dofs,</span> <span class="pre">constrained_dofs)</span></code>.</p></li>
+<li><p>Using NumPy’s multi-dimensional meshgrid indexer, <code class="docutils literal notranslate"><span class="pre">np.ix_</span></code>, to extract the sub-matrices.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Internal mechanic of solve_modal</span>
+<span class="n">free_dofs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">total_dof</span><span class="p">),</span> <span class="n">constrained_dofs</span><span class="p">)</span>
+<span class="n">K_free</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">free_dofs</span><span class="p">,</span> <span class="n">free_dofs</span><span class="p">)]</span>
+<span class="n">M_free</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">free_dofs</span><span class="p">,</span> <span class="n">free_dofs</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>By utilizing <code class="docutils literal notranslate"><span class="pre">np.ix_(free_dofs,</span> <span class="pre">free_dofs)</span></code>, NumPy efficiently grabs the intersection of the “free” rows and “free” columns without needing a slow <code class="docutils literal notranslate"><span class="pre">for</span></code> loop. The eigenvalue solver then evaluates <code class="docutils literal notranslate"><span class="pre">K_free</span></code> and <code class="docutils literal notranslate"><span class="pre">M_free</span></code>. After solving, the eigenvectors are padded with zeros at the constrained DOFs to map back to the global system.</p>
+</section>
+<section id="complete-code-10-story-shear-building-modal-analysis">
+<h3>Complete Code: 10-Story Shear Building Modal Analysis<a class="headerlink" href="#complete-code-10-story-shear-building-modal-analysis" title="Link to this heading">#</a></h3>
+<p>Assume we have a simple column or building mesh. We want to find its fundamental periods and visualize its first 3 bending modes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">femlabpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">femlabpy.modal</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve_modal</span>
+
+<span class="c1"># 1. Geometry and Mesh Generation (10m high column, 1m wide)</span>
+<span class="n">L</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span>
+<span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">20</span>
+<span class="n">nn</span> <span class="o">=</span> <span class="p">(</span><span class="n">nx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">ny</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">dof</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># Generate a basic structured Q4 mesh grid manually or via Gmsh</span>
+<span class="c1"># (For brevity, we assume X and T are generated here)</span>
+<span class="c1"># X = ... (shape: nn x 2)</span>
+<span class="c1"># T = ... (shape: nel x 5)</span>
+
+<span class="c1"># 2. Material (Concrete: E=30GPa, nu=0.2, t=1.0m, rho=2500kg/m3)</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">30e9</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2500.0</span><span class="p">]])</span>
+
+<span class="c1"># 3. Assemble Stiffness and Mass Matrices</span>
+<span class="n">K</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">dof</span><span class="p">)</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">dof</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">K</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">kq4e</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">mq4e</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">lumped</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># Consistent mass matrix</span>
+
+<span class="c1"># 4. Boundary Conditions (Fixed Base at y=0)</span>
+<span class="n">fixed_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">C</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">fixed_nodes</span><span class="p">:</span>
+    <span class="n">C</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span> <span class="c1"># Fix Ux</span>
+    <span class="n">C</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span> <span class="c1"># Fix Uy</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+
+<span class="c1"># 5. Execute Modal Solver</span>
+<span class="c1"># Requesting the first 5 modes</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">solve_modal</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n_modes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">C_bc</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">dof</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- MODAL ANALYSIS RESULTS ---&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mode </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Frequency = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">freq_hz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Hz&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Period    = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">period</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Eff. Mass (X) = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">effective_mass</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> kg&quot;</span><span class="p">)</span>
+
+<span class="c1"># 6. Plotting Mode Shapes</span>
+<span class="n">scale_factor</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">phi_i</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">mode_shapes</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">X_def</span> <span class="o">=</span> <span class="n">X</span> <span class="o">+</span> <span class="n">phi_i</span> <span class="o">*</span> <span class="n">scale_factor</span>
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">T</span><span class="p">:</span>
+        <span class="n">n_idx</span> <span class="o">=</span> <span class="n">elem</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_idx</span><span class="p">,</span> <span class="n">n_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">poly</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">poly</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X_def</span><span class="p">[</span><span class="n">poly</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_def</span><span class="p">[</span><span class="n">poly</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mode </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">freq_hz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Hz</span><span class="se">\n</span><span class="s2">(T = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">period</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="frequency-response-functions-frf">
+<h2>9.2 Frequency Response Functions (FRF)<a class="headerlink" href="#frequency-response-functions-frf" title="Link to this heading">#</a></h2>
+<p>The <strong>Frequency Response Function</strong>, <span class="math notranslate nohighlight">\(H(\omega)\)</span>, measures how the structure responds to a harmonic excitation <span class="math notranslate nohighlight">\(P \sin(\omega t)\)</span> at varying frequencies <span class="math notranslate nohighlight">\(\omega\)</span>. Resonance occurs when the excitation frequency matches one of the natural frequencies, causing a spike in the FRF magnitude.</p>
+<div class="math notranslate nohighlight">
+\[ H(\omega) = \left( -\omega^2 \mathbf{M} + i\omega \mathbf{C} + \mathbf{K} \right)^{-1} \]</div>
+<p><code class="docutils literal notranslate"><span class="pre">femlabpy</span></code> provides <code class="docutils literal notranslate"><span class="pre">compute_frf</span></code> and <code class="docutils literal notranslate"><span class="pre">plot_frf</span></code> to automate the calculation of the complex Dynamic Stiffness matrix and extract the steady-state transfer function between an input DOF and an output DOF.</p>
+</section>
+<section id="full-time-history-seismic-analysis">
+<h2>9.3 Full Time-History Seismic Analysis<a class="headerlink" href="#full-time-history-seismic-analysis" title="Link to this heading">#</a></h2>
+<p>When given an earthquake record (e.g., an <code class="docutils literal notranslate"><span class="pre">.AT2</span></code> file containing acceleration samples), a standard Response Spectrum analysis is often insufficient for non-linear assessments. A complete Time-History Analysis (THA) is required.</p>
+<p>In THA, the ground acceleration <span class="math notranslate nohighlight">\(\ddot{u}_g(t)\)</span> is transformed into an effective dynamic point load applied to every mass in the structure:</p>
+<div class="math notranslate nohighlight">
+\[ \mathbf{P}_{eff}(t) = -\mathbf{M} \mathbf{r} \ddot{u}_g(t) \]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{r}\)</span> is the influence vector (1 for DOFs in the shaking direction, 0 otherwise).</p>
+<section id="deep-dive-how-seismic-load-handles-interpolation-and-sparse-matrices">
+<h3>Deep Dive: How <code class="docutils literal notranslate"><span class="pre">seismic_load</span></code> Handles Interpolation and Sparse Matrices<a class="headerlink" href="#deep-dive-how-seismic-load-handles-interpolation-and-sparse-matrices" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">seismic_load</span></code> function inside <code class="docutils literal notranslate"><span class="pre">femlabpy</span></code> is a factory function. It takes your earthquake record array, your mass matrix, and your spatial influence vector, and returns a Python <em>callable</em> function <code class="docutils literal notranslate"><span class="pre">p(t)</span></code> that the Newmark-Beta solver can invoke at any arbitrary time <span class="math notranslate nohighlight">\(t\)</span>.</p>
+<ol class="arabic simple">
+<li><p><strong>Pre-computing the Load Vector Profile:</strong> To avoid multiplying the massive Mass matrix <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> at every single time step, <code class="docutils literal notranslate"><span class="pre">seismic_load</span></code> pre-computes the product <span class="math notranslate nohighlight">\(-\mathbf{M} \mathbf{r}\)</span> once. If <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> is a <code class="docutils literal notranslate"><span class="pre">scipy.sparse</span></code> matrix (like CSR or CSC), it leverages sparse matrix-vector multiplication (<code class="docutils literal notranslate"><span class="pre">M.dot(r)</span></code>), ensuring memory and computational efficiency.</p></li>
+<li><p><strong>The <code class="docutils literal notranslate"><span class="pre">p(t)</span></code> Callable:</strong> The returned function <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">p(t):</span></code> encapsulates the state.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">np.interp</span></code> for Sub-stepping:</strong> The Newmark-Beta solver might adapt its time step internally, evaluating forces at times <span class="math notranslate nohighlight">\(t\)</span> that do not fall exactly on the earthquake record’s discrete points (<code class="docutils literal notranslate"><span class="pre">dt_record</span></code>). To handle this, <code class="docutils literal notranslate"><span class="pre">p(t)</span></code> uses <code class="docutils literal notranslate"><span class="pre">np.interp(t,</span> <span class="pre">time_array,</span> <span class="pre">ag_ms2)</span></code>. This linearly interpolates the ground acceleration at any exact float time <span class="math notranslate nohighlight">\(t\)</span> by finding the two nearest discrete points in the record, effectively producing a continuous acceleration curve.</p></li>
+</ol>
+</section>
+<section id="step-by-step-earthquake-integration">
+<h3>Step-by-Step Earthquake Integration<a class="headerlink" href="#step-by-step-earthquake-integration" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">femlabpy.dynamics</span><span class="w"> </span><span class="kn">import</span> <span class="n">seismic_load</span><span class="p">,</span> <span class="n">solve_newmark</span>
+
+<span class="c1"># 1. Load an Earthquake Record</span>
+<span class="n">dt_record</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">n_points</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_points</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt_record</span>
+<span class="n">ag_g</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">time_array</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.2</span> <span class="o">*</span> <span class="n">time_array</span><span class="p">)</span>
+<span class="n">ag_ms2</span> <span class="o">=</span> <span class="n">ag_g</span> <span class="o">*</span> <span class="mf">9.80665</span>
+
+<span class="c1"># 2. Build the Influence Vector for Horizontal (X) Shaking</span>
+<span class="n">inf_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span> <span class="o">*</span> <span class="n">dof</span><span class="p">)</span>
+<span class="n">inf_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># 1.0 for all Ux DOFs, 0.0 for Uy DOFs</span>
+
+<span class="c1"># 3. Create the Time-Varying Load Function</span>
+<span class="c1"># Returns a callable p(t) utilizing np.interp internally</span>
+<span class="n">p_func</span> <span class="o">=</span> <span class="n">seismic_load</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">inf_vec</span><span class="p">,</span> <span class="n">ag_ms2</span><span class="p">,</span> <span class="n">dt_record</span><span class="p">)</span>
+
+<span class="c1"># 4. Set Initial Conditions</span>
+<span class="n">u0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nn</span> <span class="o">*</span> <span class="n">dof</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">v0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nn</span> <span class="o">*</span> <span class="n">dof</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="c1"># 5. Solve using the Implicit Newmark-Beta Integrator</span>
+<span class="n">history</span> <span class="o">=</span> <span class="n">solve_newmark</span><span class="p">(</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">C_damp</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">p_func</span><span class="p">,</span> <span class="n">u0</span><span class="p">,</span> <span class="n">v0</span><span class="p">,</span> 
+    <span class="n">dt</span><span class="o">=</span><span class="n">dt_record</span><span class="p">,</span> 
+    <span class="n">nsteps</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span> 
+    <span class="n">beta</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> 
+    <span class="n">C_bc</span><span class="o">=</span><span class="n">C</span><span class="p">,</span>
+    <span class="n">compute_energy</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Enables calculating strain/kinetic histories</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="understanding-the-result-u-history-array">
+<h3>Understanding the <code class="docutils literal notranslate"><span class="pre">result.u</span></code> History Array<a class="headerlink" href="#understanding-the-result-u-history-array" title="Link to this heading">#</a></h3>
+<p>The variable <code class="docutils literal notranslate"><span class="pre">history.u</span></code> returned by <code class="docutils literal notranslate"><span class="pre">solve_newmark</span></code> is a 2-dimensional NumPy array. It captures the spatial degrees of freedom across all time steps.</p>
+<ul class="simple">
+<li><p><strong>Structure:</strong> It has the shape <code class="docutils literal notranslate"><span class="pre">(N_steps,</span> <span class="pre">N_dof)</span></code>. The rows represent the passage of time (from <span class="math notranslate nohighlight">\(t=0\)</span> to <span class="math notranslate nohighlight">\(t_{end}\)</span>), and the columns represent the individual Degrees of Freedom (Ux and Uy for all nodes).</p></li>
+<li><p><strong>Slicing for Plotting:</strong> To extract the history of a single node, we use 2D array slicing: <code class="docutils literal notranslate"><span class="pre">history.u[:,</span> <span class="pre">target_dof]</span></code>. The <code class="docutils literal notranslate"><span class="pre">:</span></code> means “give me all rows (all time steps)”, and <code class="docutils literal notranslate"><span class="pre">target_dof</span></code> isolates the specific column.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 6. Extract and Plot the Roof Displacement History</span>
+<span class="n">roof_dof_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span> <span class="o">*</span> <span class="n">dof</span> <span class="o">+</span> <span class="mi">0</span>
+
+<span class="c1"># Line-by-line slice: Grab all time steps (rows) for the single roof DOF column</span>
+<span class="n">u_roof</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">u</span><span class="p">[:,</span> <span class="n">roof_dof_x</span><span class="p">]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">u_roof</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span> <span class="c1"># Convert m to mm</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Roof Relative Displacement History (X-Direction)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time (s)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Displacement (mm)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">u_roof</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="global-energy-balance-extraction">
+<h2>9.4 Global Energy Balance Extraction<a class="headerlink" href="#global-energy-balance-extraction" title="Link to this heading">#</a></h2>
+<p>To ensure numerical stability during the Time-History Analysis, engineers often plot the energy balance over time. The energy input into the system by the earthquake must equate to the sum of the system’s kinetic energy, strain energy, and damped dissipation energy.</p>
+<p>By passing <code class="docutils literal notranslate"><span class="pre">compute_energy=True</span></code> to <code class="docutils literal notranslate"><span class="pre">solve_newmark</span></code>, the solver computes these metrics line-by-line at every time step:</p>
+<ul class="simple">
+<li><p><strong>Kinetic Energy:</strong> <span class="math notranslate nohighlight">\(E_k = \frac{1}{2} \mathbf{\dot{u}}^T \mathbf{M} \mathbf{\dot{u}}\)</span></p></li>
+<li><p><strong>Strain Energy:</strong> <span class="math notranslate nohighlight">\(E_s = \frac{1}{2} \mathbf{u}^T \mathbf{K} \mathbf{u}\)</span></p></li>
+<li><p><strong>Damped Energy:</strong> Accumulated numerical integral of <span class="math notranslate nohighlight">\(\mathbf{\dot{u}}^T \mathbf{C} \mathbf{\dot{u}}\)</span></p></li>
+</ul>
+<p>You can directly access these arrays off the <code class="docutils literal notranslate"><span class="pre">history</span></code> object and visualize them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7. Verification: Energy Conservation Plot</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">history</span><span class="o">.</span><span class="n">kinetic_energy</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Kinetic Energy&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">history</span><span class="o">.</span><span class="n">strain_energy</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Strain Energy&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">history</span><span class="o">.</span><span class="n">damping_energy</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Damped Dissipation&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="c1"># Compute the total internal energy sum</span>
+<span class="n">total_internal</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">kinetic_energy</span> <span class="o">+</span> <span class="n">history</span><span class="o">.</span><span class="n">strain_energy</span> <span class="o">+</span> <span class="n">history</span><span class="o">.</span><span class="n">damping_energy</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">total_internal</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Total Internal Energy&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">history</span><span class="o">.</span><span class="n">external_work</span><span class="p">,</span> <span class="s1">&#39;m:&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Input External Work&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Seismic Energy Balance Verification&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time (s)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Energy (Joules)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>When plotted, the Total Internal Energy curve should lay perfectly over the Input External Work curve. Any divergence indicates numerical instability or a time step (<code class="docutils literal notranslate"><span class="pre">dt</span></code>) that is too large.</p>
+<p>These advanced workflows prove that <code class="docutils literal notranslate"><span class="pre">femlabpy</span></code> is not just a static matrix assembler, but a fully-fledged structural dynamics engine.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="ch08_custom_elements.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Chapter 8: Custom Element Development</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../theory/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Theory &amp; Reference Manual</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#modal-analysis-finding-periods-and-plotting-mode-shapes">9.1 Modal Analysis: Finding Periods and Plotting Mode Shapes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deep-dive-how-solve-modal-condenses-matrices-using-np-ix">Deep Dive: How <code class="docutils literal notranslate"><span class="pre">solve_modal</span></code> Condenses Matrices using <code class="docutils literal notranslate"><span class="pre">np.ix_</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#complete-code-10-story-shear-building-modal-analysis">Complete Code: 10-Story Shear Building Modal Analysis</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#frequency-response-functions-frf">9.2 Frequency Response Functions (FRF)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full-time-history-seismic-analysis">9.3 Full Time-History Seismic Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deep-dive-how-seismic-load-handles-interpolation-and-sparse-matrices">Deep Dive: How <code class="docutils literal notranslate"><span class="pre">seismic_load</span></code> Handles Interpolation and Sparse Matrices</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-by-step-earthquake-integration">Step-by-Step Earthquake Integration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#understanding-the-result-u-history-array">Understanding the <code class="docutils literal notranslate"><span class="pre">result.u</span></code> History Array</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-energy-balance-extraction">9.4 Global Energy Balance Extraction</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/manual/ch09_dynamic_workflows.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, femlabpy contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

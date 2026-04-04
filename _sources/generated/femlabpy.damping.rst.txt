@@ -1,0 +1,14 @@
+﻿femlabpy.damping
+================
+
+.. automodule:: femlabpy.damping
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      modal_damping
+      rayleigh_coefficients
+      rayleigh_damping
+   

@@ -1,0 +1,13 @@
+﻿femlabpy.loads
+==============
+
+.. automodule:: femlabpy.loads
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      addload
+      setload
+   

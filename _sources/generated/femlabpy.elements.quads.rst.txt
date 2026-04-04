@@ -1,0 +1,29 @@
+﻿femlabpy.elements.quads
+=======================
+
+.. automodule:: femlabpy.elements.quads
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      keq4e
+      keq4epe
+      keq4eps
+      keq4p
+      kq4e
+      kq4epe
+      kq4eps
+      kq4p
+      meq4e
+      mq4e
+      qeq4e
+      qeq4epe
+      qeq4eps
+      qeq4p
+      qq4e
+      qq4epe
+      qq4eps
+      qq4p
+   

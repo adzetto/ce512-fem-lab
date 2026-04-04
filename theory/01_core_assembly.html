@@ -1,0 +1,944 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective &#8212; femlabpy 0.6.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+
+    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'theory/01_core_assembly';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chapter 2: Boundary Conditions and Loads" href="02_boundary_loads.html" />
+    <link rel="prev" title="Theory &amp; Reference Manual" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">femlabpy 0.6.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="#">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="#">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="06_3d_solids.html">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_boundary_loads.html">Chapter 2: Boundary Conditions and Loads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_1d_bars.html">Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_2d_triangles.html">2D Triangular Elements (CST)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05_2d_quads.html">Chapter 5: 2D Isoparametric Quadrilateral Elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_3d_solids.html">3D Solid Elements: Tetrahedrons and Hexahedrons</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="07_plasticity.html">Chapter 7: Constitutive Models &amp; Plasticity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_dynamics.html">Structural Dynamics and Time Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_modal_periodic.html">Chapter 9: Eigenvalue Problems and Periodic Boundaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_io_mesh.html">Mesh I/O, Data Types, and Helpers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_nonlinear_solvers.html">Chapter 11: Nonlinear Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="12_plotting_postprocessing.html">Plotting and Post-Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_legacy_wrappers.html">13. Legacy Wrappers for MATLAB Compatibility</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Theory &amp; Reference Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="global-matrix-assembly-in-finite-element-analysis-a-rigorous-perspective">
+<h1>Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective<a class="headerlink" href="#global-matrix-assembly-in-finite-element-analysis-a-rigorous-perspective" title="Link to this heading">#</a></h1>
+<section id="introduction-to-assembly">
+<h2>Introduction to Assembly<a class="headerlink" href="#introduction-to-assembly" title="Link to this heading">#</a></h2>
+<p>In the Finite Element Method (FEM), the behavior of a complex continuous domain is modeled by discretizing it into smaller, manageable subdomains called elements. Each element’s behavior is characterized by local matrices—such as the element stiffness matrix <span class="math notranslate nohighlight">\(\mathbf{K}_e\)</span> and the element internal force vector <span class="math notranslate nohighlight">\(\mathbf{q}_e\)</span>. To solve the system as a whole, these local contributions must be aggregated into a global system of equations representing the entire structure. This process is known as <strong>global matrix assembly</strong>.</p>
+<p>The assembly procedure maps the local degrees of freedom (DOFs) of an individual element to the global degrees of freedom of the complete mesh structure. Mathematically, this mapping is elegantly represented using Boolean connectivity matrices. Computationally, however, using explicit Boolean matrix multiplication is highly inefficient. Instead, modern FEA codes utilize direct index mapping and sophisticated memory management techniques (such as sparse matrix structures) to efficiently accumulate local contributions.</p>
+<p>This chapter details both the rigorous mathematical foundation of assembly using Boolean matrices, and the practical, high-performance implementation in Python using NumPy and SciPy. We will explore the theoretical operators, and exactly how operations like <code class="docutils literal notranslate"><span class="pre">numpy.ix_</span></code> bridge the gap between pure mathematics and fast software.</p>
+</section>
+<hr class="docutils" />
+<section id="the-mathematics-of-l-e-t-k-e-l-e-in-extreme-detail">
+<h2>The Mathematics of <span class="math notranslate nohighlight">\(L_e^T K_e L_e\)</span> in Extreme Detail<a class="headerlink" href="#the-mathematics-of-l-e-t-k-e-l-e-in-extreme-detail" title="Link to this heading">#</a></h2>
+<p>The global stiffness matrix <span class="math notranslate nohighlight">\(\mathbf{K}\)</span> and global internal force vector <span class="math notranslate nohighlight">\(\mathbf{q}\)</span> are constructed by summing the contributions from all <span class="math notranslate nohighlight">\(N_e\)</span> elements in the mesh. Let the global displacement vector be <span class="math notranslate nohighlight">\(\mathbf{U}\)</span> (size <span class="math notranslate nohighlight">\(N \times 1\)</span>) and the local displacement vector for element <span class="math notranslate nohighlight">\(e\)</span> be <span class="math notranslate nohighlight">\(\mathbf{u}_e\)</span> (size <span class="math notranslate nohighlight">\(n_e \times 1\)</span>).</p>
+<section id="the-boolean-scatter-gather-matrix-l-e">
+<h3>The Boolean Scatter/Gather Matrix <span class="math notranslate nohighlight">\(L_e\)</span><a class="headerlink" href="#the-boolean-scatter-gather-matrix-l-e" title="Link to this heading">#</a></h3>
+<p>The relationship between the global degrees of freedom and the local degrees of freedom for an element <span class="math notranslate nohighlight">\(e\)</span> is established through a Boolean connectivity matrix <span class="math notranslate nohighlight">\(\mathbf{L}_e\)</span>. The matrix <span class="math notranslate nohighlight">\(\mathbf{L}_e\)</span> is a rectangular matrix of size <span class="math notranslate nohighlight">\(n_e \times N\)</span>.</p>
+<p>The extraction (or “gather”) of local displacements <span class="math notranslate nohighlight">\(\mathbf{u}_e\)</span> from the global displacements <span class="math notranslate nohighlight">\(\mathbf{U}\)</span> is given by:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathbf{u}_e = \mathbf{L}_e \mathbf{U}
+\]</div>
+<p>where the entries of <span class="math notranslate nohighlight">\(\mathbf{L}_e\)</span> are defined as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+(\mathbf{L}_e)_{ij} = 
+\begin{cases} 
+1 &amp; \text{if local DOF } i \text{ corresponds to global DOF } j \\
+0 &amp; \text{otherwise}
+\end{cases}
+\end{split}\]</div>
+<p>Because each local DOF maps to exactly one global DOF, each row of <span class="math notranslate nohighlight">\(\mathbf{L}_e\)</span> contains exactly one <code class="docutils literal notranslate"><span class="pre">1</span></code>, with all other entries being <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</section>
+<section id="strain-energy-and-the-assembly-operator">
+<h3>Strain Energy and the Assembly Operator<a class="headerlink" href="#strain-energy-and-the-assembly-operator" title="Link to this heading">#</a></h3>
+<p>To derive the global assembly equation for the stiffness matrix, consider the total strain energy of the system, <span class="math notranslate nohighlight">\(U_{\text{total}}\)</span>, which is the sum of the strain energies of the individual elements:</p>
+<div class="math notranslate nohighlight">
+\[
+U_{\text{total}} = \sum_{e=1}^{N_e} U_e = \sum_{e=1}^{N_e} \frac{1}{2} \mathbf{u}_e^T \mathbf{K}_e \mathbf{u}_e
+\]</div>
+<p>Substitute the Boolean mapping <span class="math notranslate nohighlight">\(\mathbf{u}_e = \mathbf{L}_e \mathbf{U}\)</span> into the energy equation:</p>
+<div class="math notranslate nohighlight">
+\[
+U_{\text{total}} = \sum_{e=1}^{N_e} \frac{1}{2} (\mathbf{L}_e \mathbf{U})^T \mathbf{K}_e (\mathbf{L}_e \mathbf{U}) = \frac{1}{2} \mathbf{U}^T \left( \sum_{e=1}^{N_e} \mathbf{L}_e^T \mathbf{K}_e \mathbf{L}_e \right) \mathbf{U}
+\]</div>
+<p>The total strain energy can also be expressed directly in terms of the global stiffness matrix <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[
+U_{\text{total}} = \frac{1}{2} \mathbf{U}^T \mathbf{K} \mathbf{U}
+\]</div>
+<p>Comparing the two expressions yields the fundamental equation for global stiffness assembly:</p>
+<div class="math notranslate nohighlight">
+\[
+\mathbf{K} = \sum_{e=1}^{N_e} \mathbf{L}_e^T \mathbf{K}_e \mathbf{L}_e
+\]</div>
+</section>
+<section id="a-concrete-mathematical-example">
+<h3>A Concrete Mathematical Example<a class="headerlink" href="#a-concrete-mathematical-example" title="Link to this heading">#</a></h3>
+<p>Let us ground this with a highly specific example. Consider a 1D bar partitioned into 2 elements (3 nodes total: nodes 1, 2, 3), where each node has 1 DOF. The global system has <span class="math notranslate nohighlight">\(N=3\)</span> DOFs.
+Element 1 connects nodes 1 and 2. Element 2 connects nodes 2 and 3.</p>
+<p>The Boolean matrix for Element 1, <span class="math notranslate nohighlight">\(\mathbf{L}_1\)</span>, maps the <span class="math notranslate nohighlight">\(2\)</span> local DOFs of the element to the <span class="math notranslate nohighlight">\(3\)</span> global DOFs:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{L}_1 = 
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0
+\end{bmatrix}
+\end{split}\]</div>
+<p>The transpose <span class="math notranslate nohighlight">\(\mathbf{L}_1^T\)</span> (the “scatter” matrix) is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{L}_1^T = 
+\begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1 \\
+0 &amp; 0
+\end{bmatrix}
+\end{split}\]</div>
+<p>Let the element stiffness matrix be:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{K}_1 = 
+\begin{bmatrix}
+k_{11} &amp; k_{12} \\
+k_{21} &amp; k_{22}
+\end{bmatrix}
+\end{split}\]</div>
+<p>Now, evaluate the matrix product <span class="math notranslate nohighlight">\(\mathbf{L}_1^T \mathbf{K}_1 \mathbf{L}_1\)</span>:</p>
+<ol class="arabic simple">
+<li><p><strong>First multiplication <span class="math notranslate nohighlight">\(\mathbf{K}_1 \mathbf{L}_1\)</span>:</strong></p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{K}_1 \mathbf{L}_1 = 
+\begin{bmatrix}
+k_{11} &amp; k_{12} \\
+k_{21} &amp; k_{22}
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0
+\end{bmatrix}
+=
+\begin{bmatrix}
+k_{11} &amp; k_{12} &amp; 0 \\
+k_{21} &amp; k_{22} &amp; 0
+\end{bmatrix}
+\end{split}\]</div>
+<ol class="arabic simple" start="2">
+<li><p><strong>Second multiplication <span class="math notranslate nohighlight">\(\mathbf{L}_1^T (\mathbf{K}_1 \mathbf{L}_1)\)</span>:</strong></p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{L}_1^T (\mathbf{K}_1 \mathbf{L}_1) = 
+\begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1 \\
+0 &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+k_{11} &amp; k_{12} &amp; 0 \\
+k_{21} &amp; k_{22} &amp; 0
+\end{bmatrix}
+=
+\begin{bmatrix}
+k_{11} &amp; k_{12} &amp; 0 \\
+k_{21} &amp; k_{22} &amp; 0 \\
+0 &amp; 0 &amp; 0
+\end{bmatrix}
+\end{split}\]</div>
+<p>The operation <span class="math notranslate nohighlight">\(\mathbf{L}_e^T \mathbf{K}_e \mathbf{L}_e\)</span> mathematically expands a small <span class="math notranslate nohighlight">\(n_e \times n_e\)</span> matrix into an <span class="math notranslate nohighlight">\(N \times N\)</span> matrix, padding it with zeros everywhere except at the specific rows and columns corresponding to the element’s global DOFs. The sum <span class="math notranslate nohighlight">\(\sum \mathbf{L}_e^T \mathbf{K}_e \mathbf{L}_e\)</span> then superimposes all these padded matrices.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="python-implementation-exactly-how-numpy-ix-works">
+<h2>Python Implementation: Exactly How <code class="docutils literal notranslate"><span class="pre">numpy.ix_</span></code> Works<a class="headerlink" href="#python-implementation-exactly-how-numpy-ix-works" title="Link to this heading">#</a></h2>
+<p>While the equations above are mathematically elegant, constructing large, mostly empty <span class="math notranslate nohighlight">\(\mathbf{L}_e\)</span> matrices and performing the full matrix multiplications is computationally intractable (<span class="math notranslate nohighlight">\(\mathcal{O}(N^3)\)</span> operations for mostly zeros). In practice, the operation <span class="math notranslate nohighlight">\(\mathbf{L}_e^T \mathbf{K}_e \mathbf{L}_e\)</span> is realized as an array slicing operation: “scatter the entries of <span class="math notranslate nohighlight">\(\mathbf{K}_e\)</span> into the appropriate rows and columns of <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>”.</p>
+<p>In Python, this is executed using <code class="docutils literal notranslate"><span class="pre">numpy.ix_</span></code>.</p>
+<section id="the-magic-of-numpy-ix">
+<h3>The Magic of <code class="docutils literal notranslate"><span class="pre">numpy.ix_</span></code><a class="headerlink" href="#the-magic-of-numpy-ix" title="Link to this heading">#</a></h3>
+<p>Advanced indexing in NumPy allows you to select arbitrary items based on their N-dimensional index. If you have an element whose local DOFs map to global DOFs <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2]</span></code>, you want to add the <span class="math notranslate nohighlight">\(2 \times 2\)</span> matrix <span class="math notranslate nohighlight">\(\mathbf{K}_e\)</span> to rows <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2]</span></code> and columns <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2]</span></code> of <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>.</p>
+<p>If you simply write <code class="docutils literal notranslate"><span class="pre">K[[0,</span> <span class="pre">2],</span> <span class="pre">[0,</span> <span class="pre">2]]</span></code>, NumPy performs <em>integer array indexing</em>, pairing the indices up: it selects <code class="docutils literal notranslate"><span class="pre">K[0,</span> <span class="pre">0]</span></code> and <code class="docutils literal notranslate"><span class="pre">K[2,</span> <span class="pre">2]</span></code>, resulting in a 1D array of two elements. This is <strong>not</strong> a submatrix (block) selection!</p>
+<p>To select the <span class="math notranslate nohighlight">\(2 \times 2\)</span> block formed by the intersection of rows <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2]</span></code> and columns <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2]</span></code>, you need an open mesh grid. <code class="docutils literal notranslate"><span class="pre">numpy.ix_</span></code> takes 1D sequences and returns a tuple of N-dimensional arrays that broadcast to form the full block.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">ix_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ix_grid</span><span class="p">)</span>
+<span class="c1"># Output:</span>
+<span class="c1"># (array([[0],</span>
+<span class="c1">#         [2]]), </span>
+<span class="c1">#  array([[0, 2]]))</span>
+</pre></div>
+</div>
+<p>Notice the shapes:</p>
+<ul class="simple">
+<li><p>The row index array has shape <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">1)</span></code>: <code class="docutils literal notranslate"><span class="pre">[[0],</span> <span class="pre">[2]]</span></code></p></li>
+<li><p>The column index array has shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">2)</span></code>: <code class="docutils literal notranslate"><span class="pre">[[0,</span> <span class="pre">2]]</span></code></p></li>
+</ul>
+<p>When NumPy uses these arrays to index <code class="docutils literal notranslate"><span class="pre">K</span></code>, the shapes broadcast together to form a <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">2)</span></code> grid:</p>
+<ul class="simple">
+<li><p>Row 0 with Col 0 <span class="math notranslate nohighlight">\(\rightarrow (0, 0)\)</span></p></li>
+<li><p>Row 0 with Col 2 <span class="math notranslate nohighlight">\(\rightarrow (0, 2)\)</span></p></li>
+<li><p>Row 2 with Col 0 <span class="math notranslate nohighlight">\(\rightarrow (2, 0)\)</span></p></li>
+<li><p>Row 2 with Col 2 <span class="math notranslate nohighlight">\(\rightarrow (2, 2)\)</span></p></li>
+</ul>
+<p>This precisely targets the block <span class="math notranslate nohighlight">\(K_{00}, K_{02}, K_{20}, K_{22}\)</span>, perfectly mimicking the exact mathematical result of <span class="math notranslate nohighlight">\(\mathbf{L}_e^T \mathbf{K}_e \mathbf{L}_e\)</span>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="sparse-vs-dense-assembly-in-assmk">
+<h2>Sparse vs. Dense Assembly in <code class="docutils literal notranslate"><span class="pre">assmk</span></code><a class="headerlink" href="#sparse-vs-dense-assembly-in-assmk" title="Link to this heading">#</a></h2>
+<p>When accumulating <span class="math notranslate nohighlight">\(\mathbf{K}_e\)</span> into <span class="math notranslate nohighlight">\(\mathbf{K}\)</span>, the syntax differs slightly based on whether <span class="math notranslate nohighlight">\(\mathbf{K}\)</span> is a dense <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> or a <code class="docutils literal notranslate"><span class="pre">scipy.sparse.lil_matrix</span></code>.</p>
+<section id="dense-arrays">
+<h3>Dense Arrays<a class="headerlink" href="#dense-arrays" title="Link to this heading">#</a></h3>
+<p>A dense matrix stores every coefficient in continuous memory blocks. In Python, an in-place addition to a block using advanced indexing works natively:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">K</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">indices</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">Ke</span>
+</pre></div>
+</div>
+<p>This invokes the C-level <code class="docutils literal notranslate"><span class="pre">__iadd__</span></code> routine. Because the memory is contiguous and fully allocated, NumPy computes the exact memory offsets and rapidly adds the values in-place without creating intermediate large array copies. It is blazingly fast for small meshes (e.g., <span class="math notranslate nohighlight">\(N &lt; 1000\)</span>).</p>
+</section>
+<section id="scipy-sparse-matrices-lil-matrix">
+<h3>SciPy Sparse Matrices (<code class="docutils literal notranslate"><span class="pre">lil_matrix</span></code>)<a class="headerlink" href="#scipy-sparse-matrices-lil-matrix" title="Link to this heading">#</a></h3>
+<p>Finite element matrices are inherently sparse. For large systems (<span class="math notranslate nohighlight">\(N \gg 1000\)</span>), storing a dense matrix consumes <span class="math notranslate nohighlight">\(\mathcal{O}(N^2)\)</span> memory, which quickly exceeds available RAM. Sparse matrices store only non-zero entries, requiring <span class="math notranslate nohighlight">\(\mathcal{O}(N)\)</span> memory.</p>
+<p>During assembly, SciPy’s <code class="docutils literal notranslate"><span class="pre">lil_matrix</span></code> (List of Lists) is typically used. In this format, each row is a Python list of column indices and a corresponding list of values.</p>
+<p>For sparse arrays, augmented assignment with advanced indexing is problematic. The expression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">K</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">indices</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">Ke</span>
+</pre></div>
+</div>
+<p>fails or is highly inefficient for <code class="docutils literal notranslate"><span class="pre">lil_matrix</span></code> because <code class="docutils literal notranslate"><span class="pre">+=</span></code> attempts to mutate the extracted sparse slice in-place, which isn’t robustly supported by SciPy’s sparse advanced indexing mechanics.</p>
+<p>Instead, we must write:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">K</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">indices</span><span class="p">)]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">indices</span><span class="p">)]</span> <span class="o">+</span> <span class="n">Ke</span>
+</pre></div>
+</div>
+<p><strong>What happens here step-by-step?</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Extract:</strong> <code class="docutils literal notranslate"><span class="pre">K[np.ix_(indices,</span> <span class="pre">indices)]</span></code> extracts the sparse block, instantiating it temporarily as a dense or sparse sub-matrix.</p></li>
+<li><p><strong>Add:</strong> <code class="docutils literal notranslate"><span class="pre">+</span> <span class="pre">Ke</span></code> adds the dense element matrix to the extracted block.</p></li>
+<li><p><strong>Assign:</strong> The <code class="docutils literal notranslate"><span class="pre">=</span></code> operator calls <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> on the <code class="docutils literal notranslate"><span class="pre">lil_matrix</span></code>. The LIL matrix updates its internal lists. If a zero entry suddenly becomes non-zero, it dynamically appends the new column index and value to the corresponding row list.</p></li>
+</ol>
+<p>While allocating lists during assignment has some overhead, it prevents the <span class="math notranslate nohighlight">\(\mathcal{O}(N^2)\)</span> memory explosion and makes the process tractable for millions of degrees of freedom. After assembly is complete, the <code class="docutils literal notranslate"><span class="pre">lil_matrix</span></code> is converted to a Compressed Sparse Row (<code class="docutils literal notranslate"><span class="pre">csr_matrix</span></code>) format for fast, hardware-optimized solving.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="complete-example-3-element-manual-assembly">
+<h2>Complete Example: 3-Element Manual Assembly<a class="headerlink" href="#complete-example-3-element-manual-assembly" title="Link to this heading">#</a></h2>
+<p>Below is a self-contained, 50-line runnable script demonstrating everything discussed: Boolean matrices via <code class="docutils literal notranslate"><span class="pre">ix_</span></code>, dense vs. sparse logic, and a 3-element system (4 nodes, 1 DOF per node).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">assemble_system</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">Ke</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    nn: Total number of global nodes</span>
+<span class="sd">    elements: List of node-pair tuples, e.g., [(0, 1), (1, 2), (2, 3)]</span>
+<span class="sd">    Ke: Element stiffness matrix (assumed identical for all elements)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 1. Initialize empty Global Matrix K</span>
+    <span class="k">if</span> <span class="n">use_sparse</span><span class="p">:</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lil_matrix</span><span class="p">((</span><span class="n">nn</span><span class="p">,</span> <span class="n">nn</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nn</span><span class="p">,</span> <span class="n">nn</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        
+    <span class="c1"># 2. Iterate through elements</span>
+    <span class="k">for</span> <span class="n">element_nodes</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">element_nodes</span><span class="p">)</span> <span class="c1"># Local to Global mapping</span>
+        <span class="n">idx_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span> <span class="c1"># The Boolean equivalent L_e^T * (...) * L_e</span>
+        
+        <span class="c1"># 3. Apply Scatter-Add Logic</span>
+        <span class="k">if</span> <span class="n">use_sparse</span><span class="p">:</span>
+            <span class="c1"># Sparse requires extraction, addition, and reassignment</span>
+            <span class="n">K</span><span class="p">[</span><span class="n">idx_grid</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">idx_grid</span><span class="p">]</span> <span class="o">+</span> <span class="n">Ke</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Dense allows highly optimized in-place addition</span>
+            <span class="n">K</span><span class="p">[</span><span class="n">idx_grid</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Ke</span>
+            
+    <span class="k">return</span> <span class="n">K</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Define a 3-element bar connected in series: Node 0 -&gt; 1 -&gt; 2 -&gt; 3</span>
+    <span class="n">nodes_total</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">topology</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+    
+    <span class="c1"># Define a generic 2x2 local element stiffness matrix</span>
+    <span class="n">k_local</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="mf">100.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">100.0</span><span class="p">],</span>
+                        <span class="p">[</span><span class="o">-</span><span class="mf">100.0</span><span class="p">,</span>  <span class="mf">100.0</span><span class="p">]])</span>
+    
+    <span class="c1"># Execute Dense Assembly</span>
+    <span class="n">K_dense</span> <span class="o">=</span> <span class="n">assemble_system</span><span class="p">(</span><span class="n">nodes_total</span><span class="p">,</span> <span class="n">topology</span><span class="p">,</span> <span class="n">k_local</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Dense Assembly Result ---&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">K_dense</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Sparse Assembly Result (CSR format) ---&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Execute Sparse Assembly</span>
+    <span class="n">K_sparse_lil</span> <span class="o">=</span> <span class="n">assemble_system</span><span class="p">(</span><span class="n">nodes_total</span><span class="p">,</span> <span class="n">topology</span><span class="p">,</span> <span class="n">k_local</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">K_sparse_csr</span> <span class="o">=</span> <span class="n">K_sparse_lil</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()</span> <span class="c1"># Convert to CSR for solving</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">K_sparse_csr</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Theory &amp; Reference Manual</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="02_boundary_loads.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Chapter 2: Boundary Conditions and Loads</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction-to-assembly">Introduction to Assembly</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mathematics-of-l-e-t-k-e-l-e-in-extreme-detail">The Mathematics of <span class="math notranslate nohighlight">\(L_e^T K_e L_e\)</span> in Extreme Detail</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-boolean-scatter-gather-matrix-l-e">The Boolean Scatter/Gather Matrix <span class="math notranslate nohighlight">\(L_e\)</span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#strain-energy-and-the-assembly-operator">Strain Energy and the Assembly Operator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-concrete-mathematical-example">A Concrete Mathematical Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-implementation-exactly-how-numpy-ix-works">Python Implementation: Exactly How <code class="docutils literal notranslate"><span class="pre">numpy.ix_</span></code> Works</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-magic-of-numpy-ix">The Magic of <code class="docutils literal notranslate"><span class="pre">numpy.ix_</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sparse-vs-dense-assembly-in-assmk">Sparse vs. Dense Assembly in <code class="docutils literal notranslate"><span class="pre">assmk</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dense-arrays">Dense Arrays</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scipy-sparse-matrices-lil-matrix">SciPy Sparse Matrices (<code class="docutils literal notranslate"><span class="pre">lil_matrix</span></code>)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#complete-example-3-element-manual-assembly">Complete Example: 3-Element Manual Assembly</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/theory/01_core_assembly.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, femlabpy contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+﻿femlabpy.io.gmsh
+================
+
+.. automodule:: femlabpy.io.gmsh
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      load_gmsh
+      load_gmsh2
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ParsedElement
+   

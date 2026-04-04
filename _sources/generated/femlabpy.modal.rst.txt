@@ -1,0 +1,19 @@
+﻿femlabpy.modal
+==============
+
+.. automodule:: femlabpy.modal
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      plot_modes
+      solve_modal
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ModalResult
+   

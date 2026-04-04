@@ -1,0 +1,981 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>3D Solid Elements: Tetrahedrons and Hexahedrons &#8212; femlabpy 0.6.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+
+    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'theory/06_3d_solids';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chapter 7: Constitutive Models &amp; Plasticity" href="07_plasticity.html" />
+    <link rel="prev" title="Chapter 5: 2D Isoparametric Quadrilateral Elements" href="05_2d_quads.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">femlabpy 0.6.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials & Usage Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Theory & Reference Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="01_core_assembly.html">
+    Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="02_boundary_loads.html">
+    Chapter 2: Boundary Conditions and Loads
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="03_1d_bars.html">
+    Chapter 3: 1D Bar Elements (Linear & Nonlinear)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="04_2d_triangles.html">
+    2D Triangular Elements (CST)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="05_2d_quads.html">
+    Chapter 5: 2D Isoparametric Quadrilateral Elements
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="#">
+    3D Solid Elements: Tetrahedrons and Hexahedrons
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="07_plasticity.html">
+    Chapter 7: Constitutive Models & Plasticity
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="08_dynamics.html">
+    Structural Dynamics and Time Integration
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="09_modal_periodic.html">
+    Chapter 9: Eigenvalue Problems and Periodic Boundaries
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="10_io_mesh.html">
+    Mesh I/O, Data Types, and Helpers
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/adzetto/femlabpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_core_assembly.html">Global Matrix Assembly in Finite Element Analysis: A Rigorous Perspective</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_boundary_loads.html">Chapter 2: Boundary Conditions and Loads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_1d_bars.html">Chapter 3: 1D Bar Elements (Linear &amp; Nonlinear)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_2d_triangles.html">2D Triangular Elements (CST)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05_2d_quads.html">Chapter 5: 2D Isoparametric Quadrilateral Elements</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">3D Solid Elements: Tetrahedrons and Hexahedrons</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="07_plasticity.html">Chapter 7: Constitutive Models &amp; Plasticity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_dynamics.html">Structural Dynamics and Time Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_modal_periodic.html">Chapter 9: Eigenvalue Problems and Periodic Boundaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_io_mesh.html">Mesh I/O, Data Types, and Helpers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_nonlinear_solvers.html">Chapter 11: Nonlinear Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="12_plotting_postprocessing.html">Plotting and Post-Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_legacy_wrappers.html">13. Legacy Wrappers for MATLAB Compatibility</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Theory &amp; Reference Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">3D Solid Elements: Tetrahedrons and Hexahedrons</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="d-solid-elements-tetrahedrons-and-hexahedrons">
+<h1>3D Solid Elements: Tetrahedrons and Hexahedrons<a class="headerlink" href="#d-solid-elements-tetrahedrons-and-hexahedrons" title="Link to this heading">#</a></h1>
+<p>Welcome, scholars, to our advanced discourse on three-dimensional finite element formulations. In computational mechanics and finite element analysis (FEA), the modeling of general volumetric bodies—where foundational simplifications such as plane stress, plane strain, or axisymmetry strictly do not apply—mandates the deployment of fully three-dimensional solid elements.</p>
+<p>In this chapter, we will embark on a rigorous mathematical journey, rigorously deriving the theoretical foundations and exploring the precise computational implementation of two indispensable elements: the 4-node linear tetrahedron (T4) and the 8-node trilinear hexahedron (H8). We shall thoroughly dissect their shape functions, the formulation of their respective Jacobian matrices, the intricate construction of the strain-displacement matrix (<span class="math notranslate nohighlight">\(\mathbf{B}\)</span>), the algorithmic assembly of the stiffness matrix (<span class="math notranslate nohighlight">\(\mathbf{K}^e\)</span>), and the recovery of internal forces and stresses.</p>
+<p>Let us begin our rigorous theoretical exposition.</p>
+<section id="the-4-node-tetrahedron-element-t4">
+<h2>1. The 4-Node Tetrahedron Element (T4)<a class="headerlink" href="#the-4-node-tetrahedron-element-t4" title="Link to this heading">#</a></h2>
+<p>The 4-node tetrahedron, widely designated in literature as the Constant Strain Tetrahedron (CST) generalized to 3D, stands as the most fundamental three-dimensional continuum element. It possesses four vertex nodes, with each node endowed with three translational degrees of freedom (<span class="math notranslate nohighlight">\(u, v, w\)</span>). Consequently, a single T4 element possesses a total of <span class="math notranslate nohighlight">\(4 \times 3 = 12\)</span> degrees of freedom.</p>
+<section id="volume-coordinates-and-shape-functions">
+<h3>1.1 Volume Coordinates and Shape Functions<a class="headerlink" href="#volume-coordinates-and-shape-functions" title="Link to this heading">#</a></h3>
+<p>For geometries defined by simplices such as the tetrahedron, Cartesian coordinates are computationally unwieldy. Instead, it is vastly more elegant to invoke <strong>volume coordinates</strong> (a 3D extension of barycentric or area coordinates), denoted as <span class="math notranslate nohighlight">\(L_1, L_2, L_3, L_4\)</span>.</p>
+<p>Consider an arbitrary interior point <span class="math notranslate nohighlight">\(P\)</span> within a tetrahedron of total volume <span class="math notranslate nohighlight">\(V\)</span>. This point elegantly partitions the master tetrahedron into four constituent sub-tetrahedra, having volumes <span class="math notranslate nohighlight">\(V_1, V_2, V_3, V_4\)</span>. Each sub-volume <span class="math notranslate nohighlight">\(V_i\)</span> is subtended by the point <span class="math notranslate nohighlight">\(P\)</span> and the triangular face strictly opposite to node <span class="math notranslate nohighlight">\(i\)</span>. We define the volume coordinates rigorously as:</p>
+<div class="math notranslate nohighlight">
+\[
+L_i = \frac{V_i}{V}, \quad i = 1, 2, 3, 4
+\]</div>
+<p>By fundamental geometric conservation, these dimensionless coordinates must sum exactly to unity:
+$<span class="math notranslate nohighlight">\(
+L_1 + L_2 + L_3 + L_4 = 1
+\)</span>$</p>
+<p>In the paradigm of isoparametric mapping, we elect three independent natural coordinates <span class="math notranslate nohighlight">\(\xi, \eta, \zeta\)</span> to span the parametric domain. We map them directly to the volume coordinates:
+$<span class="math notranslate nohighlight">\(
+\xi = L_1, \quad \eta = L_2, \quad \zeta = L_3 \implies L_4 = 1 - \xi - \eta - \zeta
+\)</span>$</p>
+<p>The interpolation or <strong>shape functions</strong> <span class="math notranslate nohighlight">\(N_i\)</span> for the T4 element are remarkably pristine—they are identically equal to the volume coordinates themselves. This enforces a strictly linear displacement field within the element interior:
+$<span class="math notranslate nohighlight">\(
+\begin{align*}
+N_1(\xi, \eta, \zeta) &amp;= \xi \\
+N_2(\xi, \eta, \zeta) &amp;= \eta \\
+N_3(\xi, \eta, \zeta) &amp;= \zeta \\
+N_4(\xi, \eta, \zeta) &amp;= 1 - \xi - \eta - \zeta
+\end{align*}
+\)</span>$</p>
+</section>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="because-the-shape-functions-are-strictly-linear-their-local-derivatives-with-respect-to-the-natural-coordinates-yield-a-remarkably-simple-constant-matrix-frac-partial-mathbf-n-partial-boldsymbol-xi-begin-bmatrix-frac-partial-n-1-partial-xi-frac-partial-n-2-partial-xi-frac-partial-n-3-partial-xi-frac-partial-n-4-partial-xi-frac-partial-n-1-partial-eta-frac-partial-n-2-partial-eta-frac-partial-n-3-partial-eta-frac-partial-n-4-partial-eta-frac-partial-n-1-partial-zeta-frac-partial-n-2-partial-zeta-frac-partial-n-3-partial-zeta-frac-partial-n-4-partial-zeta-end-bmatrix">
+<h1>Because the shape functions are strictly linear, their local derivatives with respect to the natural coordinates yield a remarkably simple constant matrix:
+$$
+\frac{\partial \mathbf{N}}{\partial \boldsymbol{\xi}} =
+\begin{bmatrix}
+\frac{\partial N_1}{\partial \xi} &amp; \frac{\partial N_2}{\partial \xi} &amp; \frac{\partial N_3}{\partial \xi} &amp; \frac{\partial N_4}{\partial \xi} \
+\frac{\partial N_1}{\partial \eta} &amp; \frac{\partial N_2}{\partial \eta} &amp; \frac{\partial N_3}{\partial \eta} &amp; \frac{\partial N_4}{\partial \eta} \
+\frac{\partial N_1}{\partial \zeta} &amp; \frac{\partial N_2}{\partial \zeta} &amp; \frac{\partial N_3}{\partial \zeta} &amp; \frac{\partial N_4}{\partial \zeta}
+\end{bmatrix}<a class="headerlink" href="#because-the-shape-functions-are-strictly-linear-their-local-derivatives-with-respect-to-the-natural-coordinates-yield-a-remarkably-simple-constant-matrix-frac-partial-mathbf-n-partial-boldsymbol-xi-begin-bmatrix-frac-partial-n-1-partial-xi-frac-partial-n-2-partial-xi-frac-partial-n-3-partial-xi-frac-partial-n-4-partial-xi-frac-partial-n-1-partial-eta-frac-partial-n-2-partial-eta-frac-partial-n-3-partial-eta-frac-partial-n-4-partial-eta-frac-partial-n-1-partial-zeta-frac-partial-n-2-partial-zeta-frac-partial-n-3-partial-zeta-frac-partial-n-4-partial-zeta-end-bmatrix" title="Link to this heading">#</a></h1>
+<p>\begin{bmatrix}
+1 &amp; 0 &amp; 0 &amp; -1 \
+0 &amp; 1 &amp; 0 &amp; -1 \
+0 &amp; 0 &amp; 1 &amp; -1
+\end{bmatrix}
+$$</p>
+<section id="the-jacobian-and-construction-of-the-12x12-stiffness-matrix">
+<h2>1.2 The Jacobian and Construction of the 12x12 Stiffness Matrix<a class="headerlink" href="#the-jacobian-and-construction-of-the-12x12-stiffness-matrix" title="Link to this heading">#</a></h2>
+<p>The Jacobian matrix <span class="math notranslate nohighlight">\(\mathbf{J}\)</span> acts as the indispensable tensor mapping the natural coordinate space to the physical Cartesian space <span class="math notranslate nohighlight">\((x, y, z)\)</span>. It is formulated as:
+$<span class="math notranslate nohighlight">\(
+\mathbf{J} = \frac{\partial \mathbf{N}}{\partial \boldsymbol{\xi}} \mathbf{X}_e
+\)</span><span class="math notranslate nohighlight">\(
+where \)</span>\mathbf{X}_e<span class="math notranslate nohighlight">\( represents the \)</span>4 \times 3<span class="math notranslate nohighlight">\( matrix of physical nodal coordinates. Because the local shape function derivatives are spatially invariant (constant), the resulting Jacobian \)</span>\mathbf{J}$ is stringently constant throughout the entirety of the element’s volume.</p>
+<p>By taking the inverse of this constant Jacobian matrix, we execute a push-forward operation, mapping the shape function derivatives from the parametric domain to the global physical domain:
+$<span class="math notranslate nohighlight">\(
+\begin{bmatrix} \frac{\partial N_i}{\partial x} \\ \frac{\partial N_i}{\partial y} \\ \frac{\partial N_i}{\partial z} \end{bmatrix} = \mathbf{J}^{-1} \begin{bmatrix} \frac{\partial N_i}{\partial \xi} \\ \frac{\partial N_i}{\partial \eta} \\ \frac{\partial N_i}{\partial \zeta} \end{bmatrix}
+\)</span>$</p>
+<p><strong>The Strain-Displacement Matrix (<span class="math notranslate nohighlight">\(\mathbf{B}\)</span>)</strong></p>
+<p>The strain-displacement matrix <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> mathematically bridges the discrete nodal displacement vector <span class="math notranslate nohighlight">\(\mathbf{u}_e\)</span> to the continuum strain tensor. We express strains in Voigt notation as a 6-component vector: <span class="math notranslate nohighlight">\(\boldsymbol{\epsilon} = [\epsilon_{xx}, \epsilon_{yy}, \epsilon_{zz}, \gamma_{xy}, \gamma_{yz}, \gamma_{zx}]^T\)</span>.</p>
+<p>For the T4 element, with 12 total DOFs, the <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> matrix rigorously assumes a <span class="math notranslate nohighlight">\(6 \times 12\)</span> dimension. We construct it by concatenating four <span class="math notranslate nohighlight">\(6 \times 3\)</span> submatrices, one dedicated to each node <span class="math notranslate nohighlight">\(i \in \{1, 2, 3, 4\}\)</span>:
+$<span class="math notranslate nohighlight">\(
+\mathbf{B} = \begin{bmatrix} \mathbf{B}_1 &amp; \mathbf{B}_2 &amp; \mathbf{B}_3 &amp; \mathbf{B}_4 \end{bmatrix}
+\)</span><span class="math notranslate nohighlight">\(
+The exquisite structure of each submatrix \)</span>\mathbf{B}_i<span class="math notranslate nohighlight">\(, dictated by the symmetric gradient of the displacement field, is defined precisely as:
+\)</span><span class="math notranslate nohighlight">\(
+\mathbf{B}_i = \begin{bmatrix}
+N_{i,x} &amp; 0 &amp; 0 \\
+0 &amp; N_{i,y} &amp; 0 \\
+0 &amp; 0 &amp; N_{i,z} \\
+N_{i,y} &amp; N_{i,x} &amp; 0 \\
+0 &amp; N_{i,z} &amp; N_{i,y} \\
+N_{i,z} &amp; 0 &amp; N_{i,x}
+\end{bmatrix}
+\)</span>$</p>
+<p><strong>Stiffness Matrix Derivation</strong></p>
+<p>Invoking the principle of virtual work for linear elastostatics, the element stiffness matrix <span class="math notranslate nohighlight">\(\mathbf{K}^e\)</span> (which will be a dense <span class="math notranslate nohighlight">\(12 \times 12\)</span> symmetric positive-definite matrix for properly supported bodies) is governed by the volume integral:
+$<span class="math notranslate nohighlight">\(
+\mathbf{K}^e = \int_{V} \mathbf{B}^T \mathbf{D} \mathbf{B} \, dV
+\)</span><span class="math notranslate nohighlight">\(
+where \)</span>\mathbf{D}<span class="math notranslate nohighlight">\( denotes the \)</span>6 \times 6$ constitutive material matrix for isotropic, linear elasticity.</p>
+<p>Because both the mapping derivatives <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> and the constitutive matrix <span class="math notranslate nohighlight">\(\mathbf{D}\)</span> are strictly spatially invariant over the element domain, the integration process simplifies drastically. The integrand is pulled entirely outside the integral, leaving only the integration of the differential volume element:
+$<span class="math notranslate nohighlight">\(
+\mathbf{K}^e = \left( \mathbf{B}^T \mathbf{D} \mathbf{B} \right) \int_V dV = \left( \mathbf{B}^T \mathbf{D} \mathbf{B} \right) V_e
+\)</span><span class="math notranslate nohighlight">\(
+Here, the volume \)</span>V_e<span class="math notranslate nohighlight">\( is algorithmically computed via the determinant of the transformation Jacobian: \)</span>V_e = \frac{1}{6} \det(\mathbf{J})$.</p>
+</section>
+<hr class="docutils" />
+<section id="the-8-node-hexahedron-element-h8">
+<h2>2. The 8-Node Hexahedron Element (H8)<a class="headerlink" href="#the-8-node-hexahedron-element-h8" title="Link to this heading">#</a></h2>
+<p>We now graduate to the 8-node hexahedron, colloquially termed the “brick” element. This is arguably the most dominant element in the computational mechanic’s arsenal due to its superior numerical accuracy and robustness against volumetric locking when compared to linear tetrahedra. Each of its 8 nodes possesses 3 translational DOFs, culminating in a computationally significant 24 degrees of freedom per element.</p>
+<section id="trilinear-shape-functions">
+<h3>2.1 Trilinear Shape Functions<a class="headerlink" href="#trilinear-shape-functions" title="Link to this heading">#</a></h3>
+<p>Unlike the simplex coordinates of the T4, the H8 element relies on a tensor-product formulation mapped from a bi-unit reference cube. The parent parametric coordinates reside strictly within the domain <span class="math notranslate nohighlight">\(\xi, \eta, \zeta \in [-1, 1]\)</span>. The eight master nodes are localized precisely at the logical extremities of this cube: <span class="math notranslate nohighlight">\((\pm 1, \pm 1, \pm 1)\)</span>.</p>
+<p>The canonical shape functions <span class="math notranslate nohighlight">\(N_i\)</span> for an arbitrary node <span class="math notranslate nohighlight">\(i\)</span> (whose parametric coordinates are denoted as <span class="math notranslate nohighlight">\(\xi_i, \eta_i, \zeta_i\)</span>) are elegantly synthesized through the product of one-dimensional linear Lagrange polynomials:
+$<span class="math notranslate nohighlight">\(
+N_i(\xi, \eta, \zeta) = \frac{1}{8} (1 + \xi_i \xi)(1 + \eta_i \eta)(1 + \zeta_i \zeta) \quad \text{for } i = 1, \dots, 8
+\)</span>$</p>
+<p>These functions are strictly <span class="math notranslate nohighlight">\(C^0\)</span> continuous. While they guarantee intra-element displacement continuity, note well that strain continuity across element interfaces is absolutely not enforced—a hallmark of standard displacement-based finite elements.</p>
+</section>
+<section id="jacobian-kinematics-and-the-6x24-b-matrix">
+<h3>2.2 Jacobian, Kinematics, and the 6x24 B-Matrix<a class="headerlink" href="#jacobian-kinematics-and-the-6x24-b-matrix" title="Link to this heading">#</a></h3>
+<p>Because the trilinear shape functions contain coupled quadratic and cubic parametric terms (e.g., <span class="math notranslate nohighlight">\(\xi\eta\)</span>, <span class="math notranslate nohighlight">\(\xi\eta\zeta\)</span>), their spatial derivatives are definitively <em>not</em> constant. They fluctuate dynamically throughout the element volume. For instance, computing the analytic derivative of <span class="math notranslate nohighlight">\(N_1\)</span> (positioned at <span class="math notranslate nohighlight">\(\xi_1=-1, \eta_1=-1, \zeta_1=-1\)</span>) with respect to <span class="math notranslate nohighlight">\(\xi\)</span> yields:
+$<span class="math notranslate nohighlight">\(
+\frac{\partial N_1}{\partial \xi} = \frac{1}{8}(\xi_1)(1 + \eta_1 \eta)(1 + \zeta_1 \zeta) = -\frac{1}{8} (1 - \eta)(1 - \zeta)
+\)</span>$</p>
+<p>The corresponding <span class="math notranslate nohighlight">\(3 \times 3\)</span> Jacobian matrix <span class="math notranslate nohighlight">\(\mathbf{J}\)</span> becomes a strictly local operator, dependent on the instantaneous parametric coordinates <span class="math notranslate nohighlight">\(\xi, \eta, \zeta\)</span>:
+$<span class="math notranslate nohighlight">\(
+\mathbf{J}(\xi, \eta, \zeta) = \sum_{i=1}^8 \begin{bmatrix} \frac{\partial N_i}{\partial \xi} \\ \frac{\partial N_i}{\partial \eta} \\ \frac{\partial N_i}{\partial \zeta} \end{bmatrix} \begin{bmatrix} x_i &amp; y_i &amp; z_i \end{bmatrix}
+\)</span>$</p>
+<p><strong>Constructing the <span class="math notranslate nohighlight">\(6 \times 24\)</span> <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> Matrix</strong></p>
+<p>To form the global strain-displacement matrix <span class="math notranslate nohighlight">\(\mathbf{B}\)</span>, we must evaluate it pointwise. The <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> matrix dictates the mapping from the 24 elemental degrees of freedom to the 6 physical strain components. It assumes a <span class="math notranslate nohighlight">\(6 \times 24\)</span> topology, comprised of eight <span class="math notranslate nohighlight">\(6 \times 3\)</span> nodal submatrices:
+$<span class="math notranslate nohighlight">\(
+\mathbf{B}(\xi, \eta, \zeta) = \begin{bmatrix} \mathbf{B}_1 &amp; \mathbf{B}_2 &amp; \dots &amp; \mathbf{B}_8 \end{bmatrix}
+\)</span><span class="math notranslate nohighlight">\(
+To construct each \)</span>\mathbf{B}_i<span class="math notranslate nohighlight">\(, we first map the parent shape function derivatives into the physical Cartesian frame precisely by operating on them with the inverse of the local Jacobian:
+\)</span><span class="math notranslate nohighlight">\(
+\begin{bmatrix} N_{i,x} \\ N_{i,y} \\ N_{i,z} \end{bmatrix} = \mathbf{J}^{-1}(\xi, \eta, \zeta) \begin{bmatrix} N_{i,\xi} \\ N_{i,\eta} \\ N_{i,\zeta} \end{bmatrix}
+\)</span><span class="math notranslate nohighlight">\(
+Once the global spatial derivatives are isolated, the matrix \)</span>\mathbf{B}_i<span class="math notranslate nohighlight">\( is flawlessly populated matching the tensorial mechanics of the displacement gradients:
+\)</span><span class="math notranslate nohighlight">\(
+\mathbf{B}_i = \begin{bmatrix}
+N_{i,x} &amp; 0 &amp; 0 \\
+0 &amp; N_{i,y} &amp; 0 \\
+0 &amp; 0 &amp; N_{i,z} \\
+N_{i,y} &amp; N_{i,x} &amp; 0 \\
+0 &amp; N_{i,z} &amp; N_{i,y} \\
+N_{i,z} &amp; 0 &amp; N_{i,x}
+\end{bmatrix}
+\)</span>$</p>
+</section>
+<section id="gauss-quadrature-and-numerical-integration">
+<h3>2.3 Gauss Quadrature and Numerical Integration<a class="headerlink" href="#gauss-quadrature-and-numerical-integration" title="Link to this heading">#</a></h3>
+<p>The computation of the <span class="math notranslate nohighlight">\(24 \times 24\)</span> element stiffness matrix necessitates numerical integration, as closed-form analytical integration of the rational polynomial expressions stemming from <span class="math notranslate nohighlight">\(\mathbf{J}^{-1}\)</span> is mathematically intractable for distorted geometries:
+$<span class="math notranslate nohighlight">\(
+\mathbf{K}^e = \int_{-1}^1 \int_{-1}^1 \int_{-1}^1 \mathbf{B}^T(\xi, \eta, \zeta) \mathbf{D} \mathbf{B}(\xi, \eta, \zeta) \det(\mathbf{J}(\xi, \eta, \zeta)) \, d\xi \, d\eta \, d\zeta
+\)</span>$</p>
+<p>We appeal rigorously to Gauss-Legendre quadrature. For the H8 element, standard exactness criteria command the use of a <span class="math notranslate nohighlight">\(2 \times 2 \times 2\)</span> integration scheme, which exactly integrates polynomials up to degree 3.</p>
+<p>The eight optimal Gauss points are situated at <span class="math notranslate nohighlight">\(\pm 1/\sqrt{3}\)</span> along each local axis:
+$<span class="math notranslate nohighlight">\(
+r_k \in \left\{-\frac{1}{\sqrt{3}}, \frac{1}{\sqrt{3}}\right\}
+\)</span><span class="math notranslate nohighlight">\(
+Each integration point commands an integration weight of \)</span>W = 1 \times 1 \times 1 = 1<span class="math notranslate nohighlight">\(. The integral is converted into a finite summation over the 8 Gauss points (indexed by \)</span>g<span class="math notranslate nohighlight">\():
+\)</span><span class="math notranslate nohighlight">\(
+\mathbf{K}^e = \sum_{g=1}^8 \mathbf{B}_g^T \mathbf{D} \mathbf{B}_g \det(\mathbf{J}_g) W_g = \sum_{g=1}^8 \mathbf{B}_g^T \mathbf{D} \mathbf{B}_g \det(\mathbf{J}_g)
+\)</span>$</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="implementation-in-python-the-professor-s-runnable-script">
+<h2>3. Implementation in Python: The Professor’s Runnable Script<a class="headerlink" href="#implementation-in-python-the-professor-s-runnable-script" title="Link to this heading">#</a></h2>
+<p>Below, I present a rigorous, completely self-contained, and highly optimized script. It synthesizes all the intricate tensorial operations and numerical integration schemes we’ve discussed into functional Python code using <code class="docutils literal notranslate"><span class="pre">numpy</span></code>. This script actively builds both the T4 (<span class="math notranslate nohighlight">\(12 \times 12\)</span>) and H8 (<span class="math notranslate nohighlight">\(24 \times 24\)</span>) local stiffness matrices.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_elastic3d_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Constitutive matrix D for 3D isotropic linear elasticity.&quot;&quot;&quot;</span>
+    <span class="n">lam</span> <span class="o">=</span> <span class="n">E</span> <span class="o">*</span> <span class="n">nu</span> <span class="o">/</span> <span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">))</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">E</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nu</span><span class="p">))</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">lam</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">lam</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="n">mu</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">D</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_solid_B</span><span class="p">(</span><span class="n">dN_global</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assembles the B matrix from global shape function derivatives.&quot;&quot;&quot;</span>
+    <span class="n">num_nodes</span> <span class="o">=</span> <span class="n">dN_global</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="n">num_nodes</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">):</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">=</span> <span class="n">dN_global</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span>   <span class="o">=</span> <span class="n">nx</span>
+        <span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ny</span>
+        <span class="n">B</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">nz</span>
+        <span class="n">B</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span><span class="n">col</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">]</span>
+        <span class="n">B</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">col</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">nz</span><span class="p">,</span> <span class="n">ny</span><span class="p">]</span>
+        <span class="n">B</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="n">col</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">nz</span><span class="p">,</span> <span class="n">nx</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">B</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">keT4e</span><span class="p">(</span><span class="n">Xe</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the 12x12 Stiffness Matrix for a T4 element.&quot;&quot;&quot;</span>
+    <span class="c1"># Master gradients</span>
+    <span class="n">dN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">],</span> 
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">],</span> 
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">]</span>
+    <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    
+    <span class="n">J</span> <span class="o">=</span> <span class="n">dN</span> <span class="o">@</span> <span class="n">Xe</span>
+    <span class="n">detJ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">J</span><span class="p">)</span>
+    <span class="n">dN_global</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">dN</span><span class="p">)</span>
+    
+    <span class="n">B</span> <span class="o">=</span> <span class="n">_solid_B</span><span class="p">(</span><span class="n">dN_global</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">_elastic3d_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+    
+    <span class="c1"># K = B^T * D * B * Volume</span>
+    <span class="c1"># Volume of tetrahedron = (1/6) * det(J). However, natural coord integration domain </span>
+    <span class="c1"># for T4 yields an intrinsic 1/6 mapping factor when doing analytical int. </span>
+    <span class="c1"># True relation: Volume = 1/6 * det(J). </span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">detJ</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
+    
+    <span class="n">K</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span> <span class="o">@</span> <span class="n">B</span> <span class="o">*</span> <span class="n">volume</span>
+    <span class="k">return</span> <span class="n">K</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">keh8e</span><span class="p">(</span><span class="n">Xe</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the 24x24 Stiffness Matrix for an H8 element.&quot;&quot;&quot;</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">_elastic3d_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">24</span><span class="p">,</span> <span class="mi">24</span><span class="p">))</span>
+    
+    <span class="c1"># 2x2x2 Gauss Quadrature Points and Weights</span>
+    <span class="n">gpt</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span>
+    <span class="n">gauss_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">],</span> <span class="p">[</span><span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">],</span> <span class="p">[</span><span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">],</span>  <span class="p">[</span><span class="n">gpt</span><span class="p">,</span> <span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">],</span>  <span class="p">[</span><span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">],</span>  <span class="p">[</span><span class="o">-</span><span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">,</span> <span class="n">gpt</span><span class="p">]</span>
+    <span class="p">])</span>
+    
+    <span class="c1"># Nodal parametric coordinates for shape function calculation</span>
+    <span class="n">nodes_xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">nodes_eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">nodes_zeta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># 2x2x2 Gauss Loop</span>
+    <span class="k">for</span> <span class="n">gp</span> <span class="ow">in</span> <span class="n">gauss_points</span><span class="p">:</span>
+        <span class="n">xi</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">zeta</span> <span class="o">=</span> <span class="n">gp</span>
+        
+        <span class="c1"># Local shape function derivatives (3x8 matrix)</span>
+        <span class="n">dN_dxi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">dN_dxi</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.125</span> <span class="o">*</span> <span class="n">nodes_xi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nodes_eta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">eta</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nodes_zeta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">zeta</span><span class="p">)</span>
+            <span class="n">dN_dxi</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.125</span> <span class="o">*</span> <span class="n">nodes_eta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nodes_xi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">xi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nodes_zeta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">zeta</span><span class="p">)</span>
+            <span class="n">dN_dxi</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.125</span> <span class="o">*</span> <span class="n">nodes_zeta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nodes_xi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">xi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nodes_eta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">eta</span><span class="p">)</span>
+            
+        <span class="c1"># Compute Jacobian, its determinant, and global derivatives</span>
+        <span class="n">J</span> <span class="o">=</span> <span class="n">dN_dxi</span> <span class="o">@</span> <span class="n">Xe</span>
+        <span class="n">detJ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">J</span><span class="p">)</span>
+        <span class="n">dN_global</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">dN_dxi</span><span class="p">)</span>
+        
+        <span class="c1"># Build 6x24 B matrix</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">_solid_B</span><span class="p">(</span><span class="n">dN_global</span><span class="p">)</span>
+        
+        <span class="c1"># Add to element stiffness matrix (Weight = 1.0 for each point)</span>
+        <span class="n">K</span> <span class="o">+=</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span> <span class="o">@</span> <span class="n">B</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">detJ</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">K</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing Professor&#39;s 3D Element Validation Script...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Material properties (Steel)</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="mf">200e9</span>   <span class="c1"># Pa</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="mf">0.3</span>    <span class="c1"># Poisson&#39;s ratio</span>
+    
+    <span class="c1"># --- T4 Element Assembly ---</span>
+    <span class="c1"># Nodal coordinates for a simple right tetrahedron</span>
+    <span class="n">Xe_T4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+    <span class="p">])</span>
+    <span class="n">K_T4</span> <span class="o">=</span> <span class="n">keT4e</span><span class="p">(</span><span class="n">Xe_T4</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T4 Stiffness Matrix Assembled. Shape: </span><span class="si">{</span><span class="n">K_T4</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Norm of K_T4: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_T4</span><span class="p">)</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># --- H8 Element Assembly ---</span>
+    <span class="c1"># Nodal coordinates for a unit bi-unit cube mapped to physical (2x2x2 physical cube)</span>
+    <span class="n">Xe_H8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]</span>
+    <span class="p">])</span>
+    <span class="n">K_H8</span> <span class="o">=</span> <span class="n">keh8e</span><span class="p">(</span><span class="n">Xe_H8</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H8 Stiffness Matrix Assembled. Shape: </span><span class="si">{</span><span class="n">K_H8</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Norm of K_H8: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_H8</span><span class="p">)</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Validation complete. Class dismissed!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>In modern 3D continuum structural mechanics, the tetrahedral elements (T4) proffer exceptional, robust meshing flexibility—vital for aggressively complex CAD topologies where topological mapping functions fail. However, their mathematically rigid constant strain formulation subjects them perilously to artificial volumetric stiffening (the notorious “shear locking”) and demands extraordinarily fine grid discretizations to adequately resolve flexural phenomena.</p>
+<p>The Hexahedral elements (H8), fortified by their higher-order trilinear interpolation manifolds, effortlessly manifest superior kinematic accuracy alongside drastically minimized degree-of-freedom allocations. The foremost algorithmic tribulation with H8 deployment remains the geometrical meshing complexity—it is formidably difficult to automatically discretize completely arbitrary 3D domains into purely hexahedral primitives without topological degeneracy. Ultimately, a prudent scholar of mechanics utilizes a judicious superposition of both topologies to master computational resilience and extreme precision.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="05_2d_quads.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Chapter 5: 2D Isoparametric Quadrilateral Elements</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="07_plasticity.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Chapter 7: Constitutive Models &amp; Plasticity</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">3D Solid Elements: Tetrahedrons and Hexahedrons</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-4-node-tetrahedron-element-t4">1. The 4-Node Tetrahedron Element (T4)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#volume-coordinates-and-shape-functions">1.1 Volume Coordinates and Shape Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#because-the-shape-functions-are-strictly-linear-their-local-derivatives-with-respect-to-the-natural-coordinates-yield-a-remarkably-simple-constant-matrix-frac-partial-mathbf-n-partial-boldsymbol-xi-begin-bmatrix-frac-partial-n-1-partial-xi-frac-partial-n-2-partial-xi-frac-partial-n-3-partial-xi-frac-partial-n-4-partial-xi-frac-partial-n-1-partial-eta-frac-partial-n-2-partial-eta-frac-partial-n-3-partial-eta-frac-partial-n-4-partial-eta-frac-partial-n-1-partial-zeta-frac-partial-n-2-partial-zeta-frac-partial-n-3-partial-zeta-frac-partial-n-4-partial-zeta-end-bmatrix">Because the shape functions are strictly linear, their local derivatives with respect to the natural coordinates yield a remarkably simple constant matrix:
+$$
+\frac{\partial \mathbf{N}}{\partial \boldsymbol{\xi}} =
+\begin{bmatrix}
+\frac{\partial N_1}{\partial \xi} &amp; \frac{\partial N_2}{\partial \xi} &amp; \frac{\partial N_3}{\partial \xi} &amp; \frac{\partial N_4}{\partial \xi} \
+\frac{\partial N_1}{\partial \eta} &amp; \frac{\partial N_2}{\partial \eta} &amp; \frac{\partial N_3}{\partial \eta} &amp; \frac{\partial N_4}{\partial \eta} \
+\frac{\partial N_1}{\partial \zeta} &amp; \frac{\partial N_2}{\partial \zeta} &amp; \frac{\partial N_3}{\partial \zeta} &amp; \frac{\partial N_4}{\partial \zeta}
+\end{bmatrix}</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-jacobian-and-construction-of-the-12x12-stiffness-matrix">1.2 The Jacobian and Construction of the 12x12 Stiffness Matrix</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-8-node-hexahedron-element-h8">2. The 8-Node Hexahedron Element (H8)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#trilinear-shape-functions">2.1 Trilinear Shape Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jacobian-kinematics-and-the-6x24-b-matrix">2.2 Jacobian, Kinematics, and the 6x24 B-Matrix</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gauss-quadrature-and-numerical-integration">2.3 Gauss Quadrature and Numerical Integration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-in-python-the-professor-s-runnable-script">3. Implementation in Python: The Professor’s Runnable Script</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/theory/06_3d_solids.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, femlabpy contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

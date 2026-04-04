@@ -1,0 +1,13 @@
+﻿femlabpy.assembly
+=================
+
+.. automodule:: femlabpy.assembly
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      assmk
+      assmq
+   

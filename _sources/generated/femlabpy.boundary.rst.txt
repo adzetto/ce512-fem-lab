@@ -1,0 +1,15 @@
+﻿femlabpy.boundary
+=================
+
+.. automodule:: femlabpy.boundary
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      rnorm
+      setbc
+      solve_lag
+      solve_lag_general
+   

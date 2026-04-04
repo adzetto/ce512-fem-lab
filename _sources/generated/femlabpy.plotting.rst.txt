@@ -1,0 +1,17 @@
+﻿femlabpy.plotting
+=================
+
+.. automodule:: femlabpy.plotting
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      plotbc
+      plotelem
+      plotforces
+      plotq4
+      plott3
+      plotu
+   

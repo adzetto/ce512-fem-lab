@@ -1,0 +1,21 @@
+﻿femlabpy.periodic
+=================
+
+.. automodule:: femlabpy.periodic
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      apply_macro_strain
+      check_periodic_mesh
+      find_all_periodic_pairs
+      find_periodic_pairs
+      fix_corner
+      homogenize
+      periodic_constraints
+      solve_periodic
+      volume_average_strain
+      volume_average_stress
+   

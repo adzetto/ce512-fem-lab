@@ -1,0 +1,33 @@
+﻿femlabpy.dynamics
+=================
+
+.. automodule:: femlabpy.dynamics
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      compute_frf
+      constant_load
+      critical_timestep
+      harmonic_load
+      plot_energy
+      plot_frf
+      plot_time_history
+      pulse_load
+      ramp_load
+      seismic_load
+      solve_central_diff
+      solve_hht
+      solve_newmark
+      solve_newmark_nl
+      tabulated_load
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NewmarkParams
+      TimeHistory
+   

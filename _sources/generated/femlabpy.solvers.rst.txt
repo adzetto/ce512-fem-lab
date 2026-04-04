@@ -1,0 +1,13 @@
+﻿femlabpy.solvers
+================
+
+.. automodule:: femlabpy.solvers
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      solve_nlbar
+      solve_plastic
+   
