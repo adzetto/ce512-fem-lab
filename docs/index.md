@@ -17,6 +17,7 @@ manual/ch05_dynamics
 manual/ch06_periodic_io
 manual/ch07_advanced_examples
 manual/ch08_custom_elements
+manual/ch09_dynamic_workflows
 api
 ```
 
