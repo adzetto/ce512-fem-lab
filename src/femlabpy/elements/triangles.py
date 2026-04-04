@@ -566,4 +566,117 @@ def qt3p(q, T, X, G, u):
     return q, S, E
 
 
-__all__ = ["ket3e", "ket3p", "kt3e", "kt3p", "qet3e", "qet3p", "qt3e", "qt3p"]
+def met3e(Xe, Ge, *, lumped: bool = False):
+    """
+    Compute the element mass matrix for a 3-node triangular (CST) element.
+
+    Consistent (6x6):
+        M = (rho * t * A / 12) * [[2,1,1],[1,2,1],[1,1,2]] tensor I_2
+
+    Lumped (diagonal):
+        M = (rho * t * A / 3) * I_6
+
+    Parameters
+    ----------
+    Xe : array_like, shape (3, 2)
+        Nodal coordinates.
+    Ge : array_like
+        Material row.  Thickness ``t`` is taken from ``Ge[3]`` if present
+        (default 1).  Density ``rho`` is taken from ``Ge[4]`` if present
+        (default 1).
+
+    Returns
+    -------
+    Me : ndarray, shape (6, 6)
+    """
+    _, area = _triangle_geometry(Xe)
+    props = as_float_array(Ge).reshape(-1)
+    t = props[3] if props.size > 3 else 1.0
+    rho = props[4] if props.size > 4 else 1.0
+
+    if lumped:
+        return (rho * t * area / 3.0) * np.eye(6, dtype=float)
+
+    scalar = np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]], dtype=float)
+    I2 = np.eye(2, dtype=float)
+    Me = (rho * t * area / 12.0) * np.kron(scalar, I2)
+    return Me
+
+
+def mt3e(M, T, X, G, *, lumped: bool = False):
+    """
+    Assemble T3 element mass matrices into the global mass matrix.
+
+    Parameters
+    ----------
+    M : ndarray or sparse, shape (ndof, ndof)
+        Global mass matrix (modified in place).
+    T : array_like, shape (nel, 4)
+        Topology table ``[n1, n2, n3, mat_id]``.
+    X : array_like, shape (nn, 2)
+        Nodal coordinates.
+    G : array_like
+        Material table.
+    lumped : bool
+        If True, assemble lumped mass.
+
+    Returns
+    -------
+    M : ndarray or sparse
+        Updated global mass matrix.
+    """
+    topology = as_float_array(T)
+    coordinates = as_float_array(X)
+    nodes = topology[:, :3].astype(int) - 1
+    materials = as_float_array(G)[topology[:, -1].astype(int) - 1]
+
+    _, area = _triangle_batch_geometry(coordinates[nodes])
+
+    t = materials[:, 3] if materials.shape[1] > 3 else np.ones(topology.shape[0])
+    rho = materials[:, 4] if materials.shape[1] > 4 else np.ones(topology.shape[0])
+
+    indices = element_dof_indices(nodes, 2, one_based=False)
+
+    if lumped:
+        mass_per_node = rho * t * area / 3.0
+        for e in range(topology.shape[0]):
+            idx = indices[e]
+            for k in idx:
+                M[k, k] += mass_per_node[e]
+        return M
+
+    scalar = np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]], dtype=float)
+    I2 = np.eye(2, dtype=float)
+    block = np.kron(scalar, I2)
+    factors = rho * t * area / 12.0
+    element_matrices = factors[:, None, None] * block[None, :, :]
+
+    if is_sparse(M) and sp is not None:
+        scatter_rows = np.broadcast_to(
+            indices[:, :, None], element_matrices.shape
+        ).reshape(-1)
+        scatter_cols = np.broadcast_to(
+            indices[:, None, :], element_matrices.shape
+        ).reshape(-1)
+        delta = sp.coo_matrix(
+            (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
+            shape=M.shape,
+            dtype=float,
+        )
+        return (M.tocsr() + delta.tocsr()).tolil()
+    np.add.at(M, (indices[:, :, None], indices[:, None, :]), element_matrices)
+    return M
+
+
+__all__ = [
+    "ket3e",
+    "ket3p",
+    "kt3e",
+    "kt3p",
+    "met3e",
+    "mt3e",
+    "qet3e",
+    "qet3p",
+    "qt3e",
+    "qt3p",
+]

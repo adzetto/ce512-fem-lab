@@ -1,4 +1,4 @@
-from .bars import kbar, kebar, qbar, qebar
+from .bars import kbar, kebar, mbar, mebar, qbar, qebar
 from .quads import (
     keq4e,
     keq4epe,
@@ -8,6 +8,8 @@ from .quads import (
     kq4epe,
     kq4eps,
     kq4p,
+    meq4e,
+    mq4e,
     qeq4e,
     qeq4epe,
     qeq4eps,
@@ -17,8 +19,21 @@ from .quads import (
     qq4eps,
     qq4p,
 )
-from .solids import keh8e, keT4e, kh8e, kT4e, qeh8e, qeT4e, qh8e, qT4e
-from .triangles import ket3e, ket3p, kt3e, kt3p, qet3e, qet3p, qt3e, qt3p
+from .solids import (
+    keh8e,
+    keT4e,
+    kh8e,
+    kT4e,
+    meh8e,
+    meT4e,
+    mh8e,
+    mT4e,
+    qeh8e,
+    qeT4e,
+    qh8e,
+    qT4e,
+)
+from .triangles import ket3e, ket3p, kt3e, kt3p, met3e, mt3e, qet3e, qet3p, qt3e, qt3p
 
 __all__ = [
     "keT4e",
@@ -39,6 +54,16 @@ __all__ = [
     "kq4p",
     "kt3e",
     "kt3p",
+    "mT4e",
+    "mbar",
+    "mebar",
+    "meh8e",
+    "meT4e",
+    "meq4e",
+    "met3e",
+    "mh8e",
+    "mq4e",
+    "mt3e",
     "qeT4e",
     "qbar",
     "qebar",

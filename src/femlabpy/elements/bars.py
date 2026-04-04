@@ -129,4 +129,113 @@ def qbar(q, T, X, G, u=None):
     return q, stress, strain
 
 
-__all__ = ["kbar", "kebar", "qbar", "qebar"]
+def mebar(Xe, Ge, dof: int = 2, *, lumped: bool = False):
+    """
+    Compute the element mass matrix for a 2-node bar/truss element.
+
+    Consistent mass:
+        M = (rho * A * L / 6) * [[2, 1], [1, 2]] tensor I_dof
+
+    Lumped mass:
+        M = (rho * A * L / 2) * I_{2*dof}
+
+    Parameters
+    ----------
+    Xe : array_like, shape (2, ndim)
+        Initial (undeformed) nodal coordinates.
+    Ge : array_like
+        Material row ``[A, E, rho]``.  If ``rho`` is omitted it defaults to 1.
+    dof : int
+        Degrees of freedom per node.
+    lumped : bool
+        If True, return the diagonally lumped mass matrix.
+
+    Returns
+    -------
+    Me : ndarray, shape (2*dof, 2*dof)
+    """
+    Xe = as_float_array(Xe)
+    props = as_float_array(Ge).reshape(-1)
+    A = props[0]
+    rho = props[2] if props.size > 2 else 1.0
+    a0 = Xe[1] - Xe[0]
+    L = float(np.linalg.norm(a0))
+    size = 2 * dof
+
+    if lumped:
+        return (rho * A * L / 2.0) * np.eye(size, dtype=float)
+
+    # Consistent: (rho*A*L/6) * [[2I, 1I],[1I, 2I]]
+    I_d = np.eye(dof, dtype=float)
+    Me = (rho * A * L / 6.0) * np.block(
+        [[2.0 * I_d, 1.0 * I_d], [1.0 * I_d, 2.0 * I_d]]
+    )
+    return Me
+
+
+def mbar(M, T, X, G, dof: int = 2, *, lumped: bool = False):
+    """
+    Assemble bar/truss mass matrices into the global mass matrix.
+
+    Parameters
+    ----------
+    M : ndarray or sparse, shape (ndof, ndof)
+        Global mass matrix (modified in place).
+    T : array_like, shape (nel, 3)
+        Topology table ``[n1, n2, mat_id]``.
+    X : array_like, shape (nn, ndim)
+        Nodal coordinates.
+    G : array_like
+        Material table with rows ``[A, E, rho]``.
+    dof : int
+        Degrees of freedom per node.
+    lumped : bool
+        If True, assemble lumped mass.
+
+    Returns
+    -------
+    M : ndarray or sparse
+        Updated global mass matrix.
+    """
+    X = as_float_array(X)
+    topology = as_float_array(T)
+    element_nodes = topology[:, :-1].astype(int) - 1
+    props = as_float_array(G)[topology[:, -1].astype(int) - 1]
+
+    initial = X[element_nodes]
+    a0 = initial[:, 1, :] - initial[:, 0, :]
+    lengths = np.linalg.norm(a0, axis=1)
+    area = props[:, 0]
+    rho = props[:, 2] if props.shape[1] > 2 else np.ones_like(area)
+
+    indices = element_dof_indices(element_nodes, dof, one_based=False)
+
+    if lumped:
+        mass_per_node = 0.5 * rho * area * lengths
+        for e in range(topology.shape[0]):
+            idx = indices[e]
+            for k in idx:
+                M[k, k] += mass_per_node[e]
+    else:
+        I_d = np.eye(dof, dtype=float)
+        block_22 = np.block([[2.0 * I_d, 1.0 * I_d], [1.0 * I_d, 2.0 * I_d]])
+        factors = rho * area * lengths / 6.0
+        element_matrices = factors[:, None, None] * block_22[None, :, :]
+        if is_sparse(M) and sp is not None:
+            scatter_rows = np.broadcast_to(
+                indices[:, :, None], element_matrices.shape
+            ).reshape(-1)
+            scatter_cols = np.broadcast_to(
+                indices[:, None, :], element_matrices.shape
+            ).reshape(-1)
+            delta = sp.coo_matrix(
+                (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
+                shape=M.shape,
+                dtype=float,
+            )
+            return (M.tocsr() + delta.tocsr()).tolil()
+        np.add.at(M, (indices[:, :, None], indices[:, None, :]), element_matrices)
+    return M
+
+
+__all__ = ["kbar", "kebar", "mbar", "mebar", "qbar", "qebar"]

@@ -672,4 +672,262 @@ def qh8e(q, T, X, G, u):
     return q, stress_gp.reshape(topology.shape[0], -1), E
 
 
-__all__ = ["keT4e", "keh8e", "kT4e", "kh8e", "qeT4e", "qeh8e", "qT4e", "qh8e"]
+def meT4e(Xe, Ge, *, lumped: bool = False):
+    """
+    Compute the element mass matrix for a 4-node tetrahedral solid element.
+
+    Consistent (12x12) — analytical formula:
+        M = (rho * V / 20) * [[2I, I, I, I],
+                               [I, 2I, I, I],
+                               [I, I, 2I, I],
+                               [I, I, I, 2I]]
+
+    Lumped (diagonal):
+        M = (rho * V / 4) * I_12
+
+    Parameters
+    ----------
+    Xe : array_like, shape (4, 3)
+        Nodal coordinates.
+    Ge : array_like
+        Material row ``[E, nu, rho]``.  If ``rho`` is omitted, defaults to 1.
+    lumped : bool
+        If True, return diagonally lumped mass.
+
+    Returns
+    -------
+    Me : ndarray, shape (12, 12)
+    """
+    Xe = as_float_array(Xe)
+    props = as_float_array(Ge).reshape(-1)
+    rho = props[2] if props.size > 2 else 1.0
+
+    # Volume from Jacobian
+    dN = np.array(
+        [[1.0, 0.0, 0.0, -1.0], [0.0, 1.0, 0.0, -1.0], [0.0, 0.0, 1.0, -1.0]],
+        dtype=float,
+    )
+    J = dN @ Xe
+    V = abs(np.linalg.det(J)) / 6.0
+
+    if lumped:
+        return (rho * V / 4.0) * np.eye(12, dtype=float)
+
+    I3 = np.eye(3, dtype=float)
+    scalar = np.array(
+        [[2, 1, 1, 1], [1, 2, 1, 1], [1, 1, 2, 1], [1, 1, 1, 2]],
+        dtype=float,
+    )
+    Me = (rho * V / 20.0) * np.kron(scalar, I3)
+    return Me
+
+
+def mT4e(M, T, X, G, *, lumped: bool = False):
+    """
+    Assemble T4 element mass matrices into the global mass matrix.
+
+    Parameters
+    ----------
+    M : ndarray or sparse, shape (ndof, ndof)
+        Global mass matrix (modified in place).
+    T : array_like, shape (nel, 5)
+        Topology ``[n1, n2, n3, n4, mat_id]``.
+    X : array_like, shape (nn, 3)
+        Nodal coordinates.
+    G : array_like
+        Material table ``[E, nu, rho]``.
+    lumped : bool
+        If True, assemble lumped mass.
+
+    Returns
+    -------
+    M : ndarray or sparse
+        Updated global mass matrix.
+    """
+    topology = as_float_array(T)
+    coordinates = as_float_array(X)
+    nodes = topology[:, :4].astype(int) - 1
+    materials = as_float_array(G)[topology[:, -1].astype(int) - 1]
+
+    Xe = coordinates[nodes]
+    dN_ref = np.array(
+        [[1.0, 0.0, 0.0, -1.0], [0.0, 1.0, 0.0, -1.0], [0.0, 0.0, 1.0, -1.0]],
+        dtype=float,
+    )
+    J = np.einsum("ij,ejk->eik", dN_ref, Xe)
+    volumes = np.abs(np.linalg.det(J)) / 6.0
+    rho = materials[:, 2] if materials.shape[1] > 2 else np.ones(topology.shape[0])
+
+    indices = element_dof_indices(nodes, 3, one_based=False)
+
+    if lumped:
+        mass_per_node = rho * volumes / 4.0
+        for e in range(topology.shape[0]):
+            idx = indices[e]
+            for k in idx:
+                M[k, k] += mass_per_node[e]
+        return M
+
+    I3 = np.eye(3, dtype=float)
+    scalar = np.array(
+        [[2, 1, 1, 1], [1, 2, 1, 1], [1, 1, 2, 1], [1, 1, 1, 2]],
+        dtype=float,
+    )
+    block = np.kron(scalar, I3)
+    factors = rho * volumes / 20.0
+    element_matrices = factors[:, None, None] * block[None, :, :]
+
+    if is_sparse(M) and sp is not None:
+        scatter_rows = np.broadcast_to(
+            indices[:, :, None], element_matrices.shape
+        ).reshape(-1)
+        scatter_cols = np.broadcast_to(
+            indices[:, None, :], element_matrices.shape
+        ).reshape(-1)
+        delta = sp.coo_matrix(
+            (element_matrices.reshape(-1), (scatter_rows, scatter_cols)),
+            shape=M.shape,
+            dtype=float,
+        )
+        return (M.tocsr() + delta.tocsr()).tolil()
+    np.add.at(M, (indices[:, :, None], indices[:, None, :]), element_matrices)
+    return M
+
+
+def meh8e(Xe, Ge, *, lumped: bool = False):
+    """
+    Compute the element mass matrix for an 8-node hexahedral solid element.
+
+    Consistent (24x24) via 2x2x2 Gauss quadrature:
+        M = sum_gp  rho * N^T N * det(J) * w
+
+    Lumped via HRZ (diagonal scaling to preserve total mass).
+
+    Parameters
+    ----------
+    Xe : array_like, shape (8, 3)
+        Nodal coordinates.
+    Ge : array_like
+        Material row ``[E, nu, rho]``.
+    lumped : bool
+        If True, return diagonally lumped mass.
+
+    Returns
+    -------
+    Me : ndarray, shape (24, 24)
+    """
+    Xe = as_float_array(Xe)
+    props = as_float_array(Ge).reshape(-1)
+    rho = props[2] if props.size > 2 else 1.0
+
+    gauss_points = np.array(
+        [
+            [-1, -1, -1],
+            [1, -1, -1],
+            [1, 1, -1],
+            [-1, 1, -1],
+            [-1, -1, 1],
+            [1, -1, 1],
+            [1, 1, 1],
+            [-1, 1, 1],
+        ],
+        dtype=float,
+    ) / np.sqrt(3.0)
+
+    Me = np.zeros((24, 24), dtype=float)
+
+    for gp in gauss_points:
+        ri, rj, rk = gp
+        # Shape functions for H8
+        N_vals = (
+            np.array(
+                [
+                    (1 - ri) * (1 - rj) * (1 - rk),
+                    (1 + ri) * (1 - rj) * (1 - rk),
+                    (1 + ri) * (1 + rj) * (1 - rk),
+                    (1 - ri) * (1 + rj) * (1 - rk),
+                    (1 - ri) * (1 - rj) * (1 + rk),
+                    (1 + ri) * (1 - rj) * (1 + rk),
+                    (1 + ri) * (1 + rj) * (1 + rk),
+                    (1 - ri) * (1 + rj) * (1 + rk),
+                ],
+                dtype=float,
+            )
+            / 8.0
+        )
+
+        N_mat = np.zeros((3, 24), dtype=float)
+        N_mat[0, 0::3] = N_vals
+        N_mat[1, 1::3] = N_vals
+        N_mat[2, 2::3] = N_vals
+
+        dN = _hexa_dN(ri, rj, rk)
+        Jt = dN @ Xe
+        detJ = np.linalg.det(Jt)
+        Me += rho * (N_mat.T @ N_mat) * detJ  # weights are 1 for 2x2x2
+
+    if lumped:
+        diag_vals = np.diag(Me).copy()
+        total_mass = Me.sum() / 3.0  # total mass = trace / ndim
+        diag_sum = diag_vals.sum()
+        if diag_sum > 0:
+            diag_vals *= (total_mass * 3.0) / diag_sum
+        return np.diag(diag_vals)
+
+    return Me
+
+
+def mh8e(M, T, X, G, *, lumped: bool = False):
+    """
+    Assemble H8 element mass matrices into the global mass matrix.
+
+    Parameters
+    ----------
+    M : ndarray or sparse, shape (ndof, ndof)
+        Global mass matrix (modified in place).
+    T : array_like, shape (nel, 9)
+        Topology ``[n1, ..., n8, mat_id]``.
+    X : array_like, shape (nn, 3)
+        Nodal coordinates.
+    G : array_like
+        Material table ``[E, nu, rho]``.
+    lumped : bool
+        If True, assemble lumped mass.
+
+    Returns
+    -------
+    M : ndarray or sparse
+        Updated global mass matrix.
+    """
+    topology = as_float_array(T)
+    coordinates = as_float_array(X)
+    nodes = topology[:, :8].astype(int) - 1
+    materials = as_float_array(G)[topology[:, -1].astype(int) - 1]
+
+    indices = element_dof_indices(nodes, 3, one_based=False)
+
+    for e in range(topology.shape[0]):
+        Xe = coordinates[nodes[e]]
+        Me = meh8e(Xe, materials[e], lumped=lumped)
+        idx = indices[e]
+        if is_sparse(M):
+            M[np.ix_(idx, idx)] = M[np.ix_(idx, idx)] + Me
+        else:
+            M[np.ix_(idx, idx)] += Me
+    return M
+
+
+__all__ = [
+    "keT4e",
+    "keh8e",
+    "kT4e",
+    "kh8e",
+    "meT4e",
+    "meh8e",
+    "mT4e",
+    "mh8e",
+    "qeT4e",
+    "qeh8e",
+    "qT4e",
+    "qh8e",
+]

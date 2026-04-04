@@ -244,6 +244,7 @@ def keq4e(Xe, Ge):
     props = as_float_array(Ge).reshape(-1)
     plane_strain = props.size > 2 and int(props[2]) == 2
     D = _plane_elastic_matrix_2d(props, plane_strain=plane_strain)
+    t = props[3] if props.size > 3 else 1.0
     nnodes = Xe.shape[0]
     r, w = _q4_gauss_points()
     Ke = np.zeros((2 * nnodes, 2 * nnodes), dtype=float)
@@ -253,7 +254,7 @@ def keq4e(Xe, Ge):
             Jt = dN @ Xe
             dN_global = np.linalg.solve(Jt, dN)
             B = _q4_B(dN_global)
-            Ke += w[i] * w[j] * (B.T @ D @ B) * np.linalg.det(Jt)
+            Ke += w[i] * w[j] * t * (B.T @ D @ B) * np.linalg.det(Jt)
     return Ke
 
 
@@ -292,6 +293,7 @@ def qeq4e(Xe, Ge, Ue):
     props = as_float_array(Ge).reshape(-1)
     plane_strain = props.size > 2 and int(props[2]) == 2
     D = _plane_elastic_matrix_2d(props, plane_strain=plane_strain)
+    t = props[3] if props.size > 3 else 1.0
     nnodes = Xe.shape[0]
     Ue = as_float_array(Ue).reshape(-1, 1)
     qe = np.zeros((2 * nnodes, 1), dtype=float)
@@ -307,7 +309,7 @@ def qeq4e(Xe, Ge, Ue):
             B = _q4_B(dN_global)
             Ee[gp] = (B @ Ue).ravel()
             Se[gp] = Ee[gp] @ D
-            qe += w[i] * w[j] * (B.T @ Se[gp].reshape(-1, 1)) * np.linalg.det(Jt)
+            qe += w[i] * w[j] * t * (B.T @ Se[gp].reshape(-1, 1)) * np.linalg.det(Jt)
     return qe, Se, Ee
 
 
@@ -1091,6 +1093,108 @@ def qq4epe(q, T, X, G, u, S, E, mtype: int = 1):
     return q, Sn, En
 
 
+def meq4e(Xe, Ge, *, lumped: bool = False):
+    """
+    Compute the element mass matrix for a 4-node quadrilateral (Q4) element.
+
+    Consistent (8x8) via 2x2 Gauss quadrature:
+        M = sum_gp  rho * t * N^T N * det(J) * w
+
+    Lumped via row-sum with total-mass preservation.
+
+    Parameters
+    ----------
+    Xe : array_like, shape (4, 2)
+        Nodal coordinates.
+    Ge : array_like
+        Material row.  Thickness ``t`` from ``Ge[3]`` (default 1).
+        Density ``rho`` from ``Ge[4]`` (default 1).
+    lumped : bool
+        If True, return the diagonally lumped mass matrix.
+
+    Returns
+    -------
+    Me : ndarray, shape (8, 8)
+    """
+    Xe = as_float_array(Xe)
+    props = as_float_array(Ge).reshape(-1)
+    t = props[3] if props.size > 3 else 1.0
+    rho = props[4] if props.size > 4 else 1.0
+
+    r, w = _q4_gauss_points()
+    Me = np.zeros((8, 8), dtype=float)
+
+    for i in range(2):
+        for j in range(2):
+            # Shape functions
+            N_vals = (
+                np.array(
+                    [
+                        (1.0 - r[i]) * (1.0 - r[j]),
+                        (1.0 + r[i]) * (1.0 - r[j]),
+                        (1.0 + r[i]) * (1.0 + r[j]),
+                        (1.0 - r[i]) * (1.0 + r[j]),
+                    ],
+                    dtype=float,
+                )
+                / 4.0
+            )
+
+            # Expand to DOF-level: N_mat = [[N1,0,N2,0,...],[0,N1,0,N2,...]]
+            N_mat = np.zeros((2, 8), dtype=float)
+            N_mat[0, 0::2] = N_vals
+            N_mat[1, 1::2] = N_vals
+
+            dN = _q4_dN(r[i], r[j], 4)
+            Jt = dN @ Xe
+            detJ = np.linalg.det(Jt)
+            Me += w[i] * w[j] * rho * t * (N_mat.T @ N_mat) * detJ
+
+    if lumped:
+        # Row-sum lumping with total mass preservation
+        row_sums = Me.sum(axis=1)
+        total_mass = row_sums.sum()
+        diag_vals = np.abs(row_sums)
+        diag_sum = diag_vals.sum()
+        if diag_sum > 0:
+            diag_vals *= total_mass / diag_sum
+        return np.diag(diag_vals)
+
+    return Me
+
+
+def mq4e(M, T, X, G, *, lumped: bool = False):
+    """
+    Assemble Q4 element mass matrices into the global mass matrix.
+
+    Parameters
+    ----------
+    M : ndarray or sparse, shape (ndof, ndof)
+        Global mass matrix (modified in place).
+    T : array_like, shape (nel, 5)
+        Topology table ``[n1, n2, n3, n4, mat_id]``.
+    X : array_like, shape (nn, 2)
+        Nodal coordinates.
+    G : array_like
+        Material table.
+    lumped : bool
+        If True, assemble lumped mass.
+
+    Returns
+    -------
+    M : ndarray or sparse
+        Updated global mass matrix.
+    """
+    topology = as_float_array(T)
+    coordinates = as_float_array(X)
+    for row in topology:
+        nodes = topology_nodes(row)
+        prop = topology_property(row)
+        Me = meq4e(coordinates[nodes - 1], material_row(G, prop), lumped=lumped)
+        M = assmk(M, Me, row, 2)
+    return M
+
+
 __all__ = [
     "keq4e",
     "keq4epe",
@@ -1100,6 +1204,8 @@ __all__ = [
     "kq4epe",
     "kq4eps",
     "kq4p",
+    "meq4e",
+    "mq4e",
     "qeq4e",
     "qeq4epe",
     "qeq4eps",
