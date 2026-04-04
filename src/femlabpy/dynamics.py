@@ -158,18 +158,41 @@ def tabulated_load(P, time_table, value_table) -> Callable:
 
 def seismic_load(M, direction, accel_record, dt_record: float) -> Callable:
     """
-    Ground motion load: p(t) = -M @ direction * a_g(t).
+    Construct a time-dependent effective force vector for uniform base excitation.
+
+    Mathematical Formulation
+    ------------------------
+    When a structure undergoes uniform ground acceleration a_g(t), the equation
+    of motion is usually solved for the relative displacement u_r(t):
+        M * ü_r(t) + C * u̇_r(t) + K * u_r(t) = -M * r * a_g(t)
+
+    where `r` is the influence vector mapping ground motion to structural DOFs.
+    This function computes and returns a callable representing the effective
+    load vector p_{eff}(t):
+        p_{eff}(t) = -M * r * a_g(t)
+
+    This callable dynamically interpolates the discrete ground acceleration record
+    to exactly match the continuous time requests `t` during time integration.
 
     Parameters
     ----------
-    M : ndarray or sparse
-        Mass matrix.
-    direction : array_like
-        Unit influence vector (1 at DOFs in excitation direction, 0 elsewhere).
-    accel_record : array_like
-        Ground acceleration time history.
+    M : ndarray or scipy.sparse matrix, shape (ndof, ndof)
+        Global mass matrix of the structure.
+    direction : array_like, shape (ndof,)
+        Unit influence vector `r`. This vector has a value of `1.0` for DOFs
+        that act parallel to the direction of ground excitation, and `0.0`
+        for orthogonal or unexcited DOFs.
+    accel_record : array_like, shape (N,)
+        Discrete time series of ground acceleration. Ensure the units match
+        the mass matrix (e.g., m/s^2, not g's, unless you pre-scale it).
     dt_record : float
-        Time step of the acceleration record.
+        Time step (seconds) between samples in `accel_record`.
+
+    Returns
+    -------
+    Callable
+        A function `p_eff(t)` that returns the effective seismic load vector
+        of shape `(ndof, 1)` at any time `t`.
     """
     direction = as_float_array(direction).reshape(-1)
     if is_sparse(M):
@@ -289,48 +312,66 @@ def solve_newmark(
     """
     Implicit Newmark-beta time integration for linear structural dynamics.
 
-    Solves:  M a + C v + K u = p(t)
+    Solves the transient equations of motion:
+        M * a(t) + C * v(t) + K * u(t) = p(t)
+
+    Mathematical Formulation
+    ------------------------
+    The Newmark method approximates the displacement and velocity at t+dt as:
+        u(t+dt) = u(t) + dt * v(t) + dt^2 * [ (0.5 - beta) * a(t) + beta * a(t+dt) ]
+        v(t+dt) = v(t) + dt * [ (1 - gamma) * a(t) + gamma * a(t+dt) ]
+
+    This leads to an effective static linear system solved at each time step:
+        K_eff * u(t+dt) = p_eff(t+dt)
+
+    where:
+        K_eff = K + a0 * M + a1 * C
+        p_eff(t+dt) = p(t+dt) + M * (a0*u(t) + a2*v(t) + a3*a(t))
+                              + C * (a1*u(t) + a4*v(t) + a5*a(t))
+    and a0, a1, ... are Newmark constants depending on dt, beta, and gamma.
 
     Parameters
     ----------
-    M : ndarray or sparse, shape (ndof, ndof)
-        Mass matrix.
-    C : ndarray or sparse, shape (ndof, ndof)
-        Damping matrix.
-    K : ndarray or sparse, shape (ndof, ndof)
-        Stiffness matrix.
+    M : ndarray or scipy.sparse matrix, shape (ndof, ndof)
+        Global mass matrix.
+    C : ndarray or scipy.sparse matrix, shape (ndof, ndof)
+        Global damping matrix.
+    K : ndarray or scipy.sparse matrix, shape (ndof, ndof)
+        Global stiffness matrix.
     p_func : callable
-        Load function: p_func(t) -> ndarray (ndof, 1).
+        Load function returning the force vector at time t.
+        Signature: `p_func(t) -> ndarray of shape (ndof, 1)`.
     u0 : array_like, shape (ndof, 1)
-        Initial displacement.
+        Initial displacement vector.
     v0 : array_like, shape (ndof, 1)
-        Initial velocity.
+        Initial velocity vector.
     dt : float
-        Time step size.
+        Time step size (seconds).
     nsteps : int
-        Number of time steps.
+        Number of time steps to compute. Total time = dt * nsteps.
     beta : float, default 0.25
-        Newmark beta parameter.
+        Newmark beta parameter. Controls variation of acceleration over the step.
     gamma : float, default 0.5
-        Newmark gamma parameter.
+        Newmark gamma parameter. Controls artificial numerical damping.
     C_bc : array_like, optional
-        Boundary constraint table (same format as setbc). Constrained
-        DOFs are zeroed in the effective system.
+        Boundary constraint table. Constrained DOFs are perfectly fixed (u=v=a=0)
+        during the dynamic response.
     dof : int, default 2
-        DOFs per node (used to interpret C_bc).
+        DOFs per node (used to interpret `C_bc`).
     compute_energy : bool, default False
-        If True, compute energy balance at each step.
+        If True, compute kinetic and strain energy at each step.
 
     Returns
     -------
     TimeHistory
-        Full time history of u, v, a.
+        Dataclass containing the full time history of displacements `u`,
+        velocities `v`, accelerations `a`, and optionally energy.
 
     Notes
     -----
-    Default parameters (beta=0.25, gamma=0.5) use the average acceleration
-    (trapezoidal) method which is unconditionally stable and second-order
-    accurate.
+    Default parameters (`beta=0.25`, `gamma=0.5`) use the constant average
+    acceleration method (trapezoidal rule). This scheme is unconditionally stable
+    for linear systems and produces no artificial numerical dissipation.
     """
     ndof = K.shape[0]
     u0 = as_float_array(u0).reshape(-1, 1)
@@ -1111,31 +1152,52 @@ def _is_zero_matrix(mat):
 
 def compute_frf(M, C, K, input_dof, output_dof, freq_range, *, n_points=500):
     """
-    Compute the Frequency Response Function (FRF) H(omega).
+    Compute the Frequency Response Function (FRF), H(omega), for harmonic excitation.
 
-    For each circular frequency omega, solves:
-        H(omega) = [(-omega^2 * M + i*omega * C + K)^{-1}]_{output, input}
+    Mathematical Formulation
+    ------------------------
+    The equation of motion for a structural system subjected to a complex
+    harmonic excitation F(t) = P * e^{i * omega * t} has the steady-state
+    harmonic response U(t) = U * e^{i * omega * t}.
+
+    Substituting these into M * U'' + C * U' + K * U = P yields:
+        [-omega^2 * M + i * omega * C + K] * U = P
+
+    The complex term in brackets is the Dynamic Stiffness Matrix, Z(omega).
+    The FRF matrix is H(omega) = Z(omega)^-1.
+
+    This function computes the scalar transfer function H(omega)_{j,k} where
+    an excitation is applied at DOF `k` (`input_dof`) and the response is
+    measured at DOF `j` (`output_dof`). The magnitude |H| gives the amplification,
+    and the phase angle gives the lag relative to the excitation.
 
     Parameters
     ----------
-    M : ndarray or sparse, shape (ndof, ndof)
-        Mass matrix.
-    C : ndarray or sparse, shape (ndof, ndof)
-        Damping matrix.
-    K : ndarray or sparse, shape (ndof, ndof)
-        Stiffness matrix.
+    M : ndarray or scipy.sparse matrix, shape (ndof, ndof)
+        Global mass matrix.
+    C : ndarray or scipy.sparse matrix, shape (ndof, ndof)
+        Global damping matrix.
+    K : ndarray or scipy.sparse matrix, shape (ndof, ndof)
+        Global stiffness matrix.
     input_dof : int
-        DOF index (0-based) where the unit harmonic force is applied.
+        The 0-based global degree-of-freedom index where the unit harmonic
+        load P is applied.
     output_dof : int
-        DOF index (0-based) where the response is measured.
-    freq_range : tuple of float
-        ``(f_min, f_max)`` in Hz.
+        The 0-based global degree-of-freedom index where the complex
+        displacement response U is measured.
+    freq_range : tuple of floats
+        The frequency spectrum window (f_min, f_max) to evaluate, in Hertz (Hz).
     n_points : int, default 500
-        Number of frequency points.
+        Number of discrete frequency sampling points within the `freq_range`.
 
     Returns
     -------
     freq_hz : ndarray, shape (n_points,)
+        Array of frequencies evaluated (Hz).
+    H : ndarray, shape (n_points,), dtype=complex
+        Array of complex scalar frequency response values H(omega).
+        Use `numpy.abs(H)` for magnitude and `numpy.angle(H)` for phase.
+
         Frequency values in Hz.
     H : ndarray, shape (n_points,), complex
         Complex FRF values.

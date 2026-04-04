@@ -93,21 +93,37 @@ def _modal_participation(M, phi, dof, ndof):
     """
     Compute modal participation factors and effective modal mass.
 
+    Mathematical Formulation
+    ------------------------
+    For a base excitation in direction 'j', the influence vector r_j
+    contains 1s at all DOFs acting in direction 'j' and 0s elsewhere.
+
+    The participation factor Gamma_{n,j} for mode n in direction j is:
+        Gamma_{n,j} = (phi_n^T * M * r_j) / (phi_n^T * M * phi_n)
+
+    If the mode shapes `phi` are already mass-normalized, the denominator is 1.
+
+    The effective modal mass m_{eff,n,j} is defined as:
+        m_{eff,n,j} = Gamma_{n,j}^2 * (phi_n^T * M * phi_n) = Gamma_{n,j}^2
+
     Parameters
     ----------
-    M : ndarray
-        Mass matrix (full size).
+    M : ndarray, shape (ndof, ndof)
+        Global mass matrix.
     phi : ndarray, shape (ndof, n_modes)
-        Mode shapes in full DOF space.
+        Mass-normalized mode shape matrix in the full DOF space.
     dof : int
-        DOFs per node.
+        Number of DOFs per node.
     ndof : int
-        Total DOFs.
+        Total number of DOFs in the system.
 
     Returns
     -------
     participation : ndarray, shape (n_modes, dof)
+        Participation factor for each mode and spatial direction.
     effective_mass : ndarray, shape (n_modes, dof)
+        Effective modal mass for each mode and spatial direction.
+
     """
     M_arr = as_float_array(M) if not is_sparse(M) else np.asarray(M.toarray())
     n_modes = phi.shape[1]
@@ -142,14 +158,30 @@ def solve_modal(
     """
     Compute the lowest natural frequencies and mode shapes.
 
-    Solves the generalized eigenvalue problem:
-        K phi = omega^2 M phi
+    Mathematical Formulation
+    ------------------------
+    This function solves the generalized structural eigenvalue problem
+    for undamped free vibration:
+
+        K * phi = omega^2 * M * phi
+
+    where:
+    - K is the global stiffness matrix.
+    - M is the global mass matrix.
+    - omega^2 are the eigenvalues (square of circular natural frequencies).
+    - phi are the eigenvectors (mode shapes).
+
+    The modes are extracted after statically condensing out all constrained
+    degrees of freedom defined in `C_bc`. The returned mode shapes `phi`
+    are mass-normalized such that:
+        phi^T * M * phi = I
+    and expanded back to the full structural DOF size (zeros at fixed DOFs).
 
     Parameters
     ----------
-    K : ndarray or sparse matrix, shape (ndof, ndof)
+    K : ndarray or scipy.sparse matrix, shape (ndof, ndof)
         Global stiffness matrix.
-    M : ndarray or sparse matrix, shape (ndof, ndof)
+    M : ndarray or scipy.sparse matrix, shape (ndof, ndof)
         Global mass matrix.
     n_modes : int, default 10
         Number of lowest modes to compute.
@@ -157,15 +189,17 @@ def solve_modal(
         Boundary condition constraint table (same format as ``setbc`` C argument).
         Constrained DOFs are eliminated before the eigensolve.
     dof : int, default 2
-        Degrees of freedom per node.
+        Degrees of freedom per node. Determines directionality for effective mass.
     sigma : float, default 0.0
-        Shift for shift-invert mode. Use 0.0 for the lowest modes.
+        Shift for the shift-and-invert solver (Lanczos). Use 0.0 to find the
+        fundamental (lowest) modes.
 
     Returns
     -------
     ModalResult
-        Dataclass containing eigenvalues, frequencies, periods, mode shapes,
-        participation factors, and effective modal mass.
+        Dataclass containing eigenvalues, circular frequencies (rad/s),
+        frequencies (Hz), periods (s), mass-normalized mode shapes (ndof, n_modes),
+        participation factors, and effective modal mass vectors.
 
     Examples
     --------
