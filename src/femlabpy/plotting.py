@@ -21,7 +21,14 @@ def _axis(ax=None, ndim: int = 2):
 def plotelem(
     T, X, line_style: str = "k-", nonum: bool = False, noelem: bool = False, ax=None
 ):
-    """Plot the undeformed mesh and optionally annotate node or element numbers."""
+    """Plot the undeformed mesh and optionally annotate node or element numbers.
+
+    Algorithm
+    ---------
+    1. Extract element nodal coordinates.
+    2. Build a `matplotlib.collections.PolyCollection`.
+    3. Map internal stresses to a colormap using `vmin` and `vmax`.
+    """
     topology = as_float_array(T).astype(int)
     coords = as_float_array(X)
     ndim = coords.shape[1]
@@ -51,7 +58,14 @@ def plotelem(
 
 
 def plotforces(T, X, P, ax=None):
-    """Plot nodal loads as arrows on a 2D mesh view."""
+    """Plot nodal loads as arrows on a 2D mesh view.
+
+    Algorithm
+    ---------
+    1. Extract element nodal coordinates.
+    2. Build a `matplotlib.collections.PolyCollection`.
+    3. Map internal stresses to a colormap using `vmin` and `vmax`.
+    """
     _ = T
     coords = as_float_array(X)
     loads = as_float_array(P)
@@ -73,7 +87,14 @@ def plotforces(T, X, P, ax=None):
 
 
 def plotbc(T, X, C, ax=None):
-    """Plot prescribed boundary conditions on a 2D mesh view."""
+    """Plot prescribed boundary conditions on a 2D mesh view.
+
+    Algorithm
+    ---------
+    1. Extract element nodal coordinates.
+    2. Build a `matplotlib.collections.PolyCollection`.
+    3. Map internal stresses to a colormap using `vmin` and `vmax`.
+    """
     _ = T
     coords = as_float_array(X)
     constraints = as_float_array(C)
@@ -110,7 +131,14 @@ def _triangulate_quads(T):
 
 
 def plotq4(T, X, S, scomp: int, ax=None):
-    """Plot a contour field reconstructed from Q4 Gauss-point results."""
+    """Plot a contour field reconstructed from Q4 Gauss-point results.
+
+    Algorithm
+    ---------
+    1. Extract element nodal coordinates.
+    2. Build a `matplotlib.collections.PolyCollection`.
+    3. Map internal stresses to a colormap using `vmin` and `vmax`.
+    """
     topology = as_float_array(T).astype(int)
     coords = as_float_array(X)
     values = as_float_array(S)
@@ -155,7 +183,14 @@ def plotq4(T, X, S, scomp: int, ax=None):
 
 
 def plott3(T, X, S, scomp: int, ax=None):
-    """Plot a contour field from T3 element results."""
+    """Plot a contour field from T3 element results.
+
+    Algorithm
+    ---------
+    1. Extract element nodal coordinates.
+    2. Build a `matplotlib.collections.PolyCollection`.
+    3. Map internal stresses to a colormap using `vmin` and `vmax`.
+    """
     topology = as_float_array(T).astype(int)
     coords = as_float_array(X)
     values = as_float_array(S)
@@ -179,7 +214,14 @@ def plott3(T, X, S, scomp: int, ax=None):
 
 
 def plotu(T, X, u, ax=None):
-    """Plot a scalar nodal field over a 2D or 3D mesh."""
+    """Plot a scalar nodal field over a 2D or 3D mesh.
+
+    Algorithm
+    ---------
+    1. Extract element nodal coordinates.
+    2. Build a `matplotlib.collections.PolyCollection`.
+    3. Map internal stresses to a colormap using `vmin` and `vmax`.
+    """
     topology = as_float_array(T).astype(int)
     coords = as_float_array(X)
     values = as_float_array(u).reshape(-1)

@@ -20,176 +20,173 @@ In standard finite element assembly, the contributions from elements are transfo
 
 The `femlabpy` library provides two primary functions in `loads.py` for manipulating the global load vector: `setload` and `addload`.
 
-*   **`setload(P, dofs, values)`**: This function explicitly overrides the current value at the specified DOFs with new values. This is mathematically equivalent to setting $P_i = v_i$. It is typically used for initial load assignments or when a specific DOF must have a precise load value, ignoring previous accumulations.
-*   **`addload(P, dofs, values)`**: In linear superposition, loads are cumulative. The `addload` function adds new load values to the existing values in the load vector. Mathematically, $P_i \leftarrow P_i + v_i$. This is the standard method for assembling structural loads from multiple overlapping sources.
+*   **`setload(P, dofs, values)`**: Explicitly overrides the current value at the specified DOFs with new values.
+*   **`addload(P, dofs, values)`**: Adds new load values to the existing values in the load vector.
 
 ```python
 # Example: Applying loads in femlabpy
 import numpy as np
 from femlabpy.loads import setload, addload
 
-# Initialize a global load vector for a 6-DOF system
 P = np.zeros(6)
-
-# Set a specific load at DOF 2 to 50.0
 setload(P, [2], [50.0])
-
-# Add multiple loads: 10.0 at DOF 2, and -25.0 at DOF 4
 addload(P, [2, 4], [10.0, -25.0])
-
 print("Global Load Vector:", P)
-# Expected Output: [0.  0.  60. 0. -25. 0.]
 ```
 
 ---
 
-## 2.2 Dirichlet Boundary Conditions: The Penalty Method
+## 2.2 Dirichlet Boundary Conditions: The Penalty and Direct Elimination Methods
 
-Dirichlet boundary conditions, also known as essential boundary conditions, specify the known values of the primary field variable (e.g., displacements) at certain boundaries. Mathematically, for a set of constrained DOFs $\mathcal{C}$, we require:
+Dirichlet boundary conditions, also known as essential boundary conditions, specify the known values of the primary field variable (e.g., displacements) at certain boundaries:
 
 $$ u_i = \bar{u}_i \quad \forall i \in \mathcal{C} $$
 
-Enforcing this directly in the system $\mathbf{K} \mathbf{u} = \mathbf{P}$ requires modifying the equations. While condensation (row/column elimination) is a mathematically exact approach, it alters the size of the matrix, making bookkeeping complex. A highly efficient alternative heavily utilized in structural analysis is the **Penalty Method** (or "Large Spring" approach).
+Enforcing this directly in the system $\mathbf{K} \mathbf{u} = \mathbf{P}$ requires modifying the equations. Two highly prominent alternatives are the Penalty Method (Large Spring) and the Direct Elimination Method (with a scaled diagonal). `femlabpy` utilizes a hybrid approach in its `setbc` function.
 
-### 2.2.1 Mathematics of the Large Spring Method
+### 2.2.1 Mathematics of the Large Spring Method in Extreme Detail
 
-The core idea is to attach an extremely stiff spring to the constrained DOF and apply an enormous force such that the spring extends exactly by the desired displacement $\bar{u}_i$. 
+The penalty method, fundamentally, attaches an extremely stiff spring to the constrained DOF and applies an enormous force such that the spring extends exactly by the desired displacement $\bar{u}_i$.
 
-Let the maximum diagonal element of the stiffness matrix be $K_{max} = \max_{j} (K_{jj})$. We define a penalty parameter $\alpha$ that is significantly larger than the stiffness of the system, typically:
+Often in textbooks, a penalty parameter $\alpha$ is defined to be significantly larger than the stiffness of the system, e.g., $\alpha = 10^6 \times \max(\mathbf{K})$. 
+1. **Modify Stiffness:** Add $\alpha$ to the diagonal entry of $\mathbf{K}$: $K_{ii} \leftarrow K_{ii} + \alpha$
+2. **Modify Load:** Set the corresponding load vector entry to $P_i \leftarrow \alpha \times \bar{u}_i$.
 
-$$ \alpha = 10^6 \times K_{max} $$
+Since $\alpha$ is overwhelmingly large, the $i$-th equation effectively becomes $\alpha u_i = \alpha \bar{u}_i \implies u_i \approx \bar{u}_i$.
 
-To enforce $u_i = \bar{u}_i$, we modify the system as follows:
-1.  **Modify Stiffness:** Add $\alpha$ to the diagonal entry of $\mathbf{K}$:
-    $$ K_{ii} \leftarrow K_{ii} + \alpha \approx \alpha $$
-2.  **Modify Load:** Set the corresponding entry in the load vector to:
-    $$ P_i \leftarrow \alpha \times \bar{u}_i $$
+However, `femlabpy` uses a rigorous direct elimination variant matching the legacy Scilab FemLab implementation. Instead of adding a penalty to the existing stiffness, the entire row and column for DOF $i$ are zeroed out, and a specific "spring stiffness" $k_s$ is assigned to the diagonal, accompanied by transferring coupling forces. The scaling used in `femlabpy` is $0.1 \times \max(|K_{ii}|)$.
 
-Since $\alpha$ is overwhelmingly large compared to other terms in the $i$-th equation, the equation effectively reduces to:
+### 2.2.2 Exact Python Code for `setbc`
 
-$$ \alpha u_i = \alpha \bar{u}_i \implies u_i \approx \bar{u}_i $$
-
-This approach preserves the symmetry, size, and band structure of $\mathbf{K}$, making it ideal for sparse matrix solvers.
-
-### 2.2.2 Implementation in `femlabpy`
-
-The `setbc` function in `src/femlabpy/boundary.py` implements this Large Spring method perfectly.
+The `setbc` function in `src/femlabpy/boundary.py` implements this flawlessly. Here is the exact Python code responsible for zeroing the rows/columns, updating the RHS, and placing the diagonal stiffness:
 
 ```python
-# Example: Enforcing Dirichlet BCs using the Penalty Method
-import numpy as np
-from femlabpy.boundary import setbc
+    ks = 0.1 * max_abs_diagonal(K)
+    if ks == 0.0:
+        ks = 1.0
 
-# Define a hypothetical 3x3 stiffness matrix and load vector
-K = np.array([[1000.0, -500.0, 0.0],
-              [-500.0, 1000.0, -500.0],
-              [0.0, -500.0, 500.0]])
-P = np.array([0.0, 100.0, 50.0])
+    # ... (DOF parsing omitted for brevity) ...
 
-# We want to constrain DOF 0 to 0.0 (fixed support)
-dofs_to_constrain = [0]
-prescribed_values = [0.0]
-
-# Apply the boundary conditions in place
-setbc(K, P, dofs_to_constrain, prescribed_values)
-
-print("Modified K_{0,0}:", K[0,0]) 
-# Will be 1000.0 + 1e6 * 1000.0 = 1000001000.0
+    for k in range(len(cdofs)):
+        j = int(cdofs[k])
+        val = cvals[k]
+        # Transfer coupling forces to RHS *before* zeroing the column.
+        if val != 0.0:
+            if sparse:
+                col_j = np.asarray(K[:, j].toarray()).ravel()
+            else:
+                col_j = K[:, j].copy()
+            p[:, 0] -= col_j * val
+            
+        # Zero row and column, set diagonal spring.
+        K[j, :] = 0
+        K[:, j] = 0
+        K[j, j] = ks
+        p[j, 0] = ks * val
 ```
+
+This procedure ensures mathematical exactness. Before the row/column is zeroed, the off-diagonal terms $K_{ij}$ are multiplied by the prescribed displacement `val` and moved to the load vector `p`. Then, the $j$-th equation is entirely replaced with $k_s u_j = k_s \bar{u}_j$.
 
 ---
 
 ## 2.3 General Constraints: Lagrange Multipliers
 
-While Dirichlet conditions fix individual DOFs, many engineering problems involve multi-point constraints (MPCs), where a linear combination of DOFs must satisfy a condition:
-
-$$ c_1 u_1 + c_2 u_2 + \dots + c_n u_n = Q $$
-
-In matrix form, a set of $m$ general constraints on $n$ DOFs can be expressed as:
+While Dirichlet conditions fix individual DOFs, engineering problems often involve multi-point constraints (MPCs), where a linear combination of DOFs must satisfy a condition:
 
 $$ \mathbf{G} \mathbf{u} = \mathbf{Q} $$
 
-where $\mathbf{G}$ is an $m \times n$ constraint matrix and $\mathbf{Q}$ is an $m \times 1$ vector of constraint values. The penalty method struggles with complex MPCs because it couples terms indiscriminately, potentially destroying matrix conditioning. Instead, we use the method of **Lagrange Multipliers**.
+where $\mathbf{G}$ is an $m \times n$ constraint matrix and $\mathbf{Q}$ is an $m \times 1$ vector. We use the method of **Lagrange Multipliers**.
 
-### 2.3.1 Augmented System Formulation
+### 2.3.1 Building the Saddle-Point Matrix via `np.block`
 
-We introduce a vector of Lagrange multipliers, $\boldsymbol{\lambda}$ (of size $m \times 1$), which physically represent the constraint forces required to maintain the specified relations. The total potential energy functional is augmented to include the constraint:
-
-$$ \Pi^*(\mathbf{u}, \boldsymbol{\lambda}) = \frac{1}{2} \mathbf{u}^T \mathbf{K} \mathbf{u} - \mathbf{u}^T \mathbf{P} + \boldsymbol{\lambda}^T (\mathbf{G} \mathbf{u} - \mathbf{Q}) $$
-
-Taking the variation with respect to both $\mathbf{u}$ and $\boldsymbol{\lambda}$ yields the saddle-point equations:
+We introduce a vector of Lagrange multipliers, $\boldsymbol{\lambda}$. The total potential energy functional is augmented to include the constraint, leading to the saddle-point equations:
 
 $$ \begin{bmatrix} \mathbf{K} & \mathbf{G}^T \\ \mathbf{G} & \mathbf{0} \end{bmatrix} \begin{bmatrix} \mathbf{u} \\ \boldsymbol{\lambda} \end{bmatrix} = \begin{bmatrix} \mathbf{P} \\ \mathbf{Q} \end{bmatrix} $$
 
-Solving this augmented system gives both the exact displacements $\mathbf{u}$ satisfying the constraints and the reaction forces $\boldsymbol{\lambda}$ simultaneously. Note that the augmented matrix loses positive-definiteness (it has zero blocks on the diagonal), requiring robust solvers (like LDLT or LU decomposition).
-
-### 2.3.2 Using `solve_lag_general`
-
-The `femlabpy` framework handles this via the `solve_lag_general` function.
+In `femlabpy`, `solve_lag_general` handles the construction of this augmented block matrix. A scaling factor is applied to $\mathbf{G}$ and $\mathbf{Q}$ to maintain numerical compatibility, then `numpy.block` is utilized to effortlessly stitch the submatrices together for dense arrays:
 
 ```python
-# Example: Using Lagrange Multipliers for an MPC
-import numpy as np
-from femlabpy.boundary import solve_lag_general
-
-# Base system
-K = np.array([[200., -100.], [-100., 100.]])
-P = np.array([0., 50.])
-
-# Constraint: u_0 - u_1 = 0.5 (Nodes move with a relative offset of 0.5)
-G = np.array([[1.0, -1.0]])
-Q = np.array([0.5])
-
-# Solve the augmented system
-u, lambda_vec = solve_lag_general(K, P, G, Q)
-
-print("Displacements:", u)
-print("Constraint Force (Lagrange Multiplier):", lambda_vec)
+    Gbar = scale * constraint_matrix
+    Qbar = scale * constraint_rhs
+    
+    # Building the Saddle-Point Matrix using np.block
+    Kbar = np.block(
+        [
+            [as_float_array(K), Gbar.T],
+            [
+                Gbar,
+                np.zeros(
+                    (constraint_matrix.shape[0], constraint_matrix.shape[0]),
+                    dtype=float,
+                ),
+            ],
+        ]
+    )
 ```
+
+This resulting `Kbar` is the indefinite augmented stiffness matrix, and the augmented load vector `pbar` is obtained via `np.vstack`.
+
+### 2.3.2 Example: 2-Node Spring System
+
+Here is a 50-line runnable Python script demonstrating `solve_lag_general` applied to a simple 2-node spring system where the two nodes are constrained to move exactly together (i.e., $u_1 - u_2 = 0$).
+
+```python
+import numpy as np
+
+# A standalone mock-up of the solve_lag_general logic for demonstration
+def solve_lag_general(K, p, G, Q):
+    scale = 1.0e-2 * np.max(np.abs(np.diag(K)))
+    Gbar = scale * G
+    Qbar = scale * Q
+    
+    # 1. Build Saddle-Point Matrix
+    Kbar = np.block([
+        [K, Gbar.T],
+        [Gbar, np.zeros((G.shape[0], G.shape[0]))]
+    ])
+    
+    # 2. Build Augmented RHS
+    pbar = np.vstack([p, Qbar])
+    
+    # 3. Solve System
+    augmented = np.linalg.solve(Kbar, pbar)
+    u = augmented[:K.shape[0]]
+    lagrange = augmented[K.shape[0]:] * scale
+    return u, lagrange
+
+def main():
+    # 2-node system: Spring 1 connects ground to Node 1, Spring 2 connects Node 1 to Node 2
+    # k1 = 1000, k2 = 500
+    K = np.array([
+        [1500.0, -500.0],
+        [-500.0,  500.0]
+    ])
+    
+    # Load applied to Node 2
+    p = np.array([[0.0], 
+                  [100.0]])
+                  
+    # Constraint: u_1 - u_2 = 0
+    G = np.array([[1.0, -1.0]])
+    Q = np.array([[0.0]])
+    
+    # Solve using Lagrange Multipliers
+    u, lagrange = solve_lag_general(K, p, G, Q)
+    
+    print("Displacements:")
+    print(f"u_1 = {u[0,0]:.5f}")
+    print(f"u_2 = {u[1,0]:.5f}")
+    print("\nConstraint Force (Lagrange Multiplier):")
+    print(f"lambda = {lagrange[0,0]:.5f}")
+
+if __name__ == "__main__":
+    main()
+```
+
+When run, both $u_1$ and $u_2$ evaluate to $0.1$ because the two nodes are constrained to displace by the same amount, making the equivalent stiffness acting on the 100 load equal to $1000$, thus $100 / 1000 = 0.1$. The Lagrange multiplier returns the constraint force transmitted between the nodes.
 
 ---
 
-## 2.4 Extraction of Reaction Forces
-
-After solving the global system $\mathbf{K} \mathbf{u} = \mathbf{P}$ subject to boundary conditions, a critical post-processing step is evaluating the reaction forces at the supports. These represent the forces the ground (or constraints) exert back onto the structure.
-
-### 2.4.1 Equilibrium and Reactions
-
-Before constraints are applied, equilibrium states that internal forces $\mathbf{F}_{int} = \mathbf{K}_{original} \mathbf{u}$ must balance external forces $\mathbf{P}_{applied}$ plus reaction forces $\mathbf{R}$:
-
-$$ \mathbf{K}_{original} \mathbf{u} = \mathbf{P}_{applied} + \mathbf{R} $$
-
-Rearranging this gives the fundamental equation for reaction extraction:
-
-$$ \mathbf{R} = \mathbf{K}_{original} \mathbf{u} - \mathbf{P}_{applied} $$
-
-**Crucial Note:** In this formula, $\mathbf{K}_{original}$ and $\mathbf{P}_{applied}$ MUST be the *unmodified* matrices before the penalty method (`setbc`) altered them. 
-
-For a DOF $i$ that is unconstrained, the equation evaluates to $R_i \approx 0$ (modulo numerical roundoff), verifying equilibrium. For a constrained DOF, $R_i$ will equal the reaction force required to maintain $\bar{u}_i$.
-
-### 2.4.2 Implementation: The `reaction` Function
-
-In `femlabpy`, the `reaction` function automates this computation, returning the reaction forces specifically at the requested DOFs.
-
-```python
-# Example: Extracting Reaction Forces
-import numpy as np
-from femlabpy.loads import reaction
-
-# Assuming K_orig and P_orig were saved BEFORE applying boundary conditions
-# and 'u' is the solved displacement vector.
-K_orig = np.array([[1000., -1000.], [-1000., 1000.]])
-P_orig = np.array([0., 500.])
-u = np.array([0.0, 0.5]) # Known from solving (Node 0 fixed, Node 1 pulled)
-
-# Extract reactions at the fixed DOF (node 0)
-fixed_dofs = [0]
-R = reaction(K_orig, u, P_orig, fixed_dofs)
-
-print(f"Reaction force at DOF 0: {R[0]}")
-# mathematically: R_0 = (1000*0 + -1000*0.5) - 0 = -500.
-```
-
 ## Summary
 
-Proper handling of boundary conditions and external loads dictates the stability and correctness of finite element solutions. `femlabpy` combines the computationally efficient Penalty Method for standard Dirichlet conditions with the rigorous Lagrange Multiplier formulation for complex multi-point constraints. Utilizing `setload`, `addload`, `setbc`, `solve_lag_general`, and `reaction` forms the complete cycle of setting up and recovering boundary data in computational mechanics models.
+Proper handling of boundary conditions dictates the stability and correctness of finite element solutions. `femlabpy` combines the computationally efficient direct elimination with a scaled diagonal for Dirichlet conditions, and the rigorous Lagrange Multiplier formulation for complex multi-point constraints utilizing `np.block` for saddle-point matrix assembly.

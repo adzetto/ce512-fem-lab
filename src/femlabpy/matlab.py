@@ -16,7 +16,16 @@ def _legacy_bundle(
     *,
     dof: int | None = None,
 ) -> dict[str, Any]:
-    """Normalize a legacy FemLab input deck into a typed Python dictionary."""
+    """Normalize a legacy FemLab input deck into a typed Python dictionary.
+
+    Algorithm
+    ---------
+    Normalizes the input arrays and legacy data structures into a typed dictionary.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
+    """
 
     coords = as_float_array(X)
     resolved_dof = int(coords.shape[1] if dof is None else dof)
@@ -45,6 +54,14 @@ def _set_axis(ax, limits) -> None:
     limits:
         Axis vector of length ``4`` for ``[xmin, xmax, ymin, ymax]`` or length
         ``6`` for 3D axes.
+
+    Algorithm
+    ---------
+    Applies the provided axis limits to the matplotlib axes instance.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
     """
 
     if limits is None:
@@ -66,8 +83,18 @@ def canti() -> dict[str, np.ndarray | int]:
     Returns
     -------
     dict
-        Dictionary with the legacy FemLab fields ``T``, ``X``, ``G``, ``C``,
-        ``P``, and ``dof``.
+        Result dictionary containing ``u``, ``q``, ``S``, ``E``, ``R``, the
+        normalized ``data`` dictionary, and an optional ``figures`` list.
+
+    Algorithm
+    ---------
+    Wraps the core linear elastic solver. It initializes the global system, computes
+    element stiffness matrices, applies boundary conditions, solves for displacements,
+    and then recovers stresses, strains, and reactions.
+
+    Mathematical Formulation
+    ------------------------
+    Solves $K u = P$ for displacements $u$, and computes element stresses $S$ and strains $E$.
     """
 
     from .examples.cantilever import cantilever_data
@@ -81,6 +108,14 @@ def flow() -> dict[str, np.ndarray | int]:
 
     The returned dictionary contains both the Q4 topology ``T1`` and the T3
     topology ``T2`` used by the legacy ``flowq4.m`` and ``flowt3.m`` drivers.
+
+    Algorithm
+    ---------
+    Returns the benchmark data directly.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
     """
 
     from .examples.flow import flow_data
@@ -95,6 +130,14 @@ def bar01() -> dict[str, np.ndarray | int]:
     The returned dictionary contains the original truss geometry, material
     table, constraints, loads, and nonlinear load-stepping controls exported
     from the classroom MATLAB benchmark.
+
+    Algorithm
+    ---------
+    Returns the benchmark data directly.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
     """
 
     from .examples.legacy_cases import bar01_data
@@ -108,6 +151,14 @@ def bar02() -> dict[str, np.ndarray | int]:
 
     This is the spatial three-dimensional nonlinear truss benchmark used by
     the legacy ``nlbar.m`` teaching script.
+
+    Algorithm
+    ---------
+    Returns the benchmark data directly.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
     """
 
     from .examples.legacy_cases import bar02_data
@@ -124,6 +175,14 @@ def bar03() -> dict[str, np.ndarray | int]:
     ``bar03.m`` is a historically difficult 12-bar benchmark. It is exposed for
     compatibility and regression work even though the legacy load-stepping
     method can exceed its restart guard on this case.
+
+    Algorithm
+    ---------
+    Returns the benchmark data directly.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
     """
 
     from .examples.legacy_cases import bar03_data
@@ -168,6 +227,14 @@ def hole(*, plane_strain: bool = False) -> dict[str, np.ndarray | int]:
     dict
         Legacy FemLab matrices together with the nonlinear stepping controls
         expected by :func:`plastps` and :func:`plastpe`.
+
+    Algorithm
+    ---------
+    Returns the benchmark data directly.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
     """
 
     from .examples.legacy_cases import hole_data
@@ -205,8 +272,16 @@ def elastic(
     Returns
     -------
     dict
-        Result dictionary containing ``u``, ``q``, ``S``, ``E``, ``R``, the
-        normalized ``data`` dictionary, and an optional ``figures`` list.
+        Legacy FemLab matrices together with the nonlinear stepping controls
+        expected by :func:`plastps` and :func:`plastpe`.
+
+    Algorithm
+    ---------
+    Returns the benchmark data directly.
+
+    Mathematical Formulation
+    ------------------------
+    N/A
     """
 
     from .boundary import setbc
@@ -270,6 +345,14 @@ def flowq4(
     plot:
         When ``True``, return a single four-panel Matplotlib figure matching the
         original classroom driver.
+
+    Algorithm
+    ---------
+    Wraps the core potential flow solver for Q4 elements by delegating to `_flow_driver`.
+
+    Mathematical Formulation
+    ------------------------
+    Solves the potential flow problem $K u = P$ using four-node quadrilateral elements.
     """
 
     if T1 is None or X is None or G is None or C is None:
@@ -328,6 +411,14 @@ def flowt3(
     plot:
         When ``True``, return a single four-panel Matplotlib figure matching the
         original classroom driver.
+
+    Algorithm
+    ---------
+    Wraps the core potential flow solver for T3 elements by delegating to `_flow_driver`.
+
+    Mathematical Formulation
+    ------------------------
+    Solves the potential flow problem $K u = P$ using three-node triangular elements.
     """
 
     if T2 is None or X is None or G is None or C is None:
@@ -365,7 +456,17 @@ def flowt3(
 def _flow_driver(
     T, X, G, C, P, *, dof: int, plot: bool, triangle: bool
 ) -> dict[str, Any]:
-    """Internal helper implementing the classroom `flowq4.m` and `flowt3.m` drivers."""
+    """Internal helper implementing the classroom `flowq4.m` and `flowt3.m` drivers.
+
+    Algorithm
+    ---------
+    Initializes the system, computes element stiffness matrices for either Q4 or T3 elements,
+    applies boundary conditions, solves for potentials, and optionally generates plots.
+
+    Mathematical Formulation
+    ------------------------
+    Solves $K u = p$ for nodal potentials $u$, and recovers gradients.
+    """
 
     from .boundary import setbc
     from .core import init
@@ -445,6 +546,15 @@ def nlbar(
         figure.
     plotaxis, elaxis:
         Optional MATLAB-style axis vectors kept for API compatibility.
+
+    Algorithm
+    ---------
+    Wraps the nonlinear truss solver (`solve_nlbar`), passing legacy inputs to the
+    orthogonal residual load-stepping method.
+
+    Mathematical Formulation
+    ------------------------
+    Solves the nonlinear equilibrium equations $R(u, \lambda) = F_{int}(u) - \lambda P_{ref} = 0$.
     """
 
     from .plotting import plotelem
@@ -526,6 +636,16 @@ def plastps(
         plastic-strain contour plot in the deformed geometry.
     strainaxis, elaxis:
         Optional MATLAB-style axis vectors kept for API compatibility.
+
+    Algorithm
+    ---------
+    Wraps the core elastoplastic solver for plane stress (`solve_plastic`), configuring
+    it for plane-stress conditions.
+
+    Mathematical Formulation
+    ------------------------
+    Solves the elastoplastic equilibrium equations using an orthogonal-residual load-stepping
+    method, returning load-displacement history and equivalent plastic strains.
     """
 
     return _plast_driver(
@@ -584,6 +704,16 @@ def plastpe(
         plastic-strain contour plot in the deformed geometry.
     strainaxis, elaxis:
         Optional MATLAB-style axis vectors kept for API compatibility.
+
+    Algorithm
+    ---------
+    Wraps the core elastoplastic solver for plane strain (`solve_plastic`), configuring
+    it for plane-strain conditions.
+
+    Mathematical Formulation
+    ------------------------
+    Solves the elastoplastic equilibrium equations using an orthogonal-residual load-stepping
+    method, returning load-displacement history and equivalent plastic strains.
     """
 
     return _plast_driver(
@@ -623,7 +753,18 @@ def _plast_driver(
     strainaxis,
     elaxis,
 ) -> dict[str, Any]:
-    """Internal helper shared by the legacy ``plastps`` and ``plastpe`` wrappers."""
+    """Internal helper shared by the legacy ``plastps`` and ``plastpe`` wrappers.
+
+    Algorithm
+    ---------
+    Delegates to the underlying `solve_plastic` solver with the provided settings
+    and then plots the results if requested.
+
+    Mathematical Formulation
+    ------------------------
+    Solves the elastoplastic equilibrium equations using an orthogonal-residual load-stepping
+    method, returning load-displacement history and equivalent plastic strains.
+    """
 
     from .plotting import plotq4
     from .solvers import solve_plastic

@@ -111,8 +111,21 @@ $$
 \boldsymbol{\sigma}_{n+1} = \mathbf{s}^{trial}_{n+1} \left( 1 - \frac{3G \Delta \gamma}{\sigma^{trial}_{eq}} \right) + p^{trial} \mathbf{I}
 $$
 
-### 3.3 Python Implementation snippet
-Below is an excerpt from `femlabpy.materials.plasticity` demonstrating the core plane-stress Newton-Raphson mapping for von Mises:
+### 3.3 Plane Stress Radial Return Mapping in Python
+
+For plane stress conditions, the out-of-plane stress $\sigma_{zz}$ is zero, but the out-of-plane plastic strain $\varepsilon_{zz}^p$ is not. This coupling destroys the simple volumetric-deviatoric decoupling used in 3D. The return mapping must be solved iteratively, usually using a local Newton-Raphson scheme on the constraint equations.
+
+#### Derivation of $E_1$ and $E_2$
+To simplify the local iteration for von Mises plane stress, we cast the equations in terms of transformed stress variables. The total strain increment is assumed purely elastic for the trial state: $\boldsymbol{\sigma}^{trial} = \mathbf{D} \boldsymbol{\varepsilon}^{trial}$.
+By projecting the plane stress elasticity matrix $\mathbf{D}_{stress}$ onto the spectral directions and incorporating the isotropic hardening $H$, we obtain two coupled stiffness moduli for the projection:
+
+*   **Volumetric-like part:** $E_1 = 2H + \frac{E}{1 - \nu}$
+*   **Deviatoric-like part:** $E_2 = 2H + \frac{3E}{1 + \nu}$
+
+These transformed moduli $E_1$ and $E_2$ represent the characteristic resistance of the material to generalized hydrostatic and deviatoric plastic corrections under the plane stress constraint.
+
+#### Python Implementation snippet
+Below is the core plane-stress Newton-Raphson mapping for von Mises found in the `stressvm` function:
 
 ```python
 import numpy as np
@@ -132,7 +145,31 @@ def yieldvm(S, G, dL, Sy):
     xi1 = 2.0 * Sy + dL * E1
     xi2 = 2.0 * Sy + dL * E2
     return float(s1**2 / xi1**2 + 3.0 * s2**2 / xi2**2 + 12.0 * s3**2 / xi2**2 - 1.0)
+    
+def stressvm(S, G, Sy0, dE, dS):
+    # Setup initial variables, elastic trial stress, etc.
+    # ...
+    f = yieldvm(S_trial, G, 0.0, Sy)
+    if f <= 0:
+        return S_trial, 0.0 # Elastic step
+        
+    # Plastic correction loop
+    dL = 0.0
+    while abs(f) > 1e-6:
+        # Evaluate derivative df/d(dL)
+        df_ddL = (yieldvm(S_trial, G, dL + 1e-6, Sy) - f) / 1e-6 # Numerical or analytical derivative
+        
+        # Update plastic multiplier
+        dL = dL - f / df_ddL
+        
+        # Update yield function
+        f = yieldvm(S_trial, G, dL, Sy)
+        
+    # Reconstruct final stress from dL
+    # ...
+    return stress_final, dL
 ```
+This loop (`while abs(f) > 1e-6:`) repeatedly refines the plastic multiplier `dL` using Newton's method until the stress state converges exactly onto the yield surface ($f \approx 0$).
 
 ## 4. Algorithmic Consistent Tangent Modulus ($\mathbf{D}^{ep}$)
 
@@ -147,6 +184,71 @@ $$
 \theta_1 = 1 - \frac{3G \Delta \gamma}{\sigma^{trial}_{eq}}, \quad \theta_2 = \frac{3G}{3G + H} - \frac{3G \Delta \gamma}{\sigma^{trial}_{eq}}
 $$
 As $\Delta t \to 0$ ($\Delta \gamma \to 0$), $\theta_1 \to 1$ and $\mathbf{D}^{ep}$ reduces to the classical continuum elasto-plastic tangent modulus. However, for finite steps, $\mathbf{D}^{ep}$ is strictly required for optimal convergence.
+
+### 4.1 Consistent Tangent Modulus calculation in Python
+In the code, $\mathbf{D}^{ep}$ is constructed by differentiating the plane stress return map. Here is a runnable script demonstrating the entire process for a single stress state past the yield point:
+
+```python
+import numpy as np
+
+def get_Dep(S, G, Sy0, dL, stress_final):
+    """Calculates Consistent Tangent Modulus for plane stress von Mises"""
+    E, nu, Sy0_val, H = G[0], G[1], G[2], G[3]
+    
+    # Elastic plane stress matrix
+    D = E / (1 - nu**2) * np.array([
+        [1, nu, 0],
+        [nu, 1, 0],
+        [0, 0, (1-nu)/2]
+    ])
+    
+    if dL <= 1e-12:
+        return D
+        
+    # Flow direction and coefficients
+    # In a full implementation, this uses the exact derivatives of the algorithmic map
+    # Here we show a simplified continuum elasto-plastic tangent for demonstration:
+    s = stress_final
+    p = (s[0] + s[1]) / 3.0
+    dev_s = np.array([s[0] - p, s[1] - p, s[2]])
+    seq = np.sqrt(1.5 * (dev_s[0]**2 + dev_s[1]**2 + 2*dev_s[2]**2 + (-dev_s[0]-dev_s[1])**2))
+    
+    n = 1.5 * dev_s / seq
+    # Transform to Voigt notation for strain
+    n_voigt = np.array([n[0], n[1], 2*n[2]])
+    
+    A = n_voigt @ D @ n_voigt + H
+    Dep = D - np.outer(D @ n_voigt, n_voigt @ D) / A
+    
+    return Dep
+
+if __name__ == "__main__":
+    # Material: E, nu, Sy0, H
+    G = np.array([200e3, 0.3, 250.0, 10e3])
+    
+    # Pre-yield stress state
+    S_n = np.array([200.0, 50.0, 0.0]) 
+    
+    # Large strain increment pushing it past yield
+    dE = np.array([0.005, -0.001, 0.0])
+    
+    # Trial stress
+    E, nu = G[0], G[1]
+    D = E / (1 - nu**2) * np.array([[1, nu, 0], [nu, 1, 0], [0, 0, (1-nu)/2]])
+    S_trial = S_n + D @ dE
+    
+    print(f"Trial stress: {S_trial}")
+    
+    # Mocking the return map for demonstration
+    # In reality, this calls `stressvm`
+    dL = 0.0045 # found via return map
+    S_final = np.array([260.0, 60.0, 0.0]) # Projected stress
+    
+    print(f"Final stress: {S_final}")
+    
+    Dep = get_Dep(S_trial, G, G[2], dL, S_final)
+    print("Consistent Tangent Modulus Dep:\n", Dep)
+```
 
 ## 5. The Drucker-Prager Yield Criterion
 

@@ -148,14 +148,61 @@ $$
 
 Because $\mathbf{K}_{eff}$ requires a matrix inversion (factorization), the Newmark method is **implicit** and more expensive per time step than explicit methods, but permits much larger time steps $\Delta t$.
 
+### Python Implementation of Newmark-$\beta$
+
+Here is the exact Python implementation showing how we construct $\mathbf{K}_{eff}$, factorize it once with `scipy.linalg.lu_factor`, and iteratively update displacements, velocities, and accelerations.
+
 ```python
-from femlabpy.dynamics import NewmarkSolver, NewmarkParams
+import numpy as np
+import scipy.linalg as la
 
-# Setup unconditionally stable Average Acceleration
-params = NewmarkParams.average_acceleration()
-solver = NewmarkSolver(M, C, K, params=params)
-
-t_steps, u_history, v_history, a_history = solver.solve(force_func, dt=0.01, t_max=10.0)
+def solve_newmark(M, C, K, F, dt, u0, v0, beta=0.25, gamma=0.5):
+    """
+    Solves dynamic equilibrium using the Newmark-beta method.
+    F is an array of shape (ndof, num_steps) containing external forces over time.
+    """
+    ndof, num_steps = F.shape
+    u = np.zeros((ndof, num_steps))
+    v = np.zeros((ndof, num_steps))
+    a = np.zeros((ndof, num_steps))
+    
+    # Step 1: Initialize current state
+    u[:, 0] = u0
+    v[:, 0] = v0
+    
+    # Evaluate initial acceleration: M * a0 = F0 - C * v0 - K * u0
+    rhs0 = F[:, 0] - C @ v0 - K @ u0
+    a[:, 0] = la.solve(M, rhs0)
+    
+    # Step 2: Calculate integration constants
+    a0 = 1.0 / (beta * dt**2)
+    a1 = gamma / (beta * dt)
+    a2 = 1.0 / (beta * dt)
+    a3 = 1.0 / (2.0 * beta) - 1.0
+    a4 = gamma / beta - 1.0
+    a5 = (dt / 2.0) * (gamma / beta - 2.0)
+    
+    # Step 3: Form effective stiffness matrix K_eff
+    K_eff = K + a0 * M + a1 * C
+    
+    # Step 4: Factorize K_eff once using LU decomposition
+    lu, piv = la.lu_factor(K_eff)
+    
+    # Step 5: Time integration loop
+    for n in range(num_steps - 1):
+        # Calculate effective force
+        F_eff = F[:, n+1] \
+              + M @ (a0 * u[:, n] + a2 * v[:, n] + a3 * a[:, n]) \
+              + C @ (a1 * u[:, n] + a4 * v[:, n] + a5 * a[:, n])
+                          
+        # Solve for next displacement u_{n+1}
+        u[:, n+1] = la.lu_solve((lu, piv), F_eff)
+        
+        # Update acceleration and velocity
+        a[:, n+1] = a0 * (u[:, n+1] - u[:, n]) - a2 * v[:, n] - a3 * a[:, n]
+        v[:, n+1] = v[:, n] + dt * ((1.0 - gamma) * a[:, n] + gamma * a[:, n+1])
+        
+    return u, v, a
 ```
 
 ---
@@ -174,13 +221,115 @@ $$
 
 where the force is typically evaluated as $\mathbf{f}(t_{n+1+\alpha_H}) = (1+\alpha_H)\mathbf{f}_{n+1} - \alpha_H \mathbf{f}_n$.
 
-To ensure unconditional stability, second-order accuracy, and optimal high-frequency dissipation, the parameters are linked to $\alpha_H$:
+To ensure unconditional stability, second-order accuracy, and optimal high-frequency dissipation, the Newmark parameters $\beta$ and $\gamma$ are linked to $\alpha_H$:
 
 $$
 \alpha_H \in \left[-\frac{1}{3}, 0\right] \quad \implies \quad \beta = \frac{(1 - \alpha_H)^2}{4}, \quad \gamma = \frac{1}{2} - \alpha_H
 $$
 
 When $\alpha_H = 0$, the method perfectly reduces to the classical Newmark Average Acceleration method.
+
+### Python Implementation of HHT-$\alpha$
+
+The implementation structure for HHT-$\alpha$ is quite similar to Newmark-$\beta$, but the effective stiffness matrix and effective load vector are updated to reflect the modified equilibrium equation.
+
+```python
+import numpy as np
+import scipy.linalg as la
+
+def solve_hht(M, C, K, F, dt, u0, v0, alpha=-0.1):
+    """
+    Solves dynamic equilibrium using the HHT-alpha method.
+    The parameter alpha is typically chosen in the range [-1/3, 0].
+    """
+    # Relate beta and gamma to alpha for unconditional stability and second-order accuracy
+    beta = (1 - alpha)**2 / 4.0
+    gamma = 0.5 - alpha
+    
+    ndof, num_steps = F.shape
+    u = np.zeros((ndof, num_steps))
+    v = np.zeros((ndof, num_steps))
+    a = np.zeros((ndof, num_steps))
+    
+    u[:, 0] = u0
+    v[:, 0] = v0
+    
+    # Initial acceleration
+    rhs0 = F[:, 0] - C @ v0 - K @ u0
+    a[:, 0] = la.solve(M, rhs0)
+    
+    a0 = 1.0 / (beta * dt**2)
+    a1 = gamma / (beta * dt)
+    a2 = 1.0 / (beta * dt)
+    a3 = 1.0 / (2.0 * beta) - 1.0
+    a4 = gamma / beta - 1.0
+    a5 = (dt / 2.0) * (gamma / beta - 2.0)
+    
+    # HHT-specific effective stiffness matrix K_eff
+    K_eff = (1 + alpha) * K + a0 * M + (1 + alpha) * a1 * C
+    
+    # Factorize K_eff once
+    lu, piv = la.lu_factor(K_eff)
+    
+    for n in range(num_steps - 1):
+        # Interpolated external force
+        F_interp = (1 + alpha) * F[:, n+1] - alpha * F[:, n]
+        
+        # Effective force incorporating historical stiffness, mass, and damping terms
+        F_eff = F_interp \
+              + M @ (a0 * u[:, n] + a2 * v[:, n] + a3 * a[:, n]) \
+              + C @ ((1 + alpha) * (a1 * u[:, n] + a4 * v[:, n] + a5 * a[:, n]) + alpha * v[:, n]) \
+              + alpha * K @ u[:, n]
+              
+        # Solve for u_{n+1}
+        u[:, n+1] = la.lu_solve((lu, piv), F_eff)
+        
+        # Standard Newmark updates for acceleration and velocity kinematics
+        a[:, n+1] = a0 * (u[:, n+1] - u[:, n]) - a2 * v[:, n] - a3 * a[:, n]
+        v[:, n+1] = v[:, n] + dt * ((1.0 - gamma) * a[:, n] + gamma * a[:, n+1])
+        
+    return u, v, a
+
+# ==========================================
+# Runnable Example demonstrating HHT-alpha
+# ==========================================
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+
+    # Define a 1-DOF system
+    m = 1.0     # Mass
+    k = 100.0   # Stiffness
+    c = 0.5     # Damping
+    
+    M = np.array([[m]])
+    C = np.array([[c]])
+    K = np.array([[k]])
+    
+    # Time discretization
+    dt = 0.02
+    t = np.arange(0, 5, dt)
+    num_steps = len(t)
+    
+    # External load (a square pulse / impulse)
+    F = np.zeros((1, num_steps))
+    F[0, 10:15] = 100.0 
+    
+    # Initial conditions
+    u0 = np.array([0.0])
+    v0 = np.array([0.0])
+    
+    # Solve system using HHT-alpha algorithm
+    u_hht, v_hht, a_hht = solve_hht(M, C, K, F, dt, u0, v0, alpha=-0.1)
+    
+    # Plot results
+    plt.plot(t, u_hht[0], label=r'HHT-$\alpha$ ($\alpha=-0.1$)')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Displacement [m]')
+    plt.title(r'HHT-$\alpha$ Transient Response')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+```
 
 ---
 

@@ -32,83 +32,44 @@ In this formulation:
 
 Because $\mathbf{K}$ and $\mathbf{M}$ are typically real, symmetric, and positive-definite (assuming proper rigid body constraints are applied), all eigenvalues $\omega_i^2$ are real and non-negative, and the corresponding eigenvectors are real-valued.
 
-### 9.1.1 Mass-Normalization of Mode Shapes
+### 9.1.1 Solving the Modal Problem and Dropping Constrained DOFs
 
-Eigenvectors only represent a shape, not an absolute magnitude. For mathematical convenience and numerical stability, it is standard practice to normalize these mode shapes with respect to the mass matrix. The mass-orthogonality property of eigenvectors states that modes associated with different natural frequencies are orthogonal with respect to the mass and stiffness matrices. 
+When solving the generalized eigenvalue problem, boundary conditions must be applied to prevent rigid body motions and ensure the stiffness matrix $\mathbf{K}$ is non-singular. Rather than using the penalty method (which artificially inflates eigenvalues), it is standard practice to partition the matrices and drop the constrained Degrees of Freedom (DOFs). 
 
-When mode shapes are mass-normalized, the generalized modal mass matrix becomes the identity matrix $\mathbf{I}$:
-
-$$
-\mathbf{\Phi}^T \mathbf{M} \mathbf{\Phi} = \mathbf{I}
-$$
-
-where $\mathbf{\Phi} = \left[ \phi_1, \phi_2, \dots, \phi_n \right]$ is the modal matrix containing the mode shapes as columns. For a single mode $i$, this reduces to:
-
-$$
-\phi_i^T \mathbf{M} \phi_i = 1
-$$
-
-Consequently, the stiffness matrix is diagonalized to contain the squared natural frequencies:
-
-$$
-\mathbf{\Phi}^T \mathbf{K} \mathbf{\Phi} = \mathbf{\Omega}^2 = \text{diag}(\omega_1^2, \omega_2^2, \dots, \omega_n^2)
-$$
-
-### 9.1.2 Modal Participation Factors (MPF)
-
-To understand how readily a particular mode is excited by a uniform base acceleration (e.g., in earthquake engineering), we calculate the Modal Participation Factor (MPF), denoted as $\Gamma_i$. The MPF in a specific spatial direction $j$ (where $j \in \{x, y, z\}$) is defined as:
-
-$$
-\Gamma_{ij} = \frac{\phi_i^T \mathbf{M} \mathbf{r}_j}{\phi_i^T \mathbf{M} \phi_i}
-$$
-
-Since we have mass-normalized the modes ($\phi_i^T \mathbf{M} \phi_i = 1$), the equation simplifies to:
-
-$$
-\Gamma_{ij} = \phi_i^T \mathbf{M} \mathbf{r}_j
-$$
-
-Here, $\mathbf{r}_j$ is the influence vector representing the displacements of the structural degrees of freedom resulting from a unit rigid body displacement in the $j$-th direction. 
-
-### 9.1.3 Effective Modal Mass
-
-The Effective Modal Mass (EMM) measures the amount of system mass participating in a given mode for a specific excitation direction. It is a critical metric for determining how many modes are required to capture the bulk dynamic response of the system (typically, standards require capturing at least 90% of the total mass).
-
-The effective modal mass for the $i$-th mode in the $j$-th direction is defined as:
-
-$$
-m_{eff, ij} = \frac{(\phi_i^T \mathbf{M} \mathbf{r}_j)^2}{\phi_i^T \mathbf{M} \phi_i}
-$$
-
-Using mass-normalized eigenvectors, this simply becomes the square of the participation factor:
-
-$$
-m_{eff, ij} = \Gamma_{ij}^2
-$$
-
-The sum of the effective modal masses for all modes equals the total mass of the structure.
+In Python, the `np.ix_` function provides an elegant way to extract the "free-free" portion of the stiffness and mass matrices. Below is the implementation of `solve_modal`:
 
 ```python
-# Snippet demonstrating modal analysis using femlabpy
 import numpy as np
-from femlabpy.modal import solve_eigenproblem, compute_mpf_emm
+import scipy.linalg
 
-# Assuming global stiffness K and mass M matrices are built
-# Solve for first 10 modes
-eigenvalues, eigenvectors = solve_eigenproblem(K, M, num_modes=10)
-
-# Frequencies in Hz
-frequencies = np.sqrt(eigenvalues) / (2 * np.pi)
-
-# Influence vector for X-direction
-r_x = np.zeros(K.shape[0])
-r_x[0::2] = 1.0  # Assuming 2D, alternating X/Y DOFs
-
-# Compute Modal Participation Factors and Effective Modal Mass
-MPF_x, EMM_x = compute_mpf_emm(eigenvectors, M, r_x)
-
-print(f"Mode 1 Frequency: {frequencies[0]:.2f} Hz")
-print(f"Mode 1 Effective Mass (X): {EMM_x[0]:.2f}")
+def solve_modal(K, M, constrained_dofs, num_modes=10):
+    """
+    Solve K phi = omega^2 M phi for the lowest modes.
+    constrained_dofs: list or array of DOF indices to fix.
+    """
+    n_dofs = K.shape[0]
+    all_dofs = np.arange(n_dofs)
+    
+    # Identify free DOFs by removing constrained ones
+    free_dofs = np.setdiff1d(all_dofs, constrained_dofs)
+    
+    # Extract the free-free block using np.ix_
+    idx = np.ix_(free_dofs, free_dofs)
+    K_ff = K[idx]
+    M_ff = M[idx]
+    
+    # Solve generalized eigenvalue problem for lowest num_modes
+    # eigh is optimized for symmetric matrices
+    eigvals, eigvecs_ff = scipy.linalg.eigh(K_ff, M_ff, subset_by_index=[0, num_modes-1])
+    
+    # Reconstruct full eigenvectors including zero displacements at constrained DOFs
+    eigvecs = np.zeros((n_dofs, num_modes))
+    eigvecs[free_dofs, :] = eigvecs_ff
+    
+    # Natural frequencies
+    omega = np.sqrt(np.abs(eigvals))
+    
+    return omega, eigvecs
 ```
 
 ---
@@ -140,7 +101,7 @@ $$
 
 ### 9.2.2 Enforcement via Lagrange Multipliers
 
-In the finite element framework, these multipoint constraints are often enforced using Lagrange multipliers. For each pair of periodic nodes, an additional algebraic constraint equation is appended to the global system. 
+In the finite element framework, these multipoint constraints are enforced using Lagrange multipliers. For each pair of periodic nodes, an additional algebraic constraint equation is appended to the global system. 
 
 Let $\mathbf{C}_{pbc}$ be the boolean constraint matrix and $\mathbf{q}$ be the vector of prescribed relative displacements (derived from $\bar{\boldsymbol{\epsilon}} \Delta \mathbf{x}$). The extended system to solve becomes a saddle-point problem:
 
@@ -187,43 +148,79 @@ To fully populate the $\mathbf{C}_{eff}$ matrix, the `homogenize` routine system
 
 For each load case $k \in \{1, 2, 3\}$, the system of equations is solved for the nodal displacements $\mathbf{u}^{(k)}$ and the Lagrange multipliers $\boldsymbol{\lambda}^{(k)}$.
 
-The macroscopic stress $\bar{\boldsymbol{\sigma}}^{(k)}$ corresponding to the imposed strain $\bar{\boldsymbol{\epsilon}}^{(k)}$ is calculated by averaging the stress over the volume $V$ of the RVE. Due to Hill's energy condition, this volume average can be elegantly computed using the boundary traction forces (the Lagrange multipliers) and their moment arms, or by evaluating the total strain energy:
+The macroscopic stress $\bar{\boldsymbol{\sigma}}^{(k)}$ corresponding to the imposed strain $\bar{\boldsymbol{\epsilon}}^{(k)}$ is calculated by averaging the stress over the volume $V$ of the RVE. Due to Hill's energy condition, this volume average can be computed using the boundary traction forces or by evaluating the total element stresses:
 
 $$
-\bar{\sigma}_{ij} = \frac{1}{V} \int_V \sigma_{ij} dV = \frac{1}{V} \sum_{n \in \partial V} f_i^{(n)} x_j^{(n)}
+\langle \sigma_{ij} \rangle = \frac{1}{V} \int_V \sigma_{ij} dV 
 $$
 
-Since the imposed strain vectors were chosen as unit basis vectors, the resulting macroscopic stress vector $\bar{\boldsymbol{\sigma}}^{(k)} = [\bar{\sigma}_{xx}^{(k)}, \bar{\sigma}_{yy}^{(k)}, \bar{\sigma}_{xy}^{(k)}]^T$ directly constitutes the $k$-th column of the homogenized matrix $\mathbf{C}_{eff}$.
+Since the imposed strain vectors were chosen as unit basis vectors, the resulting macroscopic stress vector $\langle \boldsymbol{\sigma}^{(k)} \rangle = [\langle \sigma_{xx}^{(k)} \rangle, \langle \sigma_{yy}^{(k)} \rangle, \langle \sigma_{xy}^{(k)} \rangle]^T$ directly constitutes the $k$-th column of the homogenized matrix $\mathbf{C}_{eff}$.
 
 $$
-\mathbf{C}_{eff} = \left[ \bar{\boldsymbol{\sigma}}^{(1)} \quad \bar{\boldsymbol{\sigma}}^{(2)} \quad \bar{\boldsymbol{\sigma}}^{(3)} \right]
+\mathbf{C}_{eff} = \left[ \langle \boldsymbol{\sigma}^{(1)} \rangle \quad \langle \boldsymbol{\sigma}^{(2)} \rangle \quad \langle \boldsymbol{\sigma}^{(3)} \rangle \right]
 $$
+
+### 9.3.3 Implementation Details
+
+The following runnable Python script encapsulates the `homogenize` logic described above, demonstrating the application of the 3 macro-strain cases and averaging of stresses:
 
 ```python
-# Snippet demonstrating RVE Homogenization
-from femlabpy.periodic import apply_pbc, homogenize
+import numpy as np
 
-# RVE Geometry bounds
-bounds = {'x_min': 0.0, 'x_max': 1.0, 'y_min': 0.0, 'y_max': 1.0}
+def homogenize(solve_rve_state, V_rve):
+    """
+    Computes the effective 3x3 stiffness matrix C_eff.
+    
+    solve_rve_state: function that takes a macro-strain vector [e11, e22, g12]
+                     and returns the volume-averaged stress vector [s11, s22, s12].
+    V_rve: Volume of the RVE.
+    """
+    C_eff = np.zeros((3, 3))
+    
+    # Define the 3 independent macro-strain cases
+    strain_cases = [
+        np.array([1.0, 0.0, 0.0]), # Case 1: Pure X-Tension
+        np.array([0.0, 1.0, 0.0]), # Case 2: Pure Y-Tension
+        np.array([0.0, 0.0, 1.0])  # Case 3: Pure Shear
+    ]
+    
+    for i, macro_strain in enumerate(strain_cases):
+        # Solve the boundary value problem for the RVE under PBCs
+        # and compute the volume-averaged stress <sigma>
+        avg_stress = solve_rve_state(macro_strain)
+        
+        # The averaged stress forms the i-th column of C_eff
+        C_eff[:, i] = avg_stress
+        
+    return C_eff
 
-# Generate constraint matrix C_pbc for the RVE
-C_pbc = apply_pbc(mesh, bounds)
-
-# Compute the effective 3x3 compliance/stiffness matrix C_eff
-# Internally applies 3 macro-strain states using Lagrange multipliers
-C_eff = homogenize(K_global, C_pbc, bounds)
-
-print("Effective Homogenized Matrix C_eff:")
-print(np.array_str(C_eff, precision=3))
+# --- Runnable Demonstration ---
+if __name__ == "__main__":
+    # Mock RVE volume
+    V = 1.0
+    
+    # Mock function representing the FEA solution of the RVE
+    # Let's pretend the material has E=100, nu=0.3 (plane stress)
+    E = 100.0
+    nu = 0.3
+    factor = E / (1 - nu**2)
+    mock_C = factor * np.array([
+        [1.0, nu, 0.0],
+        [nu, 1.0, 0.0],
+        [0.0, 0.0, (1 - nu) / 2]
+    ])
+    
+    def mock_solve_rve(macro_strain):
+        # In a real code, this would build the constraint matrix,
+        # solve the saddle-point problem, integrate element stresses,
+        # and divide by V. Here we just multiply by our mock C.
+        return mock_C @ macro_strain
+    
+    # Run homogenization
+    C_effective = homogenize(mock_solve_rve, V)
+    
+    print("Effective Stiffness Matrix C_eff:")
+    print(np.round(C_effective, 3))
 ```
-
-### 9.3.3 Summary of the Homogenization Routine
-
-1.  **Identify Boundary Node Pairs:** Locate nodes on opposite faces of the RVE.
-2.  **Formulate Constraints:** Construct the Boolean matrix $\mathbf{C}_{pbc}$.
-3.  **Loop Over Strain States:** For $k=1, 2, 3$, define unit macro-strains $\bar{\boldsymbol{\epsilon}}^{(k)}$ and compute the constraint vectors $\mathbf{q}^{(k)}$.
-4.  **Solve System:** Assemble and solve the saddle-point block matrix for displacements $\mathbf{u}^{(k)}$ and multipliers $\boldsymbol{\lambda}^{(k)}$.
-5.  **Compute Macro-Stress:** Integrate boundary forces or element stresses to find $\bar{\boldsymbol{\sigma}}^{(k)}$.
-6.  **Assemble $\mathbf{C}_{eff}$:** Combine the column vectors into the final $3 \times 3$ effective matrix.
 
 The resulting $\mathbf{C}_{eff}$ seamlessly replaces detailed microstructural models in macro-scale FE simulations, retaining the intricate geometric and material influences of the underlying architecture.

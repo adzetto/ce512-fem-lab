@@ -28,6 +28,15 @@ def reaction(q, C, dof: int, comp: int | None = None):
     ndarray
         Reaction table with either ``[node, local_dof, reaction]`` columns or
         ``[constraint_row, reaction]`` when ``comp`` is supplied.
+
+    Algorithm
+    ---------
+    Extracts the support reactions from the computed global internal force vector
+    at the constrained degrees of freedom.
+
+    Mathematical Formulation
+    ------------------------
+    The reactions are calculated using $R = K u - P$.
     """
     force = as_float_array(q).reshape(-1, 1)
     constraints = as_float_array(C)

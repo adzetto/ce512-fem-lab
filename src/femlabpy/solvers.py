@@ -19,17 +19,51 @@ except ImportError:  # pragma: no cover
 
 
 def _scalar(value: object) -> float:
-    """Return the first scalar entry from an arbitrary array-like object."""
+    r"""Return the first scalar entry from an arbitrary array-like object.
+
+    Mathematical Formulation
+    ------------------------
+    Extracts a scalar from a tensor :math:`\mathbf{T}`:
+    .. math:: t = \mathbf{T}_{0, 0, \dots, 0}
+
+    Algorithm
+    ---------
+    1. Flatten the array-like object to 1D.
+    2. Return the element at index 0 as float.
+    """
     return float(as_float_array(value).reshape(-1)[0])
 
 
 def _column(values: list[float]) -> np.ndarray:
-    """Return a Python list as a floating-point column vector."""
+    r"""Return a Python list as a floating-point column vector.
+
+    Mathematical Formulation
+    ------------------------
+    Constructs a column vector :math:`\mathbf{v} \in \mathbb{R}^{n \times 1}`:
+    .. math:: \mathbf{v} = [v_1, v_2, \dots, v_n]^T
+
+    Algorithm
+    ---------
+    1. Convert the input list to a numpy array.
+    2. Reshape the array to :math:`(n, 1)`.
+    """
     return np.asarray(values, dtype=float).reshape(-1, 1)
 
 
 def _solve_plastic_system(matrix, rhs, *, plane_strain: bool):
-    """Select the dense legacy fallback only for plane-strain plastic solves."""
+    r"""Select the dense legacy fallback only for plane-strain plastic solves.
+
+    Mathematical Formulation
+    ------------------------
+    Solves the linear system of equations:
+    .. math:: \mathbf{K} \mathbf{u} = \mathbf{f}
+
+    Algorithm
+    ---------
+    1. Check if the system is plane-strain.
+    2. If true, use the legacy symmetric dense solver.
+    3. If false, use the standard linear system solver.
+    """
     if plane_strain:
         return solve_legacy_symmetric_system(matrix, rhs)
     return solve_linear_system(matrix, rhs)
@@ -48,11 +82,39 @@ def solve_nlbar(
     tol: float,
     plotdof: int,
 ):
-    """
+    r"""
     Solve the legacy nonlinear bar examples with the orthogonal residual method.
 
     The implementation follows the original ``nlbar.m`` control flow while using
     vectorized element kernels for bar stiffness and internal-force assembly.
+
+    Mathematical Formulation
+    ------------------------
+    Tracks the load-displacement path of a snap-through structure using the
+    Orthogonal Residual Method. The fundamental constraint requires that the
+    iterative displacement updates remain orthogonal to the previous increment:
+
+    .. math:: \Delta u_i^T \Delta u_{i+1} = 0
+
+    The external force vector is scaled by a load parameter :math:`\lambda`,
+    where :math:`f_{ext} = \lambda P`. The residual at iteration :math:`k` is:
+
+    .. math:: r^{(k)} = \lambda^{(k)} P - f_{int}(u^{(k)})
+
+    Algorithm
+    ---------
+    1. Initialize nodal displacements :math:`u = 0`, load scaling :math:`\lambda = 0`.
+    2. Compute the tangent stiffness matrix :math:`K_T(u)`.
+    3. Solve for the reference displacement increment :math:`\Delta u_0 = K_T^{-1} P`.
+    4. Loop over load steps:
+       a. Predictor: :math:`\Delta u = \alpha \Delta u_0` (scaled by arc-length).
+       b. Corrector loop (until convergence):
+          i. Compute internal forces :math:`q(u + \Delta u)`.
+          ii. Compute load increment :math:`\xi = \frac{(q - f)^T \Delta u}{P^T \Delta u}`.
+          iii. Compute residual :math:`r = -(q - f) + \xi P`.
+          iv. Solve :math:`K_T \delta u = r`.
+          v. Update :math:`\Delta u \leftarrow \Delta u + \delta u`.
+       c. Update total displacements and forces.
 
     Parameters
     ----------
@@ -191,12 +253,39 @@ def solve_plastic(
     plane_strain: bool,
     material_type: int = 1,
 ):
-    """
+    r"""
     Solve the legacy Q4 elastoplastic examples with orthogonal residual iterations.
 
     Parameters follow the original FemLab classroom drivers ``plastps.m`` and
     ``plastpe.m``. The Gauss-point constitutive updates remain in the element
     routines; this function orchestrates the load stepping and equilibrium loop.
+
+    Mathematical Formulation
+    ------------------------
+    Tracks the elastoplastic load-displacement path using the Orthogonal Residual
+    Method. The equilibrium equation balances internal and external forces:
+
+    .. math:: \int_V B^T \sigma(u) \, dV = \lambda P
+
+    The iterative displacement increment :math:`\Delta u` is constrained by:
+
+    .. math:: \Delta u_i^T \Delta u_{i+1} = 0
+
+    Algorithm
+    ---------
+    1. Initialize displacements :math:`u = 0` and plastic internal history variables.
+    2. Compute the tangent stiffness matrix :math:`K_T` based on current state.
+    3. Solve for reference step :math:`\Delta u_0 = K_T^{-1} P`.
+    4. Loop over load increments:
+       a. Predictor step based on arc-length scaling.
+       b. Corrector iterations:
+          i. Integrate element stresses and update internal variables.
+          ii. Assemble internal force vector :math:`q`.
+          iii. Evaluate load increment :math:`\xi = \frac{(q - f)^T \Delta u}{P^T \Delta u}`.
+          iv. Compute residual :math:`r = -q + f + \xi P`.
+          v. Solve :math:`K_T \delta u = r` and update :math:`\Delta u`.
+       c. Commit internal history variables (stress :math:`S`, strain :math:`E`).
+       d. Update total load and displacement fields.
 
     Parameters
     ----------

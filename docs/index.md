@@ -6,19 +6,12 @@ femlabpy is a pure-Python finite element library. It brings the array-based appr
 
 ```{toctree}
 :maxdepth: 2
-:caption: User Guide
 :hidden:
 
 tutorials
-manual/ch01_fundamentals
-manual/ch02_elements
-manual/ch03_assembly_statics
-manual/ch04_materials
-manual/ch05_dynamics
-manual/ch06_periodic_io
-manual/ch07_advanced_examples
-manual/ch08_custom_elements
-manual/ch09_dynamic_workflows
+manual/index
+theory/index
+api
 ```
 
 ```{toctree}
