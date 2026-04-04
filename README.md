@@ -7,16 +7,18 @@
 
 Python FEM library for teaching. Based on MATLAB/Scilab FemLab.
 
-## Contents
-
-- [Install](#install)
-- [Complete Workflow Example](#complete-workflow-example)
-- [Quick Examples](#quick-examples)
-- [API Reference](#api-reference)
-- [Dynamic Analysis & Benchmarks](#dynamic-analysis--benchmarks)
-- [Development](#development)
-- [Links](#links)
-- [References](#references)
+<br>
+<p align="center">
+  <b>
+    <a href="#install">Install</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="#complete-workflow-example">Workflow</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="#quick-examples">Examples</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="#api-reference">API Reference</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="#dynamic-analysis--benchmarks">Benchmarks</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="#development">Development</a>
+  </b>
+</p>
+<br>
 
 ## Install
 
