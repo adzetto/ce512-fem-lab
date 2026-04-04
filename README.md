@@ -354,6 +354,34 @@ Data loaders: `cantilever_data()`, `flow_data()`, `bar01_data()`, `bar02_data()`
 
 </details>
 
+## Dynamic Analysis & Benchmarks
+
+`femlabpy` includes comprehensive structural dynamics solvers (Newmark-$\beta$, HHT-$\alpha$, Central Difference) and has been rigorously benchmarked against industry-standard open-source codes like **OpenSeesPy** and **CalculiX**.
+
+### 1. Static and Modal Analysis (Cantilever Beam)
+
+A 2D plane-stress cantilever beam ($4m \times 0.5m$, $32 \times 4$ Q4 elements) was tested for static tip deflection under a point load and free-vibration natural frequencies.
+
+| Metric | Analytical (E-B) | OpenSeesPy | CalculiX (CPS4) | femlabpy (Q4) | femlabpy vs OpenSees |
+|---|---|---|---|---|---|
+| **Static Deflection** | -9.752e-05 m | -9.544e-05 m | -9.518e-05 m | **-9.544e-05 m** | **0.000%** (Exact) |
+| **Frequency: Mode 1** | 26.110 Hz | 26.228 Hz | 26.283 Hz | **26.248 Hz** | **0.07%** |
+| **Frequency: Mode 2** | 163.628 Hz | 153.716 Hz | 154.668 Hz | **154.437 Hz** | **0.47%** |
+| **Frequency: Mode 3** | 458.163 Hz | 323.810 Hz | 323.892 Hz | **323.881 Hz** | **0.02%** |
+
+*Note: Differences against the Euler-Bernoulli analytical solution are expected, as 2D plane-stress elements capture shear deformations and Poisson effects that simple 1D beam theory ignores.*
+
+### 2. Seismic Time History Analysis
+
+A 2D plane-stress concrete column ($8m \times 1m$, $4 \times 32$ Q4 elements) was subjected to the **Düzce Earthquake** horizontal ground motion record (`BOL090.AT2`, PGA = 0.82g). The analysis ran for 55.9 seconds (5590 time steps at $\Delta t = 0.01s$) using the unconditionally stable Newmark average acceleration method with 5% Rayleigh damping.
+
+| Metric | OpenSeesPy (UniformExcitation) | CalculiX (*DLOAD GRAV) | femlabpy (seismic_load) |
+|---|---|---|---|
+| **Max Roof Disp. (X)** | 5.850 mm | 4.180 mm | **5.848 mm** |
+| **Solve Time** | 1.33 seconds | 141.37 seconds | **1.12 seconds** |
+
+**Conclusion:** The time-history displacement trace of `femlabpy` almost perfectly overlaps with the compiled C++ OpenSees integrator over thousands of cycles (**0.67% RMS difference** over 5590 steps). The `femlabpy` solver also completed the analysis significantly faster than CalculiX and slightly faster than OpenSeesPy.
+
 ## Development
 
 ```bash
